@@ -48,7 +48,8 @@ namespace Nerva.Toolkit.Config
             else
             {
                 Log.Instance.Write("Configuration loaded from '{0}'", loadedConfigFile);
-                instance = new ObjectSerializer().Deserialize<Configuration>(XHelper.LoadDocument(loadedConfigFile));
+                var os = new ObjectSerializer();
+                instance = os.Deserialize<Configuration>(XHelper.LoadDocument(loadedConfigFile));
             }
         }
 

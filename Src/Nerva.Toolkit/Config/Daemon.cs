@@ -5,5 +5,7 @@ namespace Nerva.Toolkit.Config
         public int RpcPort { get; set; } = 17566;
 
         public bool PrivateRpc { get; set; } = true;
+
+        public bool StopOnExit { get; set; } = false;
     }
 }

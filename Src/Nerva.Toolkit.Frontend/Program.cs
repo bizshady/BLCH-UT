@@ -1,6 +1,7 @@
 ﻿using System;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
+using AngryWasp.Serializer;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Config;
@@ -23,8 +24,8 @@ namespace Nerva.Toolkit.Frontend
 			if (logPath != null)
 				Log.Instance.Write("Writing log to file '{0}'", logPath);
 
+			Serializer.Initialize();
 			Configuration.Load(cmdPath);
-
 			CliInterface.Start();
 			
 			new Application(Eto.Platform.Detect).Run(new MainForm());
