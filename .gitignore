@@ -1,4 +1,6 @@
 Bin
 /Src/Nerva.Toolkit/obj
+/Src/Nerva.Cli.Interface/obj
 /Src/Nerva.Toolkit.Gtk/obj
 /Src/Nerva.Toolkit.Wpf/obj
+/Src/Nerva.Toolkit.Frontend/obj

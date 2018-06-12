@@ -15,4 +15,8 @@
     <Optimize>true</Optimize>
     <OutputPath>../../Bin/$(Configuration)</OutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer/AngryWasp.Serializer.csproj" />
+    <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer.Serializers/AngryWasp.Serializer.Serializers.csproj" />
+  </ItemGroup>
 </Project>
