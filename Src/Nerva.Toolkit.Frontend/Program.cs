@@ -8,7 +8,7 @@ namespace Nerva.Toolkit.Frontend
 		[STAThread]
 		public static void Main(string[] args)
 		{
-			new Application(Eto.Platforms.Detect).Run(new MainForm());
+			new Application(Eto.Platform.Detect).Run(new MainForm());
 		}
 	}
 }

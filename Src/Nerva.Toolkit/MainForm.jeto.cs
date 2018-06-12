@@ -9,7 +9,6 @@ namespace Nerva.Toolkit
 {	
 	public class MainForm : Form
 	{	
-		public cons
 		public MainForm()
 		{
 			Log.CreateInstance();
