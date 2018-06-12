@@ -7,9 +7,6 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nerva.Cli.Interface\Nerva.Cli.Interface.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Eto.Forms" Version="2.4.1" />
     <PackageReference Include="Eto.Serialization.Json" Version="2.4.1" />
   </ItemGroup>

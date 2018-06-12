@@ -5,11 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch",
+            "name": "launch-debug",
             "type": "mono",
             "request": "launch",
             "program": "${workspaceRoot}/Bin/Debug/Nerva.Toolkit.Frontend.exe",
-            "cwd": "${workspaceRoot}"
+            "cwd": "${workspaceRoot}/Bin/Debug",
+            "preLaunchTask": "build-debug",
+            "args":[
+                "--log-file", "debug.log",
+                "--config-file", "app.config"
+            ]
+        },
+        {
+            "name": "launch-release",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/Bin/Release/Nerva.Toolkit.Frontend.exe",
+            "cwd": "${workspaceRoot}/Bin/Release",
+            "preLaunchTask": "build-release",
+            "args":[
+                "--log-file", "debug.log",
+                "--config-file", "app.config"
+            ]
         },
         {
             "name": "Attach",

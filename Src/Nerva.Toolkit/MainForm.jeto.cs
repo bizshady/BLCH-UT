@@ -11,9 +11,6 @@ namespace Nerva.Toolkit
 	{	
 		public MainForm()
 		{
-			Log.CreateInstance();
-			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.VERSION);
-
 			JsonReader.Load(this);
 		}
 
