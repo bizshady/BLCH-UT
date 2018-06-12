@@ -36,7 +36,6 @@ namespace Nerva.Toolkit.CLI
             try
             {
                 Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
-
                 Process proc;
 
                 //Kill existing nervad instances. We need to start a new one with our config file parameters
