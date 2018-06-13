@@ -71,6 +71,8 @@ namespace Nerva.Toolkit.Frontend
 
 			new Application(Eto.Platform.Detect).Run(new MainForm());
 
+			//Prevent the daemon restarting automatically before telling it to stop
+			Cli.Instance.RestartEnabled = false;
 			Cli.Instance.Daemon.StopDaemon();
 
 			Configuration.Save();

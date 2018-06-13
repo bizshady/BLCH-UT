@@ -16,6 +16,8 @@ namespace Nerva.Toolkit.CLI
         public delegate void ProcessStartedEventHandler(string fileName, string args, Process process);
         public event ProcessStartedEventHandler ProcessStarted;
 
+        public bool RestartEnabled { get; set; } = true;
+
         private DaemonInterface di = new DaemonInterface();
         private static Cli instance;
 
@@ -71,8 +73,13 @@ namespace Nerva.Toolkit.CLI
 
             worker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs e)
             {
-                Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", processName);
-                worker.RunWorkerAsync();
+                if (RestartEnabled)
+                {
+                    Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", processName);
+                    worker.RunWorkerAsync();
+                }
+                else
+                    Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Automatic restart disabled", processName);
             };
 
             worker.RunWorkerAsync();
