@@ -11,6 +11,10 @@ namespace Nerva.Toolkit.Config
 
         public string ToolsPath { get; set; } = "./";
 
+        public bool CheckForUpdateOnStartup { get; set; } = true;
+
+        public bool LogRpcTraffic { get; set; } = false;
+        
         public Daemon DaemonConfig { get; set; } = new Daemon();
 
         public Wallet WalletConfig { get; set; } = new Wallet();
