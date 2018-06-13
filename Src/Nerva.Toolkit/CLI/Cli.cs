@@ -57,8 +57,8 @@ namespace Nerva.Toolkit.CLI
 
             #endregion
 
-            string daemonIp = Configuration.Instance.DaemonConfig.PrivateRpc ? "127.0.0.1" : "0.0.0.0";
-            string daemonArgs = $"--rpc-bind-ip {daemonIp} --rpc-bind-port {Configuration.Instance.DaemonConfig.RpcPort} --log-file {logFile}";
+            string daemonIp = Configuration.Instance.Daemon.PrivateRpc ? "127.0.0.1" : "0.0.0.0";
+            string daemonArgs = $"--rpc-bind-ip {daemonIp} --rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile}";
 
             StartWatcherThread(daemonPath, daemonArgs);
         }
@@ -111,15 +111,22 @@ namespace Nerva.Toolkit.CLI
 
                 #endregion
 
+                if (Configuration.Instance.Daemon.AutoStartMining)
+                {
+                    args += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
+                    Log.Instance.Write("Enabling startup mining @ {0}", Configuration.Instance.WalletAddress);
+                }
+
                 ProcessStartInfo psi = new ProcessStartInfo(exe, args);
                 psi.UseShellExecute = false;
-                psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
+                psi.RedirectStandardOutput = true;
                 psi.CreateNoWindow = true;
+
+                Log.Instance.Write("Starting nervad {0}", args);
 
                 proc = new Process();
                 proc.StartInfo = psi;
-                proc.EnableRaisingEvents = true;
 
                 proc.Start();
                 Thread.Sleep(5000);

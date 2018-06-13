@@ -6,6 +6,7 @@ using AngryWasp.Serializer;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Config;
+using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Frontend
 {
@@ -22,12 +23,13 @@ namespace Nerva.Toolkit.Frontend
 		{
 			CommandLineParser cmd = CommandLineParser.Parse(args);
 
-			string cmdPath = cmd["config-file"] != null ? cmd["config-file"].Value : null;
-			string logPath = cmd["log-file"] != null ? cmd["log-file"].Value : null;
+			string cmdPath = cmd["config-file"] != null ? cmd["config-file"].Value : Constants.DEFAULT_CONFIG_FILENAME;
+			string logPath = cmd["log-file"] != null ? cmd["log-file"].Value : Constants.DEFAULT_LOG_FILENAME;
 
 			Log.CreateInstance(true, logPath);
 			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.VERSION);
 
+			//Crash the program if not 64-bit
 			if (!Environment.Is64BitOperatingSystem)
 				Log.Instance.Write(Log_Severity.Fatal, "The NERVA Unified Toolkit is only available for 64-bit platforms");
 
@@ -72,8 +74,11 @@ namespace Nerva.Toolkit.Frontend
 			new Application(Eto.Platform.Detect).Run(new MainForm());
 
 			//Prevent the daemon restarting automatically before telling it to stop
-			Cli.Instance.RestartEnabled = false;
-			Cli.Instance.Daemon.StopDaemon();
+			if (Configuration.Instance.Daemon.StopOnExit)
+			{
+				Cli.Instance.RestartEnabled = false;
+				Cli.Instance.Daemon.StopDaemon();
+			}
 
 			Configuration.Save();
 			Log.Instance.Shutdown();

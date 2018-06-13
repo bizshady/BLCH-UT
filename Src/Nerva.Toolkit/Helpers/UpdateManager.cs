@@ -1,13 +1,10 @@
 using System;
-using System.IO;
-using System.Net;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.Config;
 using Newtonsoft.Json.Linq;
 
-namespace Nerva.Toolkit
-{	
+namespace Nerva.Toolkit.Helpers
+{
     public enum Update_Status_Code
     {
         Undefined,
@@ -63,7 +60,7 @@ namespace Nerva.Toolkit
             Log.Instance.Write("Installed CLI version {0}", version);
             updateStatus = (remoteVersion == localVersion) ? Update_Status_Code.UpToDate : Update_Status_Code.NewVersionAvailable;
         }
-
+        
         private static int CheckAvailableVersion()
         {
             string versionString = null;

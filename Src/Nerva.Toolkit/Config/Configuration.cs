@@ -2,6 +2,7 @@ using System.IO;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using AngryWasp.Serializer;
+using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Config
 {	
@@ -14,10 +15,12 @@ namespace Nerva.Toolkit.Config
         public bool CheckForUpdateOnStartup { get; set; } = true;
 
         public bool LogRpcTraffic { get; set; } = false;
-        
-        public Daemon DaemonConfig { get; set; } = new Daemon();
 
-        public Wallet WalletConfig { get; set; } = new Wallet();
+        public string WalletAddress { get; set; } = Constants.DEV_WALLET_ADDRESS;
+        
+        public Daemon Daemon { get; set; } = new Daemon();
+
+        public Wallet Wallet { get; set; } = new Wallet();
 
         #endregion
 
@@ -36,9 +39,9 @@ namespace Nerva.Toolkit.Config
             get { return instance; }
         }
 
-        public static void Load(string file = null)
+        public static void Load(string file)
         {
-            loadedConfigFile = file != null ? file : Constants.DEFAULT_CONFIG_FILENAME;
+            loadedConfigFile = file;
 
             if (!File.Exists(loadedConfigFile))
             {

@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
+using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Config;
-using Newtonsoft.Json;
+using Nerva.Toolkit.Helpers;
 using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.CLI
@@ -34,9 +34,32 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeRpcRequest("stop_daemon", out result))
+            if (!NetHelper.MakeRpcRequest("stop_daemon", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
+                return false;
+            }
+
+            var json = JObject.Parse(result);
+            bool ok = json["status"].Value<string>().ToLower() == "ok";
+
+            return ok;
+        }
+
+        public bool StartMining(int miningThreads)
+        {
+            int threads = MathHelper.Clamp(miningThreads, 1, Environment.ProcessorCount - 1);
+
+            //To simplify things we set
+            //do_background_mining = false
+            //ignore_battery = true
+            string postDataString = $"{{\"do_background_mining\":false,\"ignore_battery\":true,\"miner_address\":\"{Configuration.Instance.WalletAddress}\",\"threads_count\":{threads}}}";
+
+            string result = null;
+
+            if (!NetHelper.MakeRpcRequest("start_mining", postDataString, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: start_mining");
                 return false;
             }
 
