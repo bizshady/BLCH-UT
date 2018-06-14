@@ -46,6 +46,11 @@ namespace Nerva.Toolkit.CLI
             return ok;
         }
 
+        /// <summary>
+        /// Starts mining on the node
+        /// </summary>
+        /// <param name="miningThreads">The number of threads to set mining</param>
+        /// <returns>Returns a bool value indicating if the request was successful</returns>
         public bool StartMining(int miningThreads)
         {
             int threads = MathHelper.Clamp(miningThreads, 1, Environment.ProcessorCount - 1);

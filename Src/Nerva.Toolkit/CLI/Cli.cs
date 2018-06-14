@@ -5,6 +5,9 @@ using System.IO;
 using System.Threading;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Config;
+using Nerva.Toolkit.Helpers;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace Nerva.Toolkit.CLI
 {
@@ -14,11 +17,15 @@ namespace Nerva.Toolkit.CLI
     public class Cli
     {
         public delegate void ProcessStartedEventHandler(string fileName, string args, Process process);
-        public event ProcessStartedEventHandler ProcessStarted;
+        public event ProcessStartedEventHandler DaemonStarted;
+        public event ProcessStartedEventHandler WalletStarted;
 
-        public bool RestartEnabled { get; set; } = true;
+        private int daemonPid = -1;
+
+        private Timer daemonCheckTimer = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
 
         private DaemonInterface di = new DaemonInterface();
+
         private static Cli instance;
 
         public DaemonInterface Daemon
@@ -40,12 +47,8 @@ namespace Nerva.Toolkit.CLI
             return instance;
         }
 
-        public void StartDaemon()
+        public string CycleDaemonLogFile(string daemonPath)
         {
-            string daemonPath = $"{Configuration.Instance.ToolsPath}nervad";
-
-            #region Log file cycling
-
             string logFile = daemonPath + ".log";
             string oldLogFile = logFile + ".old";
 
@@ -55,12 +58,13 @@ namespace Nerva.Toolkit.CLI
             if (File.Exists(logFile))
                 File.Move(logFile, oldLogFile);
 
-            #endregion
+            return logFile;
+        }
 
-            string daemonArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile}";
+        public string GetDaemonCommandLine(string logFile)
+        {
+            string daemonArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile} --detach";
 
-            //If using public RPC we bind to any port (0.0.0.0) 
-            //Public Ip requires a username and password
             if (!Configuration.Instance.Daemon.PrivateRpc)
             {
                 string user = Configuration.Instance.Daemon.RpcLogin;
@@ -78,84 +82,147 @@ namespace Nerva.Toolkit.CLI
                 }
             }
 
-            StartDaemonWatcherThread(daemonPath, daemonArgs);
+            if (Configuration.Instance.Daemon.AutoStartMining)
+            {
+                Log.Instance.Write("Enabling startup mining @ {0}", Configuration.Instance.WalletAddress);
+                daemonArgs += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
+            }
+
+            return daemonArgs;
         }
 
-        private void StartDaemonWatcherThread(string processName, string args)
+        public void StartDaemon()
         {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += delegate(object sender, DoWorkEventArgs e)
-            {
-                StartDaemonProcess(processName, args);
-            };
+            string daemonPath = $"{Configuration.Instance.ToolsPath}nervad";
+            string daemonArgs = GetDaemonCommandLine(CycleDaemonLogFile(daemonPath));
 
-            worker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs e)
+            daemonCheckTimer = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+            daemonCheckTimer.Elapsed += delegate(object source, ElapsedEventArgs e)
             {
-                if (RestartEnabled)
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += delegate(object sender, DoWorkEventArgs dwe)
                 {
-                    Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", processName);
-                    worker.RunWorkerAsync();
-                }
-                else
-                    Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Automatic restart disabled", processName);
+                    StartDaemonProcessMonitor(daemonPath, daemonArgs);
+                };
+
+                worker.RunWorkerAsync();
             };
 
-            worker.RunWorkerAsync();
+            daemonCheckTimer.Start();
         }
 
-        private void StartDaemonProcess(string exe, string args)
+        private void StartDaemonProcessMonitor(string exe, string args)
         {
             try
             {
-                Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
-                Process proc;
+                #region Check if the process we have already bound to is still running
 
-                #region Kill existing nervad instances
-
-                foreach (Process p in processes)
+                if (daemonPid != -1)
                 {
-                    Log.Instance.Write(Log_Severity.Warning, "Killing already running instances of {0} with id {1}", p.ProcessName, p.Id);
+                    try
+                    {
+                        Process dp = Process.GetProcessById(daemonPid);
+                        if (dp == null || dp.HasExited)
+                        {
+                            Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", exe);
+                            daemonPid = -1;
+                        }
+                        else
+                            return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Instance.WriteNonFatalException(ex);
+                        daemonPid = -1;
+                    }
+                }
+                
+                #endregion
 
-                    ProcessStartInfo kpsi = new ProcessStartInfo(exe, "stop_daemon");
-                    kpsi.CreateNoWindow = true;
-                    kpsi.UseShellExecute = false;
-                    Process kp = Process.Start(kpsi);
-                    kp.WaitForExit();
+                Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
 
-                    p.WaitForExit();
+                #region Manage existing nervad processes
 
-                    Log.Instance.Write(Log_Severity.Info, "Kill code exited with status: {0}", kp.ExitCode);
+                if (processes.Length > 0)
+                {
+                    //Reconnect to an existing process if only one is running
+                    //If more than 1, we have to start again, because we cannot be sure which one to connec to
+                    if (processes.Length == 1 && Configuration.Instance.Daemon.ReconnectToDaemonProcess)
+                    {
+                        Process p = processes[0];
+                        daemonPid = p.Id;
+                        DaemonStarted?.Invoke(exe, args, p);
+                    }
+                    else
+                    {
+                        #region Kill existing instances
+
+                        foreach (Process p in processes)
+                            if (p.Id != daemonPid)
+                            {
+                                Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
+                                p.Kill();
+                                p.WaitForExit();
+                            }
+
+                        processes = Process.GetProcessesByName(Path.GetFileName(exe));
+
+                        if (processes.Length > 0)
+                        {
+                            Log.Instance.Write(Log_Severity.Fatal, "There are unknown daemon proceses running. Please kill all processes");
+                            return;
+                        }
+
+                        daemonPid = -1;
+                                
+                        #endregion
+                    }
                 }
 
                 #endregion
 
-                if (Configuration.Instance.Daemon.AutoStartMining)
+                if (daemonPid == -1)
                 {
-                    args += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
-                    Log.Instance.Write("Enabling startup mining @ {0}", Configuration.Instance.WalletAddress);
+                    #region Start a new daemon process
+
+                    ProcessStartInfo psi = new ProcessStartInfo(exe, args)
+                    {
+                        UseShellExecute = false,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+
+                    Process proc = new Process
+                    {
+                        StartInfo = psi
+                    };
+
+                    Log.Instance.Write("Starting process {0} {1}", exe, args);
+
+                    proc.Start();
+                    DaemonStarted?.Invoke(exe, args, proc);
+
+                    proc.WaitForExit();
+
+                    //We can assume there is only one nervad process running by now.
+                    daemonPid = Process.GetProcessesByName(Path.GetFileName(exe))[0].Id;
+
+                    #endregion
                 }
-
-                ProcessStartInfo psi = new ProcessStartInfo(exe, args);
-                psi.UseShellExecute = false;
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.CreateNoWindow = true;
-
-                Log.Instance.Write("Starting nervad {0}", args);
-
-                proc = new Process();
-                proc.StartInfo = psi;
-
-                proc.Start();
-                Thread.Sleep(5000);
-                ProcessStarted?.Invoke(exe, args, proc);
-
-                proc.WaitForExit();
+                else
+                    Log.Instance.Write("Connecting to process {0} with id {1}", exe, daemonPid);
             }
             catch (Exception ex)
             {
                 Log.Instance.WriteFatalException(ex);
             }
+        }
+
+        public void StopDaemonCheck()
+        {
+            if (daemonCheckTimer != null)
+                daemonCheckTimer.Stop();
         }
     }
 }

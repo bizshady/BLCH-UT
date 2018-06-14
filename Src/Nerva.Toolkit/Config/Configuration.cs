@@ -17,6 +17,9 @@ namespace Nerva.Toolkit.Config
         public bool LogRpcTraffic { get; set; } = false;
 
         public string WalletAddress { get; set; } = Constants.DEV_WALLET_ADDRESS;
+
+        [SerializerExclude]
+        public bool NewDaemonOnStartup { get; set; } = true;
         
         public Daemon Daemon { get; set; } = new Daemon();
 

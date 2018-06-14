@@ -1,5 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Timers;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using AngryWasp.Serializer;
@@ -25,6 +27,7 @@ namespace Nerva.Toolkit.Frontend
 
 			string cmdPath = cmd["config-file"] != null ? cmd["config-file"].Value : Constants.DEFAULT_CONFIG_FILENAME;
 			string logPath = cmd["log-file"] != null ? cmd["log-file"].Value : Constants.DEFAULT_LOG_FILENAME;
+			bool forceRecreateDaemon = cmd["new-daemon"] != null;
 
 			Log.CreateInstance(true, logPath);
 			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.VERSION);
@@ -43,29 +46,7 @@ namespace Nerva.Toolkit.Frontend
 			Configuration.Load(cmdPath);
 			Cli.CreateInstance();
 
-			#region check for update to CLI tools
-
-			Cli.Instance.ProcessStarted += delegate(string exe, string arg, Process process)
-			{
-				if (Configuration.Instance.CheckForUpdateOnStartup)
-				{
-					UpdateManager.CheckForCliUpdates();
-					switch (UpdateManager.UpdateStatus)
-					{
-						case Update_Status_Code.UpToDate:
-							Log.Instance.Write("NERVA CLI tools are up to date");
-							break;
-						case Update_Status_Code.NewVersionAvailable:
-							Log.Instance.Write("A new version of the NERVA CLI tools are available");
-							break;
-						default:
-							Log.Instance.Write("An error occurred checking for updates");
-							break;
-					}
-				}
-			};
-
-			#endregion
+			Cli.Instance.DaemonStarted += StartupUpdateCheck;
 
 			//TODO: Check for updates to this application
 
@@ -76,12 +57,65 @@ namespace Nerva.Toolkit.Frontend
 			//Prevent the daemon restarting automatically before telling it to stop
 			if (Configuration.Instance.Daemon.StopOnExit)
 			{
-				Cli.Instance.RestartEnabled = false;
+				Cli.Instance.StopDaemonCheck();
 				Cli.Instance.Daemon.StopDaemon();
 			}
 
 			Configuration.Save();
 			Log.Instance.Shutdown();
+		}
+
+		private static void StartupUpdateCheck(string exe, string arg, Process process)
+		{
+			//Unsubscribe so we only check for an update at the start
+			Cli.Instance.DaemonStarted -= StartupUpdateCheck;
+
+			//We need to givew the daemon time to start.
+			//So wait a few seconds, then fire up a backgroudn worker and do a background check
+			BackgroundWorker updateWorker = new BackgroundWorker();
+
+			updateWorker.DoWork += delegate(object sender, DoWorkEventArgs e)
+			{
+				Timer tmr = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+				int retries = 0;
+
+				tmr.Elapsed += delegate(object source, ElapsedEventArgs e2)
+				{
+					if (Configuration.Instance.CheckForUpdateOnStartup)
+					{
+						UpdateManager.CheckForCliUpdates();
+
+						switch (UpdateManager.UpdateStatus)
+						{
+							case Update_Status_Code.UpToDate:
+								{
+									Log.Instance.Write("NERVA CLI tools are up to date");
+									tmr.Stop();
+								}
+								break;
+							case Update_Status_Code.NewVersionAvailable:
+								{
+									Log.Instance.Write("A new version of the NERVA CLI tools are available");
+									tmr.Stop();
+								}
+								break;
+							default:
+								{
+									Log.Instance.Write("An error occurred checking for updates");
+									++retries;
+
+									if (retries >= 5)
+										tmr.Stop();
+								}
+								break;
+						}
+					}
+				};
+
+				tmr.Start();
+			};
+
+			updateWorker.RunWorkerAsync();
 		}
 	}
 }
