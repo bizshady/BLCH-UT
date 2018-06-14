@@ -6,6 +6,10 @@ namespace Nerva.Toolkit.Config
 
         public bool PrivateRpc { get; set; } = true;
 
+        public string RpcLogin { get; set; } = "user";
+
+        public string RpcPass { get; set; } = "pass";
+
         public bool StopOnExit { get; set; } = false;
 
         public bool AutoStartMining { get; set; } = true;

@@ -1,7 +1,7 @@
 ﻿{
 	"$type": "Form",
-	"Title": "My Eto Form",
-	"ClientSize": "400,350",
+	"Title": "NERVA Toolkit",
+	"ClientSize": "640,480",
 	"Padding": "10",
 	"Content": {
 		"$type": "StackLayout",

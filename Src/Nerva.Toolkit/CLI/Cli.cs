@@ -57,18 +57,36 @@ namespace Nerva.Toolkit.CLI
 
             #endregion
 
-            string daemonIp = Configuration.Instance.Daemon.PrivateRpc ? "127.0.0.1" : "0.0.0.0";
-            string daemonArgs = $"--rpc-bind-ip {daemonIp} --rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile}";
+            string daemonArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile}";
 
-            StartWatcherThread(daemonPath, daemonArgs);
+            //If using public RPC we bind to any port (0.0.0.0) 
+            //Public Ip requires a username and password
+            if (!Configuration.Instance.Daemon.PrivateRpc)
+            {
+                string user = Configuration.Instance.Daemon.RpcLogin;
+                string pass = Configuration.Instance.Daemon.RpcPass;
+
+                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+                {
+                    Log.Instance.Write(Log_Severity.Error, "RPC username or password not set. Public RPC access is disabled");
+                    daemonArgs += $" --rpc-bind-ip 127.0.0.1";
+                }
+                else
+                {
+                    daemonArgs += $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind";
+                    daemonArgs += $" --rpc-login {user}:{pass}";
+                }
+            }
+
+            StartDaemonWatcherThread(daemonPath, daemonArgs);
         }
 
-        private void StartWatcherThread(string processName, string args)
+        private void StartDaemonWatcherThread(string processName, string args)
         {
             BackgroundWorker worker = new BackgroundWorker();
             worker.DoWork += delegate(object sender, DoWorkEventArgs e)
             {
-                StartProcess(processName, args);
+                StartDaemonProcess(processName, args);
             };
 
             worker.RunWorkerCompleted += delegate(object sender, RunWorkerCompletedEventArgs e)
@@ -85,7 +103,7 @@ namespace Nerva.Toolkit.CLI
             worker.RunWorkerAsync();
         }
 
-        private void StartProcess(string exe, string args)
+        private void StartDaemonProcess(string exe, string args)
         {
             try
             {
