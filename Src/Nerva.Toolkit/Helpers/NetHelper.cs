@@ -9,11 +9,6 @@ namespace Nerva.Toolkit.Helpers
 {	
 	public static class NetHelper
 	{
-        public static string GenerateParams(params KeyValuePair<string, string>[] args)
-        {
-            return null;
-        }
-
         public static bool MakeJsonRpcRequest(string methodName, out string jsonString)
         {
             int port = Configuration.Instance.Daemon.RpcPort;

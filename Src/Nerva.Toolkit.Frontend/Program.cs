@@ -27,7 +27,7 @@ namespace Nerva.Toolkit.Frontend
 
 			string cmdPath = cmd["config-file"] != null ? cmd["config-file"].Value : Constants.DEFAULT_CONFIG_FILENAME;
 			string logPath = cmd["log-file"] != null ? cmd["log-file"].Value : Constants.DEFAULT_LOG_FILENAME;
-			bool forceRecreateDaemon = cmd["new-daemon"] != null;
+			
 
 			Log.CreateInstance(true, logPath);
 			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.VERSION);
@@ -45,6 +45,8 @@ namespace Nerva.Toolkit.Frontend
 			Serializer.Initialize();
 			Configuration.Load(cmdPath);
 			Cli.CreateInstance();
+
+			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
 
 			Cli.Instance.DaemonStarted += StartupUpdateCheck;
 

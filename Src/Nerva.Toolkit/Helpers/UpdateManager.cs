@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.CLI.Structures;
 using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.Helpers
@@ -41,15 +43,16 @@ namespace Nerva.Toolkit.Helpers
             updateStatus = Update_Status_Code.Undefined;
 
             Log.Instance.Write("Checking for updates...");
-			JObject j = Cli.Instance.Daemon.GetInfo();
+			//JObject j = Cli.Instance.Daemon.GetInfo();
+            Info daemonInfo = Cli.Instance.Daemon.GetInfo();
 
-            if (j == null)
+            if (daemonInfo == null)
             {
                 Log.Instance.Write(Log_Severity.Error, "Failed to poll version information from daemon");
                 return;
             }
             
-            var version = j["result"]["version"].Value<string>();
+            var version = daemonInfo.Version;
             
             int localVersion = ConvertVersionStringToInt(version);
             int remoteVersion = CheckAvailableVersion();

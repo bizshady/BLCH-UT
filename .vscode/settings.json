@@ -1,5 +1,8 @@
 {
     "editor.minimap.enabled": false,
+    "files.associations": {
+        "*.jeto": "json",
+    },
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,

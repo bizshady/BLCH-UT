@@ -99,16 +99,22 @@ namespace Nerva.Toolkit.CLI
             daemonCheckTimer = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
             daemonCheckTimer.Elapsed += delegate(object source, ElapsedEventArgs e)
             {
-                BackgroundWorker worker = new BackgroundWorker();
-                worker.DoWork += delegate(object sender, DoWorkEventArgs dwe)
-                {
-                    StartDaemonProcessMonitor(daemonPath, daemonArgs);
-                };
-
-                worker.RunWorkerAsync();
+                RunDaemonCheck(daemonPath, daemonArgs);
             };
 
+            RunDaemonCheck(daemonPath, daemonArgs);
             daemonCheckTimer.Start();
+        }
+
+        private void RunDaemonCheck(string daemonPath, string daemonArgs)
+        {
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += delegate(object sender, DoWorkEventArgs dwe)
+            {
+                StartDaemonProcessMonitor(daemonPath, daemonArgs);
+            };
+
+            worker.RunWorkerAsync();
         }
 
         private void StartDaemonProcessMonitor(string exe, string args)
@@ -147,7 +153,7 @@ namespace Nerva.Toolkit.CLI
                 {
                     //Reconnect to an existing process if only one is running
                     //If more than 1, we have to start again, because we cannot be sure which one to connec to
-                    if (processes.Length == 1 && Configuration.Instance.Daemon.ReconnectToDaemonProcess)
+                    if (processes.Length == 1 && Configuration.Instance.Daemon.ReconnectToDaemonProcess && !Configuration.Instance.NewDaemonOnStartup)
                     {
                         Process p = processes[0];
                         daemonPid = p.Id;
@@ -177,6 +183,8 @@ namespace Nerva.Toolkit.CLI
                                 
                         #endregion
                     }
+
+                    Configuration.Instance.NewDaemonOnStartup = false;
                 }
 
                 #endregion

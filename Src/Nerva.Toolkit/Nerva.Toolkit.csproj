@@ -8,7 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Eto.Forms" Version="2.4.1"/>
-    <PackageReference Include="Eto.Serialization.Json" Version="2.4.1"/>
     <PackageReference Include="Newtonsoft.Json" Version="*"/>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../Content/NERVA-Logo.png" />
+</ItemGroup>
 </Project>

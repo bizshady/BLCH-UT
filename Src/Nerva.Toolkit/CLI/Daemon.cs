@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
+using Nerva.Toolkit.CLI.Structures;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.CLI
@@ -10,10 +13,27 @@ namespace Nerva.Toolkit.CLI
     public class DaemonInterface
     {
         /// <summary>
+        /// Get the current block height seen by the node
+        /// </summary>
+        /// <returns></returns>
+        public int GetBlockCount()
+        {
+            string result = null;
+
+            if (!NetHelper.MakeJsonRpcRequest("get_block_count", out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_block_count");
+                return -1;
+            }
+
+            return int.Parse(JObject.Parse(result)["result"]["count"].Value<string>());
+        }
+
+        /// <summary>
         /// gets node information
         /// </summary>
         /// <returns>A JObject containing the node information</returns>
-        public JObject GetInfo()
+        public Info GetInfo()
         {
             string result = null;
 
@@ -23,7 +43,29 @@ namespace Nerva.Toolkit.CLI
                 return null;
             }
 
-            return JObject.Parse(result);
+            //var inf = JObject.Parse(result)["result"];//.Value<Info>();
+
+            var info = JsonConvert.DeserializeObject<JsonValue<Info>>(result);
+
+            return info.Result;
+        }
+
+        /// <summary>
+        /// gets node connections information
+        /// </summary>
+        /// <returns>A JObject containing the node information</returns>
+        public List<Connection> GetConnections()
+        {
+            string result = null;
+
+            if (!NetHelper.MakeJsonRpcRequest("get_connections", out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
+                return null;
+            }
+
+            var info = JsonConvert.DeserializeObject<JsonValue<ConnectionList>>(result);
+            return info.Result.Connections;
         }
 
         /// <summary>
