@@ -47,7 +47,7 @@ namespace Nerva.Toolkit
 		{
 			while (shouldUpdate)
 			{
-				Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL / 5);
+				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
 
 				//Condition may have changed. 5 seconds is a long time
 				if (!shouldUpdate)
@@ -78,6 +78,7 @@ namespace Nerva.Toolkit
 					{
 						lblStatus.Text = $"Height: {height} | Connections (In/Out): {info.IncomingConnectionsCount} / {info.OutgoingConnectionsCount}";
 						lblVersion.Text = $"Version: {info.Version}";
+						ad.Version = $"GUI: {Constants.VERSION}\r\nCLI: {info.Version}";
 
 						if (info.TargetHeight != 0 && info.Height < info.TargetHeight)
 							lblStatus.Text += " | Syncing";
@@ -91,6 +92,8 @@ namespace Nerva.Toolkit
 					{
 						lblStatus.Text = "ERROR: Could not connect to daemon";
 					});
+
+					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
 				}
 			}
 		}
@@ -110,31 +113,17 @@ namespace Nerva.Toolkit
 			//Log the restart and kill the daemon
 			Log.Instance.Write("Restarting daemon");
 			Cli.Instance.Daemon.StopDaemon();
-
 			//From here the crash handler should reboot the daemon
 		}
 
 		protected void HandleAbout(object sender, EventArgs e)
 		{
-			AboutDialog ad = new AboutDialog();
-			ad.ProgramName = "NERVA Unified Toolkit";
-			ad.ProgramDescription = "Unified frontend for the NERVA CLI tools";
-			string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-			ad.Title = "About NERVA Toolkit";
-			ad.License = "Copyright © 2018 Angry Wasp";
-			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 			ad.ShowDialog(this);
 		}
 
 		protected void HandleQuit(object sender, EventArgs e)
 		{
 			Application.Instance.Quit();
-		}
-
-		private void UpdateStatus(int height, Info info, List<Connection> connections)
-		{
-			lblStatus.Text = $"Height: {height} | Connections (In/Out): {info.IncomingConnectionsCount} / {info.OutgoingConnectionsCount}";
-			lblVersion.Text = $"Version: {info.Version}";
 		}
     }
 }

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
 using AngryWasp.Logger;
+using System.Reflection;
 
 namespace Nerva.Toolkit
 {	
 	public partial class MainForm : Form
 	{	
 		#region Status Bar controls
-
+		AboutDialog ad;
 		Label lblStatus = new Label { Text = "Connections  (In/Out): 0 / 0" };
 		Label lblVersion = new Label { Text = "Version: 0.1.2.3" };
 
@@ -19,6 +20,15 @@ namespace Nerva.Toolkit
 		{
 			Title = "NERVA Toolkit";
 			ClientSize = new Size(640, 480);
+			
+			//Construct About dialog
+			ad = new AboutDialog();
+			ad.ProgramName = "NERVA Unified Toolkit";
+			ad.ProgramDescription = "Unified frontend for the NERVA CLI tools";
+			string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+			ad.Title = "About NERVA Toolkit";
+			ad.License = "Copyright © 2018 Angry Wasp";
+			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 
 			var statusPage = new TabPage { Text = "Status", Content = new StatusPage() };
 			var minerPage = new TabPage { Text = "Miner", Content = new MinerPage() };
