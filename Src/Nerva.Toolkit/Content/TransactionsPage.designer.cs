@@ -6,12 +6,11 @@ using AngryWasp.Logger;
 
 namespace Nerva.Toolkit
 {	
-	public partial class DaemonInfo : StackLayout
+	public partial class TransactionsPage : StackLayout
 	{
-		public DaemonInfo()
+		public TransactionsPage()
 		{
 			Padding = 10;
-			Items.Add("Hello World!");
 		}
     }
 }

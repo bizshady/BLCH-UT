@@ -28,7 +28,6 @@ namespace Nerva.Toolkit.Frontend
 			string cmdPath = cmd["config-file"] != null ? cmd["config-file"].Value : Constants.DEFAULT_CONFIG_FILENAME;
 			string logPath = cmd["log-file"] != null ? cmd["log-file"].Value : Constants.DEFAULT_LOG_FILENAME;
 			
-
 			Log.CreateInstance(true, logPath);
 			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.VERSION);
 
@@ -39,6 +38,7 @@ namespace Nerva.Toolkit.Frontend
 			Log.Instance.Write(Log_Severity.None, "System Information:");
 			Log.Instance.Write(Log_Severity.None, "OS: {0} {1}", Environment.OSVersion.Platform, Environment.OSVersion.Version);
 			Log.Instance.Write(Log_Severity.None, "CPU Count: {0}", Environment.ProcessorCount);
+			
 			if (logPath != null)
 				Log.Instance.Write("Writing log to file '{0}'", logPath);
 

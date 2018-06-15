@@ -8,16 +8,72 @@ namespace Nerva.Toolkit
 {	
 	public partial class MainForm : Form
 	{	
+		#region Status Bar controls
+
+		Label lblStatus = new Label { Text = "Connections  (In/Out): 0 / 0" };
+		Label lblVersion = new Label { Text = "Version: 0.1.2.3" };
+
+		#endregion
+
 		public void ConstructLayout()
 		{
 			Title = "NERVA Toolkit";
 			ClientSize = new Size(640, 480);
 
-			Content = new DaemonInfo();
+			var statusPage = new TabPage { Text = "Status", Content = new StatusPage() };
+			var minerPage = new TabPage { Text = "Miner", Content = new MinerPage() };
+			var sendPage = new TabPage { Text = "Send", Content = new SendPage() };
+			var transactionsPage = new TabPage { Text = "Transactions", Content = new TransactionsPage() };
 
-			// create a few commands that can be used for the menu and toolbar
-			var clickMe = new Command { MenuText = "Click Me!", ToolBarText = "Click Me!" };
-			clickMe.Executed += HandleClickMe;
+			TabControl tabs = new TabControl
+			{
+				Pages = 
+				{
+					statusPage,
+					minerPage,
+					sendPage,
+					transactionsPage
+				}
+			};
+
+			TableLayout statusBar = new TableLayout
+			{
+				Padding = 5,
+				Rows =
+				{
+					new TableRow
+					{
+						Cells = 
+						{
+							new TableCell(lblStatus, true),
+							new TableCell(lblVersion),
+						}
+					}
+				}
+			};
+
+			TableLayout content = new TableLayout
+			{
+				Rows =
+				{
+					new TableRow (new TableCell(tabs, true))
+					{
+						ScaleHeight = true
+					},
+					new TableRow (new TableCell(statusBar, true))
+				}
+			};
+
+			Content = content;
+
+			var daemon_GetInfo = new Command { MenuText = "Show Info", ToolBarText = "Show Info" };
+			daemon_GetInfo.Executed += daemon_GetInfo_Clicked;
+
+			var daemon_GetConnections = new Command { MenuText = "Show Connections", ToolBarText = "Show Connections" };
+			daemon_GetConnections.Executed += daemon_GetConnections_Clicked;
+
+			var daemon_Restart = new Command { MenuText = "Restart", ToolBarText = "Restart" };
+			daemon_Restart.Executed += daemon_Restart_Clicked;
 
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
 			quitCommand.Executed += HandleQuit;
@@ -36,52 +92,41 @@ namespace Nerva.Toolkit
 						Text = "&File",
 						Items =
 						{ 
-							clickMe,
-							clickMe 
+							
 						}
 					},
 					new ButtonMenuItem
 					{
-						Text = "&Edit",
-						Items = { /* commands/items */ }
-					},
-					new ButtonMenuItem
-					{
-						Text = "&View",
-						Items =
-						{ /* commands/items */ 
-						}
-					},
-				},
-				ApplicationItems =
-				{
-					new ButtonMenuItem
-					{
-						Text = "&Preferences...",
+						Text = "&Daemon",
 						Items =
 						{
-							clickMe
+							daemon_GetInfo,
+							daemon_GetConnections,
+							new SeparatorMenuItem(),
+							daemon_Restart
 						}
 					},
 					new ButtonMenuItem
 					{
-						Text = "&Whatever..."
-					},
+						Text = "&Wallet",
+						Items =
+						{
+							
+						}
+					}
+					,
+					new ButtonMenuItem
+					{
+						Text = "&Advanced",
+						Items =
+						{
+							
+						}
+					}
 				},
 				QuitItem = quitCommand,
 				AboutItem = aboutCommand
 			};
-			// create toolbar			
-			ToolBar = new ToolBar
-			{
-				Items =
-				{
-					clickMe,
-					clickMe,
-					clickMe
-				} 
-			};
-			
 		}
 	}
 }

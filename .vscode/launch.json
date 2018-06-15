@@ -13,7 +13,7 @@
             "preLaunchTask": "build-debug",
             "args":[
                 "--log-file", "debug.log",
-                "--config-file", "app.config"
+                "--config-file", "../app.config"
             ]
         },
         {
