@@ -4,7 +4,7 @@ using Eto.Forms;
 using Eto.Drawing;
 using AngryWasp.Logger;
 
-namespace Nerva.Toolkit
+namespace Nerva.Toolkit.Content
 {	
 	public partial class SendPage : StackLayout
 	{

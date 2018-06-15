@@ -10,6 +10,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.CLI
 {
+    /// <summary>
+    /// Minimal Daemon RPC API.
+    /// </summary>
     public class DaemonInterface
     {
         /// <summary>

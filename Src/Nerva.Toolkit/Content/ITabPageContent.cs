@@ -6,11 +6,8 @@ using AngryWasp.Logger;
 
 namespace Nerva.Toolkit.Content
 {	
-	public partial class TransactionsPage : StackLayout
-	{
-		public TransactionsPage()
-		{
-			Padding = 10;
-		}
+	public interface ITabPageContent
+    {
+        Control MainControl { get; }
     }
 }

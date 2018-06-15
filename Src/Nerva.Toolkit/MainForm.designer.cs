@@ -4,6 +4,7 @@ using Eto.Forms;
 using Eto.Drawing;
 using AngryWasp.Logger;
 using System.Reflection;
+using Nerva.Toolkit.Content;
 
 namespace Nerva.Toolkit
 {	
@@ -30,15 +31,14 @@ namespace Nerva.Toolkit
 			ad.License = "Copyright © 2018 Angry Wasp";
 			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 
-			var statusPage = new TabPage { Text = "Status", Content = new StatusPage() };
+			var statusPage = new TabPage { Text = "Status", Content = new StatusPage().MainControl };
 			var minerPage = new TabPage { Text = "Miner", Content = new MinerPage() };
 			var sendPage = new TabPage { Text = "Send", Content = new SendPage() };
 			var transactionsPage = new TabPage { Text = "Transactions", Content = new TransactionsPage() };
 
 			TabControl tabs = new TabControl
 			{
-				Pages = 
-				{
+				Pages = {
 					statusPage,
 					minerPage,
 					sendPage,
@@ -49,32 +49,22 @@ namespace Nerva.Toolkit
 			TableLayout statusBar = new TableLayout
 			{
 				Padding = 5,
-				Rows =
-				{
-					new TableRow
-					{
-						Cells = 
-						{
-							new TableCell(lblStatus, true),
-							new TableCell(lblVersion),
-						}
-					}
+				Rows = {
+					new TableRow (
+						new TableCell(lblStatus, true),
+						new TableCell(lblVersion))
 				}
 			};
 
-			TableLayout content = new TableLayout
+			Content = new TableLayout
 			{
-				Rows =
-				{
-					new TableRow (new TableCell(tabs, true))
-					{
-						ScaleHeight = true
-					},
-					new TableRow (new TableCell(statusBar, true))
+				Rows = {
+					new TableRow (
+						new TableCell(tabs, true)) { ScaleHeight = true },
+					new TableRow (
+						new TableCell(statusBar, true))
 				}
 			};
-
-			Content = content;
 
 			var daemon_GetInfo = new Command { MenuText = "Show Info", ToolBarText = "Show Info" };
 			daemon_GetInfo.Executed += daemon_GetInfo_Clicked;
