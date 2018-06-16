@@ -23,21 +23,6 @@ namespace Nerva.Toolkit.Helpers
             get { return updateStatus; }
         }
 
-        private static int ConvertVersionStringToInt(string vs)
-        {
-            //TODO; Check format. Unhandled exception will occur if wrong string is passed in
-            int i = 0;
-
-            string[] split = vs.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-
-            i += int.Parse(split[0]) * 16777216;
-            i += int.Parse(split[1]) * 65536;
-            i += int.Parse(split[2]) * 256;
-            i += int.Parse(split[3]);
-
-            return i;
-        }
-
         public static void CheckForCliUpdates()
         {
             updateStatus = Update_Status_Code.Undefined;
@@ -54,7 +39,7 @@ namespace Nerva.Toolkit.Helpers
             
             var version = daemonInfo.Version;
             
-            int localVersion = ConvertVersionStringToInt(version);
+            int localVersion = Conversions.OctetSetToInt(version);
             int remoteVersion = CheckAvailableVersion();
 
             if (remoteVersion == -1)
@@ -76,7 +61,7 @@ namespace Nerva.Toolkit.Helpers
             }
 
             Log.Instance.Write("Available CLI version {0}", versionString);
-            return ConvertVersionStringToInt(versionString);
+            return Conversions.OctetSetToInt(versionString);
         }
     }
 }

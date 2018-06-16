@@ -46,11 +46,7 @@ namespace Nerva.Toolkit.CLI
                 return null;
             }
 
-            //var inf = JObject.Parse(result)["result"];//.Value<Info>();
-
-            var info = JsonConvert.DeserializeObject<JsonValue<Info>>(result);
-
-            return info.Result;
+            return JsonConvert.DeserializeObject<JsonValue<Info>>(result).Result;
         }
 
         /// <summary>
@@ -67,8 +63,7 @@ namespace Nerva.Toolkit.CLI
                 return null;
             }
 
-            var info = JsonConvert.DeserializeObject<JsonValue<ConnectionList>>(result);
-            return info.Result.Connections;
+            return JsonConvert.DeserializeObject<JsonValue<ConnectionList>>(result).Result.Connections;
         }
 
         /// <summary>
@@ -86,9 +81,7 @@ namespace Nerva.Toolkit.CLI
             }
 
             var json = JObject.Parse(result);
-            bool ok = json["status"].Value<string>().ToLower() == "ok";
-
-            return ok;
+            return json["status"].Value<string>().ToLower() == "ok";
         }
 
         /// <summary>
@@ -114,9 +107,20 @@ namespace Nerva.Toolkit.CLI
             }
 
             var json = JObject.Parse(result);
-            bool ok = json["status"].Value<string>().ToLower() == "ok";
+            return json["status"].Value<string>().ToLower() == "ok";
+        }
 
-            return ok;
+        public MiningStatus GetMiningStatus()
+        {
+            string result = null;
+
+            if (!NetHelper.MakeRpcRequest("mining_status", null, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
+                return null;
+            }
+
+            return JsonConvert.DeserializeObject<MiningStatus>(result);
         }
     }
 }

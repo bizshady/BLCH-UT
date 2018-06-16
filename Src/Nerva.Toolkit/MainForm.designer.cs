@@ -1,26 +1,25 @@
-using System;
-using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
-using AngryWasp.Logger;
 using System.Reflection;
 using Nerva.Toolkit.Content;
 
 namespace Nerva.Toolkit
-{	
-	public partial class MainForm : Form
+{
+    public partial class MainForm : Form
 	{	
 		#region Status Bar controls
 		AboutDialog ad;
 		Label lblStatus = new Label { Text = "Connections  (In/Out): 0 / 0" };
 		Label lblVersion = new Label { Text = "Version: 0.1.2.3" };
 
+		StatusPage statusPage = new StatusPage();
+
 		#endregion
 
 		public void ConstructLayout()
 		{
 			Title = "NERVA Toolkit";
-			ClientSize = new Size(640, 480);
+			ClientSize = new Size(480, 480);
 			
 			//Construct About dialog
 			ad = new AboutDialog();
@@ -31,7 +30,6 @@ namespace Nerva.Toolkit
 			ad.License = "Copyright © 2018 Angry Wasp";
 			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 
-			var statusPage = new TabPage { Text = "Status", Content = new StatusPage().MainControl };
 			var minerPage = new TabPage { Text = "Miner", Content = new MinerPage() };
 			var sendPage = new TabPage { Text = "Send", Content = new SendPage() };
 			var transactionsPage = new TabPage { Text = "Transactions", Content = new TransactionsPage() };
@@ -39,7 +37,7 @@ namespace Nerva.Toolkit
 			TabControl tabs = new TabControl
 			{
 				Pages = {
-					statusPage,
+					new TabPage { Text = "Status", Content = statusPage.MainControl },
 					minerPage,
 					sendPage,
 					transactionsPage

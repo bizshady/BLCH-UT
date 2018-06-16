@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 using AngryWasp.Logger;
-using Eto.Drawing;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures;
@@ -56,12 +51,14 @@ namespace Nerva.Toolkit
 				Info info = null;
 				List<Connection> connections = null;
 				int height = -1;
+				MiningStatus mStatus = null;
 
 				try
 				{
 					info = Cli.Instance.Daemon.GetInfo();
 					connections = Cli.Instance.Daemon.GetConnections();
 					height = Cli.Instance.Daemon.GetBlockCount();
+					mStatus = Cli.Instance.Daemon.GetMiningStatus();
 				}
 				catch (Exception)
 				{
@@ -84,6 +81,8 @@ namespace Nerva.Toolkit
 							lblStatus.Text += " | Syncing";
 						else
 							lblStatus.Text += " | Sync OK";
+
+						statusPage.Update(info, connections, mStatus);
 					});
 				}
 				else
