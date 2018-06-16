@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Eto.Forms;
+using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures;
 
 namespace Nerva.Toolkit.Content
@@ -15,6 +16,9 @@ namespace Nerva.Toolkit.Content
 		private Label lblHeight = new Label() { Text = "." };
 		private Label lblRunTime = new Label() { Text = "." };
 		private Label lblNetHash = new Label() { Text = "." };
+		private Label lblNetwork = new Label() { Text = "." };
+
+		private Label lblMinerStatus = new Label { Text = "Miner" };
 		private Label lblMiningAddress = new Label() { Text = "." };
 		private Label lblMiningThreads = new Label() { Text = "." };
 		private Label lblMiningHashrate = new Label() { Text = "." };
@@ -28,25 +32,28 @@ namespace Nerva.Toolkit.Content
 				Rows =
 				{
 					new TableRow (
-						new TableCell(new Label { Text = "Daemon Status" }),
-						new TableCell(null),
-						new TableCell(new Label { Text = "Miner Status" }),
-						new TableCell(null)),
+						new TableCell(new Label { Text = "Daemon" }),
+						new TableCell(null, true),
+						new TableCell(lblMinerStatus),
+						new TableCell(null, true)),
 					new TableRow(
 						new TableCell(new Label { Text = "Height:" }),
-						new TableCell(lblHeight, true),
+						new TableCell(lblHeight),
 						new TableCell(new Label { Text = "Address:" }),
-						new TableCell(lblMiningAddress, true)),
+						new TableCell(lblMiningAddress)),
 					new TableRow(
 						new TableCell(new Label { Text = "Run Time:" }),
-						new TableCell(lblRunTime, true),
+						new TableCell(lblRunTime),
 						new TableCell(new Label { Text = "Threads:" }),
-						new TableCell(lblMiningThreads, true)),
+						new TableCell(lblMiningThreads)),
 					new TableRow(
 						new TableCell(new Label { Text = "Net Hash:" }),
-						new TableCell(lblNetHash, true),
+						new TableCell(lblNetHash),
 						new TableCell(new Label { Text = "Hash Rate:" }),
-						new TableCell(lblMiningHashrate, true)),
+						new TableCell(lblMiningHashrate)),
+					new TableRow(
+						new TableCell(new Label { Text = "Network:" }),
+						new TableCell(lblNetwork)),
 				}
 			};
 
@@ -79,13 +86,18 @@ namespace Nerva.Toolkit.Content
 				new TableCell(null)));
 
 			foreach (var c in connections)
+			{
+				Button btn = new Button { Text = "Ban" };
+				btn.Click += (sender, e) => { Cli.Instance.Daemon.BanPeer(c.Host); };
+
 				rows.Add(new TableRow(
 					new TableCell(new Label { Text = c.Address }),
 					new TableCell(new Label { Text = c.Height.ToString() }),
 					new TableCell(new Label { Text = TimeSpan.FromSeconds(c.LiveTime).ToString(@"hh\:mm\:ss") }),
 					new TableCell(new Label { Text = c.State.Remove(0, 6) }),
 					new TableCell(null, true),
-					TableLayout.AutoSized(new Button { Text = "Ban" })));
+					TableLayout.AutoSized(btn)));
+			}
 
 			connectionsContainer.Content = new TableLayout(rows)
 			{

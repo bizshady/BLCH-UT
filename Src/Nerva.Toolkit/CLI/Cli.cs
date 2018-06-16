@@ -88,6 +88,12 @@ namespace Nerva.Toolkit.CLI
                 daemonArgs += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
 
+            if (Configuration.Instance.Testnet)
+            {
+                Log.Instance.Write("Connecting to testnet");
+                daemonArgs += " --testnet";
+            }
+
             return daemonArgs;
         }
 

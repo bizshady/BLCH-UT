@@ -90,6 +90,7 @@ namespace Nerva.Toolkit
 					Application.Instance.AsyncInvoke ( () =>
 					{
 						lblStatus.Text = "ERROR: Could not connect to daemon";
+						statusPage.Update(null, null, null);
 					});
 
 					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);

@@ -18,6 +18,8 @@ namespace Nerva.Toolkit.Config
 
         public string WalletAddress { get; set; } = Constants.DEV_WALLET_ADDRESS;
 
+        public bool Testnet { get; set; } = false;
+
         [SerializerExclude]
         public bool NewDaemonOnStartup { get; set; } = true;
         

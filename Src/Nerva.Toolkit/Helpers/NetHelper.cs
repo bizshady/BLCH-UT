@@ -10,13 +10,18 @@ namespace Nerva.Toolkit.Helpers
 {	
 	public static class NetHelper
 	{
-        public static bool MakeJsonRpcRequest(string methodName, out string jsonString)
+        public static bool MakeJsonRpcRequest(string methodName, string jsonParams, out string jsonString)
         {
             try
             {
                 int port = Configuration.Instance.Daemon.RpcPort;
                 string url = $"http://127.0.0.1:{port}/json_rpc";
+
                 string postDataString = $"{{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"{methodName}\"}}";
+
+                if (jsonParams != null)
+                    postDataString = $"{{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"{methodName}\",\"params\":{jsonParams}}}";
+
                 byte[] postData = Encoding.ASCII.GetBytes(postDataString);
 
                 if (Configuration.Instance.LogRpcTraffic)

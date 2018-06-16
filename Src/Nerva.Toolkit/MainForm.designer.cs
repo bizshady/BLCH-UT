@@ -8,9 +8,10 @@ namespace Nerva.Toolkit
     public partial class MainForm : Form
 	{	
 		#region Status Bar controls
+		
 		AboutDialog ad;
 		Label lblStatus = new Label { Text = "Connections  (In/Out): 0 / 0" };
-		Label lblVersion = new Label { Text = "Version: 0.1.2.3" };
+		Label lblVersion = new Label { Text = "Version: 0.0.0.0" };
 
 		StatusPage statusPage = new StatusPage();
 
@@ -19,7 +20,7 @@ namespace Nerva.Toolkit
 		public void ConstructLayout()
 		{
 			Title = "NERVA Toolkit";
-			ClientSize = new Size(480, 480);
+			ClientSize = new Size(640, 480);
 			
 			//Construct About dialog
 			ad = new AboutDialog();
@@ -37,10 +38,8 @@ namespace Nerva.Toolkit
 			TabControl tabs = new TabControl
 			{
 				Pages = {
-					new TabPage { Text = "Status", Content = statusPage.MainControl },
-					minerPage,
-					sendPage,
-					transactionsPage
+					new TabPage { Text = "Daemon", Content = statusPage.MainControl },
+					new TabPage { Text = "Wallet", Content = new MinerPage() }
 				}
 			};
 

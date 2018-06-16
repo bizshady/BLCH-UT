@@ -23,7 +23,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("get_block_count", out result))
+            if (!NetHelper.MakeJsonRpcRequest("get_block_count", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_block_count");
                 return -1;
@@ -40,7 +40,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("get_info", out result))
+            if (!NetHelper.MakeJsonRpcRequest("get_info", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_info");
                 return null;
@@ -57,7 +57,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("get_connections", out result))
+            if (!NetHelper.MakeJsonRpcRequest("get_connections", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
                 return null;
@@ -121,6 +121,22 @@ namespace Nerva.Toolkit.CLI
             }
 
             return JsonConvert.DeserializeObject<MiningStatus>(result);
+        }
+
+        public bool BanPeer(string ip)
+        {
+            string jsonParams = $"{{\"bans\":[{{\"host\":\"{ip}\",\"ban\":true,\"seconds\":{Constants.BAN_TIME}}}]}}";
+
+            string result = null;
+
+            if (!NetHelper.MakeJsonRpcRequest("set_bans", jsonParams, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: set_bans");
+                return false;
+            }
+
+            var json = JObject.Parse(result);
+            return json["result"]["status"].Value<string>().ToLower() == "ok";
         }
     }
 }
