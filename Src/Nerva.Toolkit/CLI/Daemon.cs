@@ -15,6 +15,12 @@ namespace Nerva.Toolkit.CLI
     /// </summary>
     public class DaemonInterface
     {
+        private NetHelper netHelper;
+
+        public DaemonInterface()
+        {
+            netHelper = new NetHelper(Configuration.Instance.Daemon.RpcPort);
+        }
         /// <summary>
         /// Get the current block height seen by the node
         /// </summary>
@@ -23,7 +29,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("get_block_count", null, out result))
+            if (!netHelper.MakeJsonRpcRequest("get_block_count", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_block_count");
                 return -1;
@@ -40,7 +46,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("get_info", null, out result))
+            if (!netHelper.MakeJsonRpcRequest("get_info", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_info");
                 return null;
@@ -57,7 +63,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("get_connections", null, out result))
+            if (!netHelper.MakeJsonRpcRequest("get_connections", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
                 return null;
@@ -74,7 +80,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeRpcRequest("stop_daemon", null, out result))
+            if (!netHelper.MakeRpcRequest("stop_daemon", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
                 return false;
@@ -100,7 +106,7 @@ namespace Nerva.Toolkit.CLI
 
             string result = null;
 
-            if (!NetHelper.MakeRpcRequest("start_mining", postDataString, out result))
+            if (!netHelper.MakeRpcRequest("start_mining", postDataString, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: start_mining");
                 return false;
@@ -114,7 +120,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!NetHelper.MakeRpcRequest("mining_status", null, out result))
+            if (!netHelper.MakeRpcRequest("mining_status", null, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
                 return null;
@@ -129,7 +135,7 @@ namespace Nerva.Toolkit.CLI
 
             string result = null;
 
-            if (!NetHelper.MakeJsonRpcRequest("set_bans", jsonParams, out result))
+            if (!netHelper.MakeJsonRpcRequest("set_bans", jsonParams, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: set_bans");
                 return false;

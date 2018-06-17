@@ -17,26 +17,21 @@ namespace Nerva.Toolkit.CLI
     public class Cli
     {
         public delegate void ProcessStartedEventHandler(string fileName, string args, Process process);
-        public event ProcessStartedEventHandler DaemonStarted;
-        public event ProcessStartedEventHandler WalletStarted;
+        public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
 
-        private int daemonPid = -1;
-
-        private Timer daemonCheckTimer = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
-
+        private int dPid = -1, walletPid = -1;
+        private bool doDaemonCrashCheck = true, doWalletCrashCheck = true;
+        private BackgroundWorker daemonWorker, walletWorker;
         private DaemonInterface di = new DaemonInterface();
+        private WalletInterface wi = new WalletInterface();
 
         private static Cli instance;
 
-        public DaemonInterface Daemon
-        {
-            get { return di; }
-        }
+        public DaemonInterface Daemon => di;
 
-        public static Cli Instance
-        {
-            get { return instance; }
-        }
+        public WalletInterface Wallet => wi;
+
+        public static Cli Instance => instance;
 
         public static Cli CreateInstance()
         {
@@ -47,9 +42,9 @@ namespace Nerva.Toolkit.CLI
             return instance;
         }
 
-        public string CycleDaemonLogFile(string daemonPath)
+        public string CycleLogFile(string path)
         {
-            string logFile = daemonPath + ".log";
+            string logFile = path + ".log";
             string oldLogFile = logFile + ".old";
 
             if (File.Exists(oldLogFile))
@@ -61,7 +56,7 @@ namespace Nerva.Toolkit.CLI
             return logFile;
         }
 
-        public string GetDaemonCommandLine(string logFile)
+        /*public string GetDaemonCommandLine(string logFile)
         {
             string daemonArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile} --detach";
 
@@ -95,137 +90,230 @@ namespace Nerva.Toolkit.CLI
             }
 
             return daemonArgs;
-        }
+        }*/
 
         public void StartDaemon()
         {
-            string daemonPath = $"{Configuration.Instance.ToolsPath}nervad";
-            string daemonArgs = GetDaemonCommandLine(CycleDaemonLogFile(daemonPath));
+            string exeName = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? "nervad.exe" : "nervad";
+            string exePath = $"{Configuration.Instance.ToolsPath}{exeName}";
 
-            daemonCheckTimer = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
-            daemonCheckTimer.Elapsed += delegate(object source, ElapsedEventArgs e)
+            #region Build the command line
+
+            string exeArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {CycleLogFile(exePath)} --detach";
+
+            if (!Configuration.Instance.Daemon.Credentials.PrivateRpc)
             {
-                RunDaemonCheck(daemonPath, daemonArgs);
+                string user = Configuration.Instance.Daemon.Credentials.RpcLogin;
+                string pass = Configuration.Instance.Daemon.Credentials.RpcPass;
+
+                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+                {
+                    Log.Instance.Write(Log_Severity.Error, "RPC username or password not set. Public RPC access is disabled");
+                    exeArgs += $" --rpc-bind-ip 127.0.0.1";
+                }
+                else
+                {
+                    exeArgs += $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind";
+                    exeArgs += $" --rpc-login {user}:{pass}";
+                }
+            }
+
+            if (Configuration.Instance.Daemon.AutoStartMining)
+            {
+                Log.Instance.Write("Enabling startup mining @ {0}", Configuration.Instance.WalletAddress);
+                exeArgs += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
+            }
+
+            if (Configuration.Instance.Testnet)
+            {
+                Log.Instance.Write("Connecting to testnet");
+                exeArgs += " --testnet";
+            }
+
+            #endregion
+
+            #region Create BackgroundWorker that will do the crash checking
+
+            daemonWorker = new BackgroundWorker();
+            daemonWorker.WorkerSupportsCancellation = true;
+
+            daemonWorker.DoWork += (sender, e) =>
+            {
+                if (doDaemonCrashCheck)
+                {
+                    StartDaemonProcessMonitor(exePath, exeArgs);
+                    Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+                }
             };
 
-            RunDaemonCheck(daemonPath, daemonArgs);
-            daemonCheckTimer.Start();
+            daemonWorker.RunWorkerCompleted += (sender, e) =>
+            {
+                if (e.Cancelled)
+                { //Been cancelled. Return so the worker is not run again
+                    Log.Instance.Write(Log_Severity.Warning, "Daemon crash check has been cancelled");
+                    return;
+                }
+
+                if (doDaemonCrashCheck)
+                    daemonWorker.RunWorkerAsync();
+            };
+
+            #endregion
+            
+            //Start crash checking
+            daemonWorker.RunWorkerAsync();
         }
 
-        private void RunDaemonCheck(string daemonPath, string daemonArgs)
+        public void StartWallet()
         {
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += delegate(object sender, DoWorkEventArgs dwe)
+            string exeName = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? "nerva-wallet-rpc.exe" : "nerva-wallet-rpc";
+            string exePath = $"{Configuration.Instance.ToolsPath}{exeName}";
+            //string daemonArgs = GetDaemonCommandLine(CycleLogFile(daemonPath));
+
+            #region Build the command line
+
+            string exeArgs = $"--rpc-bind-port {Configuration.Instance.Wallet.RpcPort} --log-file {CycleLogFile(exePath)} --detach";
+
+            if (!Configuration.Instance.Wallet.Credentials.PrivateRpc)
             {
-                StartDaemonProcessMonitor(daemonPath, daemonArgs);
+                string user = Configuration.Instance.Daemon.Credentials.RpcLogin;
+                string pass = Configuration.Instance.Daemon.Credentials.RpcPass;
+
+                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+                {
+                    Log.Instance.Write(Log_Severity.Error, "RPC username or password not set. Public RPC access is disabled");
+                    exeArgs += $" --rpc-bind-ip 127.0.0.1";
+                }
+                else
+                {
+                    exeArgs += $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind";
+                    exeArgs += $" --rpc-login {user}:{pass}";
+                }
+            }
+
+            if (Configuration.Instance.Testnet)
+            {
+                Log.Instance.Write("Connecting to testnet");
+                exeArgs += " --testnet";
+            }
+
+            #endregion
+        }
+
+        public bool CheckIsAlreadyRunning(string exe, ref int pid)
+        {
+            if (pid != -1)
+            {
+                try
+                {
+                    Process dp = Process.GetProcessById(pid);
+                    if (dp == null || dp.HasExited)
+                    {
+                        Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", exe);
+                        pid = -1;
+                        return false;
+                    }
+                    else
+                        return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Instance.WriteNonFatalException(ex);
+                    pid = -1;
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        public void ManageExistingProcesses(string exe, string args, bool reconnect, ref bool createNew, ref int pid)
+        {
+            Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
+
+            if (processes.Length > 0)
+            {
+                //Reconnect to an existing process if only one is running
+                //If more than 1, we have to start again, because we cannot be sure which one to connec to
+                if (processes.Length == 1 && reconnect && !createNew)
+                {
+                    Process p = processes[0];
+                    pid = p.Id;
+                    ProcessConnected?.Invoke(exe, args, p);
+                }
+                else
+                {
+                    #region Kill existing instances
+
+                    foreach (Process p in processes)
+                        if (p.Id != pid)
+                        {
+                            Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
+                            p.Kill();
+                            p.WaitForExit();
+                        }
+
+                    processes = Process.GetProcessesByName(Path.GetFileName(exe));
+
+                    if (processes.Length > 0)
+                    {
+                        Log.Instance.Write(Log_Severity.Fatal, "There are unknown daemon proceses running. Please kill all processes");
+                        return;
+                    }
+
+                    pid = -1;
+                                
+                    #endregion
+                }
+
+                createNew = false;
+            }
+        }
+
+        public void CreateNewProcess(string exe, string args, ref int pid)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo(exe, args)
+            {
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
             };
 
-            worker.RunWorkerAsync();
+            Process proc = new Process
+            {
+                StartInfo = psi
+            };
+
+            Log.Instance.Write("Starting process {0} {1}", exe, args);
+
+            proc.Start();
+            proc.WaitForExit();
+
+            ProcessStarted?.Invoke(exe, args, proc);
+
+            //We can assume there is only one nervad process running by now.
+            pid = Process.GetProcessesByName(Path.GetFileName(exe))[0].Id;
         }
 
         private void StartDaemonProcessMonitor(string exe, string args)
         {
             try
             {
-                #region Check if the process we have already bound to is still running
+                if (CheckIsAlreadyRunning(exe, ref dPid))
+                    return;
 
-                if (daemonPid != -1)
-                {
-                    try
-                    {
-                        Process dp = Process.GetProcessById(daemonPid);
-                        if (dp == null || dp.HasExited)
-                        {
-                            Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", exe);
-                            daemonPid = -1;
-                        }
-                        else
-                            return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Instance.WriteNonFatalException(ex);
-                        daemonPid = -1;
-                    }
-                }
-                
-                #endregion
+                bool createNew = Configuration.Instance.NewDaemonOnStartup;
 
-                Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
+                ManageExistingProcesses(exe, args, Configuration.Instance.Daemon.ReconnectToDaemonProcess, 
+                    ref createNew, ref dPid);
 
-                #region Manage existing nervad processes
+                Configuration.Instance.NewDaemonOnStartup = createNew;
 
-                if (processes.Length > 0)
-                {
-                    //Reconnect to an existing process if only one is running
-                    //If more than 1, we have to start again, because we cannot be sure which one to connec to
-                    if (processes.Length == 1 && Configuration.Instance.Daemon.ReconnectToDaemonProcess && !Configuration.Instance.NewDaemonOnStartup)
-                    {
-                        Process p = processes[0];
-                        daemonPid = p.Id;
-                        DaemonStarted?.Invoke(exe, args, p);
-                    }
-                    else
-                    {
-                        #region Kill existing instances
-
-                        foreach (Process p in processes)
-                            if (p.Id != daemonPid)
-                            {
-                                Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
-                                p.Kill();
-                                p.WaitForExit();
-                            }
-
-                        processes = Process.GetProcessesByName(Path.GetFileName(exe));
-
-                        if (processes.Length > 0)
-                        {
-                            Log.Instance.Write(Log_Severity.Fatal, "There are unknown daemon proceses running. Please kill all processes");
-                            return;
-                        }
-
-                        daemonPid = -1;
-                                
-                        #endregion
-                    }
-
-                    Configuration.Instance.NewDaemonOnStartup = false;
-                }
-
-                #endregion
-
-                if (daemonPid == -1)
-                {
-                    #region Start a new daemon process
-
-                    ProcessStartInfo psi = new ProcessStartInfo(exe, args)
-                    {
-                        UseShellExecute = false,
-                        RedirectStandardError = true,
-                        RedirectStandardOutput = true,
-                        CreateNoWindow = true
-                    };
-
-                    Process proc = new Process
-                    {
-                        StartInfo = psi
-                    };
-
-                    Log.Instance.Write("Starting process {0} {1}", exe, args);
-
-                    proc.Start();
-                    DaemonStarted?.Invoke(exe, args, proc);
-
-                    proc.WaitForExit();
-
-                    //We can assume there is only one nervad process running by now.
-                    daemonPid = Process.GetProcessesByName(Path.GetFileName(exe))[0].Id;
-
-                    #endregion
-                }
+                if (dPid == -1)
+                    CreateNewProcess(exe, args, ref dPid);
                 else
-                    Log.Instance.Write("Connecting to process {0} with id {1}", exe, daemonPid);
+                    Log.Instance.Write("Connecting to process {0} with id {1}", exe, dPid);
             }
             catch (Exception ex)
             {
@@ -235,8 +323,9 @@ namespace Nerva.Toolkit.CLI
 
         public void StopDaemonCheck()
         {
-            if (daemonCheckTimer != null)
-                daemonCheckTimer.Stop();
+            dPid = -1;
+            doDaemonCrashCheck = false;
+            daemonWorker.CancelAsync();
         }
     }
 }

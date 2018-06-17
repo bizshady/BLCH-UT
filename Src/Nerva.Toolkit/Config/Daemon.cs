@@ -1,14 +1,12 @@
+using AngryWasp.Serializer;
+
 namespace Nerva.Toolkit.Config
 {	
 	public class Daemon
     {
-        public int RpcPort { get; set; } = 17566;
+        public RpcCredentials Credentials { get; set; } = new RpcCredentials();
 
-        public bool PrivateRpc { get; set; } = true;
-
-        public string RpcLogin { get; set; } = "user";
-
-        public string RpcPass { get; set; } = "pass";
+        public int RpcPort { get; set; } = 20566;
 
         public bool StopOnExit { get; set; } = false;
 

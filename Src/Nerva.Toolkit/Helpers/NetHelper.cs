@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -7,14 +6,20 @@ using AngryWasp.Logger;
 using Nerva.Toolkit.Config;
 
 namespace Nerva.Toolkit.Helpers
-{	
-	public static class NetHelper
+{
+    public class NetHelper
 	{
-        public static bool MakeJsonRpcRequest(string methodName, string jsonParams, out string jsonString)
+        private int port;
+
+        public NetHelper(int port)
+        {
+            this.port = port;
+        }
+
+        public bool MakeJsonRpcRequest(string methodName, string jsonParams, out string jsonString)
         {
             try
             {
-                int port = Configuration.Instance.Daemon.RpcPort;
                 string url = $"http://127.0.0.1:{port}/json_rpc";
 
                 string postDataString = $"{{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"{methodName}\"}}";
@@ -69,11 +74,10 @@ namespace Nerva.Toolkit.Helpers
             }
         }
 
-        public static bool MakeRpcRequest(string methodName, string postDataString, out string jsonString)
+        public bool MakeRpcRequest(string methodName, string postDataString, out string jsonString)
         {
             try
             {
-                int port = Configuration.Instance.Daemon.RpcPort;
                 string url = $"http://127.0.0.1:{port}/{methodName}";
 
                 if (Configuration.Instance.LogRpcTraffic)
@@ -126,7 +130,7 @@ namespace Nerva.Toolkit.Helpers
             }
         }
 
-        public static bool MakeHttpRequest(string url, out string returnString)
+        public bool MakeHttpRequest(string url, out string returnString)
         {
             try
             {

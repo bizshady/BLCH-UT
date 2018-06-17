@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Timers;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
@@ -48,7 +49,8 @@ namespace Nerva.Toolkit.Frontend
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
 
-			Cli.Instance.DaemonStarted += StartupUpdateCheck;
+			Cli.Instance.ProcessStarted += StartupUpdateCheck;
+			Cli.Instance.ProcessConnected += StartupUpdateCheck;
 
 			//TODO: Check for updates to this application
 
@@ -69,8 +71,13 @@ namespace Nerva.Toolkit.Frontend
 
 		private static void StartupUpdateCheck(string exe, string arg, Process process)
 		{
+			string exeName = Path.GetFileNameWithoutExtension(exe).ToLower();
+			if (exeName != "nervad")
+				return;
+
 			//Unsubscribe so we only check for an update at the start
-			Cli.Instance.DaemonStarted -= StartupUpdateCheck;
+			Cli.Instance.ProcessStarted -= StartupUpdateCheck;
+			Cli.Instance.ProcessConnected -= StartupUpdateCheck;
 
 			//We need to givew the daemon time to start.
 			//So wait a few seconds, then fire up a backgroudn worker and do a background check
