@@ -10,39 +10,57 @@ namespace Nerva.Toolkit.Config
 	{
         #region Configuration properties
 
-        public string ToolsPath { get; set; } = "./";
+        public string ToolsPath { get; set; }
 
-        public bool CheckForUpdateOnStartup { get; set; } = true;
+        public bool CheckForUpdateOnStartup { get; set; }
 
-        public bool LogRpcTraffic { get; set; } = false;
+        public bool LogRpcTraffic { get; set; }
 
-        public string WalletAddress { get; set; } = Constants.DEV_WALLET_ADDRESS;
-
-        public bool Testnet { get; set; } = false;
-
-        [SerializerExclude]
-        public bool NewDaemonOnStartup { get; set; } = true;
+        public bool Testnet { get; set; }
         
-        public Daemon Daemon { get; set; } = new Daemon();
+        public Daemon Daemon { get; set; }
 
-        public Wallet Wallet { get; set; } = new Wallet();
+        public Wallet Wallet { get; set; }
+
+        public bool ReconnectToDaemonProcess { get; set; }
+
+        public bool ReconnectToWalletProcess { get; set; }
 
         #endregion
+
+        #region Not serialized
+        
+        [SerializerExclude]
+        public bool NewDaemonOnStartup { get; set; } = true;
+
+        [SerializerExclude]
+        public bool NewWalletOnStartup { get; set; } = true;
+
+        #endregion
+
+        public static Configuration New()
+        {
+            return new Configuration
+            {
+                ToolsPath = "./",
+                CheckForUpdateOnStartup = true,
+                LogRpcTraffic = false,
+                Testnet = false,
+                Daemon = Daemon.New(),
+                Wallet = Wallet.New(),
+                ReconnectToDaemonProcess = true,
+                ReconnectToWalletProcess = true
+            };
+        }
 
         #region Integration code
 
         private static string loadedConfigFile;
         private static Configuration instance;
 
-        public static string LoadedConfigFile
-        {
-            get { return loadedConfigFile; }
-        }
+        public static string LoadedConfigFile => loadedConfigFile;
 
-        public static Configuration Instance
-        {
-            get { return instance; }
-        }
+        public static Configuration Instance => instance;
 
         public static void Load(string file)
         {
@@ -50,7 +68,7 @@ namespace Nerva.Toolkit.Config
 
             if (!File.Exists(loadedConfigFile))
             {
-                instance = new Configuration();
+                instance = Configuration.New();
             
                 //TODO: Set default values for a new config file
                 

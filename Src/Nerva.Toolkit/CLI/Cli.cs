@@ -8,6 +8,7 @@ using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
 using System.Timers;
 using Timer = System.Timers.Timer;
+using AngryWasp.Helpers;
 
 namespace Nerva.Toolkit.CLI
 {
@@ -17,9 +18,9 @@ namespace Nerva.Toolkit.CLI
     public class Cli
     {
         public delegate void ProcessStartedEventHandler(string fileName, string args, Process process);
-        public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
+        public event ProcessStartedEventHandler ProcessStarted, ProcessEnded, ProcessConnected;
 
-        private int dPid = -1, walletPid = -1;
+        private int daemonPid = -1, walletPid = -1;
         private bool doDaemonCrashCheck = true, doWalletCrashCheck = true;
         private BackgroundWorker daemonWorker, walletWorker;
         private DaemonInterface di = new DaemonInterface();
@@ -56,81 +57,61 @@ namespace Nerva.Toolkit.CLI
             return logFile;
         }
 
-        /*public string GetDaemonCommandLine(string logFile)
+        private string GetBaseCommandLine(string exe, out string formattedExePath)
         {
-            string daemonArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {logFile} --detach";
+            string exeName = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? $"{exe}.exe" : exe;
+            formattedExePath = $"{Configuration.Instance.ToolsPath}{exeName}";
 
-            if (!Configuration.Instance.Daemon.PrivateRpc)
-            {
-                string user = Configuration.Instance.Daemon.RpcLogin;
-                string pass = Configuration.Instance.Daemon.RpcPass;
-
-                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-                {
-                    Log.Instance.Write(Log_Severity.Error, "RPC username or password not set. Public RPC access is disabled");
-                    daemonArgs += $" --rpc-bind-ip 127.0.0.1";
-                }
-                else
-                {
-                    daemonArgs += $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind";
-                    daemonArgs += $" --rpc-login {user}:{pass}";
-                }
-            }
-
-            if (Configuration.Instance.Daemon.AutoStartMining)
-            {
-                Log.Instance.Write("Enabling startup mining @ {0}", Configuration.Instance.WalletAddress);
-                daemonArgs += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
-            }
+            string arg = $"--log-file {CycleLogFile(formattedExePath)}";
 
             if (Configuration.Instance.Testnet)
             {
                 Log.Instance.Write("Connecting to testnet");
-                daemonArgs += " --testnet";
+                arg += " --testnet";
             }
 
-            return daemonArgs;
-        }*/
+            return arg;
+        }
+
+        private string GetRpcBindCommandLine(RpcDetails d)
+        {
+            string arg = $" --rpc-bind-port {d.Port}";
+
+            if (string.IsNullOrEmpty(d.Login))
+            {
+                Log.Instance.Write(Log_Severity.Error, "RPC username not set. Generating a new random user name");
+                d.Login = StringHelper.GenerateRandomString(24);
+            }
+
+            if (string.IsNullOrEmpty(d.Pass))
+            {
+                Log.Instance.Write(Log_Severity.Error, "RPC password not set. Generating a new random user name");
+                d.Pass = StringHelper.GenerateRandomString(24);
+            }
+            
+            string ip = d.IsPublic ? $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind" : $" --rpc-bind-ip 127.0.0.1";
+
+            arg += $" --rpc-login {d.Login}:{d.Pass}";
+
+            return arg;
+        }
 
         public void StartDaemon()
         {
-            string exeName = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? "nervad.exe" : "nervad";
-            string exePath = $"{Configuration.Instance.ToolsPath}{exeName}";
+            string exePath;
 
-            #region Build the command line
-
-            string exeArgs = $"--rpc-bind-port {Configuration.Instance.Daemon.RpcPort} --log-file {CycleLogFile(exePath)} --detach";
-
-            if (!Configuration.Instance.Daemon.Credentials.PrivateRpc)
-            {
-                string user = Configuration.Instance.Daemon.Credentials.RpcLogin;
-                string pass = Configuration.Instance.Daemon.Credentials.RpcPass;
-
-                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-                {
-                    Log.Instance.Write(Log_Severity.Error, "RPC username or password not set. Public RPC access is disabled");
-                    exeArgs += $" --rpc-bind-ip 127.0.0.1";
-                }
-                else
-                {
-                    exeArgs += $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind";
-                    exeArgs += $" --rpc-login {user}:{pass}";
-                }
-            }
+            string arg = GetBaseCommandLine("nervad", out exePath);
+            arg += GetRpcBindCommandLine(Configuration.Instance.Daemon.Rpc);
 
             if (Configuration.Instance.Daemon.AutoStartMining)
             {
-                Log.Instance.Write("Enabling startup mining @ {0}", Configuration.Instance.WalletAddress);
-                exeArgs += $" --start-mining {Configuration.Instance.WalletAddress} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
+                string ma = Configuration.Instance.Daemon.MiningAddress;
+
+                Log.Instance.Write("Enabling startup mining @ {0}", ma);
+                arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
 
-            if (Configuration.Instance.Testnet)
-            {
-                Log.Instance.Write("Connecting to testnet");
-                exeArgs += " --testnet";
-            }
-
-            #endregion
+            arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -141,7 +122,28 @@ namespace Nerva.Toolkit.CLI
             {
                 if (doDaemonCrashCheck)
                 {
-                    StartDaemonProcessMonitor(exePath, exeArgs);
+                    try
+                    {
+                        if (CheckIsAlreadyRunning(exePath, ref daemonPid))
+                            return;
+
+                        bool reconnect = Configuration.Instance.ReconnectToDaemonProcess;
+                        bool createNew = Configuration.Instance.NewDaemonOnStartup;
+
+                        ManageExistingProcesses(exePath, arg, reconnect, ref createNew, ref daemonPid);
+
+                        Configuration.Instance.NewDaemonOnStartup = createNew;
+
+                        if (daemonPid == -1)
+                            CreateNewProcess(exePath, arg, ref daemonPid);
+                        else
+                            Log.Instance.Write("Connecting to process {0} with id {1}", exePath, daemonPid);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Instance.WriteFatalException(ex);
+                    }
+
                     Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
                 }
             };
@@ -166,38 +168,78 @@ namespace Nerva.Toolkit.CLI
 
         public void StartWallet()
         {
-            string exeName = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? "nerva-wallet-rpc.exe" : "nerva-wallet-rpc";
-            string exePath = $"{Configuration.Instance.ToolsPath}{exeName}";
-            //string daemonArgs = GetDaemonCommandLine(CycleLogFile(daemonPath));
+            string wd = Configuration.Instance.Wallet.WalletDir;
 
-            #region Build the command line
-
-            string exeArgs = $"--rpc-bind-port {Configuration.Instance.Wallet.RpcPort} --log-file {CycleLogFile(exePath)} --detach";
-
-            if (!Configuration.Instance.Wallet.Credentials.PrivateRpc)
+            //Make sure the wallet dir exists
+            if (!Directory.Exists(wd))
             {
-                string user = Configuration.Instance.Daemon.Credentials.RpcLogin;
-                string pass = Configuration.Instance.Daemon.Credentials.RpcPass;
-
-                if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-                {
-                    Log.Instance.Write(Log_Severity.Error, "RPC username or password not set. Public RPC access is disabled");
-                    exeArgs += $" --rpc-bind-ip 127.0.0.1";
-                }
-                else
-                {
-                    exeArgs += $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind";
-                    exeArgs += $" --rpc-login {user}:{pass}";
-                }
+                Log.Instance.Write("Creating wallet directory @ {0}", wd);
+                Directory.CreateDirectory(wd);
+            }
+            else
+            {
+                //TODO: Load wallet file paths
+                Log.Instance.Write("Loading wallets from {0}", wd);
             }
 
-            if (Configuration.Instance.Testnet)
+            string exePath;
+
+            string arg = GetBaseCommandLine("nerva-wallet-rpc", out exePath);
+            arg += GetRpcBindCommandLine(Configuration.Instance.Wallet.Rpc);
+
+            arg += $" --wallet-dir {Configuration.Instance.Wallet.WalletDir}";
+
+            #region Create BackgroundWorker that will do the crash checking
+
+            walletWorker = new BackgroundWorker();
+            walletWorker.WorkerSupportsCancellation = true;
+
+            walletWorker.DoWork += (sender, e) =>
             {
-                Log.Instance.Write("Connecting to testnet");
-                exeArgs += " --testnet";
-            }
+                if (doWalletCrashCheck)
+                {
+                    try
+                    {
+                        if (CheckIsAlreadyRunning(exePath, ref walletPid))
+                            return;
+
+                        bool reconnect = Configuration.Instance.ReconnectToWalletProcess;
+                        bool createNew = Configuration.Instance.NewWalletOnStartup;
+
+                        ManageExistingProcesses(exePath, arg, reconnect, ref createNew, ref walletPid);
+
+                        Configuration.Instance.NewWalletOnStartup = createNew;
+
+                        if (walletPid == -1)
+                            CreateNewProcess(exePath, arg, ref walletPid);
+                        else
+                            Log.Instance.Write("Connecting to process {0} with id {1}", exePath, walletPid);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Instance.WriteFatalException(ex);
+                    }
+
+                    Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+                }
+            };
+
+            walletWorker.RunWorkerCompleted += (sender, e) =>
+            {
+                if (e.Cancelled)
+                {
+                    Log.Instance.Write(Log_Severity.Warning, "Wallet crash check has been cancelled");
+                    return;
+                }
+
+                if (doWalletCrashCheck)
+                    walletWorker.RunWorkerAsync();
+            };
 
             #endregion
+            
+            //Start crash checking
+            walletWorker.RunWorkerAsync();
         }
 
         public bool CheckIsAlreadyRunning(string exe, ref int pid)
@@ -290,42 +332,30 @@ namespace Nerva.Toolkit.CLI
             proc.Start();
             proc.WaitForExit();
 
-            ProcessStarted?.Invoke(exe, args, proc);
+            string n = Path.GetFileName(exe);
+            var p = Process.GetProcessesByName(n);
 
-            //We can assume there is only one nervad process running by now.
-            pid = Process.GetProcessesByName(Path.GetFileName(exe))[0].Id;
-        }
-
-        private void StartDaemonProcessMonitor(string exe, string args)
-        {
-            try
+            if (p.Length == 1)
             {
-                if (CheckIsAlreadyRunning(exe, ref dPid))
-                    return;
-
-                bool createNew = Configuration.Instance.NewDaemonOnStartup;
-
-                ManageExistingProcesses(exe, args, Configuration.Instance.Daemon.ReconnectToDaemonProcess, 
-                    ref createNew, ref dPid);
-
-                Configuration.Instance.NewDaemonOnStartup = createNew;
-
-                if (dPid == -1)
-                    CreateNewProcess(exe, args, ref dPid);
-                else
-                    Log.Instance.Write("Connecting to process {0} with id {1}", exe, dPid);
+                pid = p[0].Id;
+                ProcessStarted?.Invoke(exe, args, proc);
             }
-            catch (Exception ex)
-            {
-                Log.Instance.WriteFatalException(ex);
-            }
+            else 
+                Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
         }
 
         public void StopDaemonCheck()
         {
-            dPid = -1;
+            daemonPid = -1;
             doDaemonCrashCheck = false;
             daemonWorker.CancelAsync();
+        }
+
+        public void StopWalletCheck()
+        {
+            walletPid = -1;
+            doWalletCrashCheck = false;
+            walletWorker.CancelAsync();
         }
     }
 }

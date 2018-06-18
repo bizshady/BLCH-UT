@@ -12,8 +12,8 @@
             "cwd": "${workspaceRoot}/Bin/Debug",
             "preLaunchTask": "build-debug",
             "args":[
-                "--log-file", "debug.log",
-                "--config-file", "../app.config"
+                "--log-file", "../debug.log",
+                "--config-file", "../debug.config"
             ]
         },
         {
@@ -24,8 +24,8 @@
             "cwd": "${workspaceRoot}/Bin/Release",
             "preLaunchTask": "build-release",
             "args":[
-                "--log-file", "debug.log",
-                "--config-file", "app.config"
+                "--log-file", "../release.log",
+                "--config-file", "../release.config"
             ]
         },
         {

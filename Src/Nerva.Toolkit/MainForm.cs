@@ -82,7 +82,7 @@ namespace Nerva.Toolkit
 						else
 							lblStatus.Text += " | Sync OK";
 
-						statusPage.Update(info, connections, mStatus);
+						daemonPage.Update(info, connections, mStatus);
 					});
 				}
 				else
@@ -90,7 +90,7 @@ namespace Nerva.Toolkit
 					Application.Instance.AsyncInvoke ( () =>
 					{
 						lblStatus.Text = "ERROR: Could not connect to daemon";
-						statusPage.Update(null, null, null);
+						daemonPage.Update(null, null, null);
 					});
 
 					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);

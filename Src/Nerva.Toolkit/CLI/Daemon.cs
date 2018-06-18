@@ -19,7 +19,7 @@ namespace Nerva.Toolkit.CLI
 
         public DaemonInterface()
         {
-            netHelper = new NetHelper(Configuration.Instance.Daemon.RpcPort);
+            netHelper = new NetHelper(Configuration.Instance.Daemon.Rpc.Port);
         }
         /// <summary>
         /// Get the current block height seen by the node
@@ -102,7 +102,7 @@ namespace Nerva.Toolkit.CLI
             //To simplify things we set
             //do_background_mining = false
             //ignore_battery = true
-            string postDataString = $"{{\"do_background_mining\":false,\"ignore_battery\":true,\"miner_address\":\"{Configuration.Instance.WalletAddress}\",\"threads_count\":{threads}}}";
+            string postDataString = $"{{\"do_background_mining\":false,\"ignore_battery\":true,\"miner_address\":\"{Configuration.Instance.Daemon.MiningAddress}\",\"threads_count\":{threads}}}";
 
             string result = null;
 

@@ -16,7 +16,7 @@ namespace Nerva.Toolkit.CLI
 
         public WalletInterface()
         {
-            netHelper = new NetHelper(Configuration.Instance.Wallet.RpcPort);
+            netHelper = new NetHelper(Configuration.Instance.Wallet.Rpc.Port);
         }
 
         public Account GetAccounts()

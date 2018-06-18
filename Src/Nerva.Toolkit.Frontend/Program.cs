@@ -55,11 +55,18 @@ namespace Nerva.Toolkit.Frontend
 			//TODO: Check for updates to this application
 
 			Cli.Instance.StartDaemon();
+			Cli.Instance.StartWallet();
 
 			new Application(Eto.Platform.Detect).Run(new MainForm());
 
 			//Prevent the daemon restarting automatically before telling it to stop
 			if (Configuration.Instance.Daemon.StopOnExit)
+			{
+				Cli.Instance.StopDaemonCheck();
+				Cli.Instance.Daemon.StopDaemon();
+			}
+
+			if (Configuration.Instance.Wallet.StopOnExit)
 			{
 				Cli.Instance.StopDaemonCheck();
 				Cli.Instance.Daemon.StopDaemon();

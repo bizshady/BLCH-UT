@@ -13,7 +13,8 @@ namespace Nerva.Toolkit
 		Label lblStatus = new Label { Text = "Connections  (In/Out): 0 / 0" };
 		Label lblVersion = new Label { Text = "Version: 0.0.0.0" };
 
-		StatusPage statusPage = new StatusPage();
+		DaemonPage daemonPage = new DaemonPage();
+		WalletPage walletPage = new WalletPage();
 
 		#endregion
 
@@ -31,15 +32,14 @@ namespace Nerva.Toolkit
 			ad.License = "Copyright © 2018 Angry Wasp";
 			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 
-			var minerPage = new TabPage { Text = "Miner", Content = new MinerPage() };
-			var sendPage = new TabPage { Text = "Send", Content = new SendPage() };
-			var transactionsPage = new TabPage { Text = "Transactions", Content = new TransactionsPage() };
+			daemonPage.ConstructLayout();
+			walletPage.ConstructLayout();
 
 			TabControl tabs = new TabControl
 			{
 				Pages = {
-					new TabPage { Text = "Daemon", Content = statusPage.MainControl },
-					new TabPage { Text = "Wallet", Content = new MinerPage() }
+					new TabPage { Text = "Daemon", Content = daemonPage.MainControl },
+					new TabPage { Text = "Wallet", Content = walletPage.MainControl }
 				}
 			};
 

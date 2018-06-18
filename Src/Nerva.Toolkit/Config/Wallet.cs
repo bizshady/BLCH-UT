@@ -4,8 +4,20 @@ namespace Nerva.Toolkit.Config
 {
 	public class Wallet
 	{
-		public RpcCredentials Credentials { get; set; } = new RpcCredentials();
+		public RpcDetails Rpc { get; set; }
 
-		public int RpcPort { get; set; } = 21566;
-  }
+        public bool StopOnExit { get; set; }
+
+        public string WalletDir { get; set; }
+
+		public static Wallet New()
+        {
+            return new Wallet
+            {
+                StopOnExit = false,
+                WalletDir = "./wallets",
+                Rpc = RpcDetails.New()
+            };
+        }
+    }
 }

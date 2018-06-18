@@ -13,7 +13,10 @@
                 "/t:build",
                 "/property:Configuration=Debug"
             ],
-            "group": "build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "presentation": {
                 // Reveal the output only if unrecognized errors occur.
                 "reveal": "silent"
