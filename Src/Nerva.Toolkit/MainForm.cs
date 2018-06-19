@@ -5,6 +5,7 @@ using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures;
+using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit

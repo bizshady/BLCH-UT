@@ -10,22 +10,17 @@ namespace Nerva.Toolkit.Helpers
     public class NetHelper
 	{
         private RpcDetails rpc;
-        CredentialCache cc;
-        string baseUrl;
 
         public NetHelper(RpcDetails rpc)
         {
             this.rpc = rpc;
-            this.cc = new CredentialCache();
-            baseUrl = $"http://127.0.0.1:{rpc.Port}";
-            cc.Add(new Uri(baseUrl), "Digest", new NetworkCredential(rpc.Login, rpc.Pass));
         }
 
         public bool MakeJsonRpcRequest(string methodName, string jsonParams, out string jsonString)
         {
             try
             {
-                string url = $"{baseUrl}/json_rpc";
+                string url = $"http://127.0.0.1:{rpc.Port}/json_rpc";
                 string postDataString = $"{{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"{methodName}\"}}";
 
                 if (jsonParams != null)
@@ -41,7 +36,6 @@ namespace Nerva.Toolkit.Helpers
                 }
 
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-                //req.Credentials = cc;
                 req.Method = "POST";
                 req.ContentType = "application/json";
 
@@ -76,7 +70,7 @@ namespace Nerva.Toolkit.Helpers
         {
             try
             {
-                string url = $"{baseUrl}/{methodName}";
+                string url = $"http://127.0.0.1:{rpc.Port}/{methodName}";
    
                 if (Configuration.Instance.LogRpcTraffic)
                 {
@@ -135,27 +129,19 @@ namespace Nerva.Toolkit.Helpers
                 req.Method = "GET";
                 HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
 
-                if (resp.StatusCode == HttpStatusCode.OK)
+                using (Stream stream = resp.GetResponseStream())
                 {
-                    HttpStatusCode status = resp.StatusCode;
-                    using (Stream stream = resp.GetResponseStream())
-                    {
-                        StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
-                        returnString = reader.ReadToEnd();
-                    }
+                    StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+                    returnString = reader.ReadToEnd();
+                }
                     
-                    if (Configuration.Instance.LogRpcTraffic)
-                    {
-                        Log.Instance.Write(Log_Severity.None, "HTTP RESPONSE:");
-                        Log.Instance.Write(Log_Severity.None, returnString);
-                    }
-
-                    return true;
+                if (Configuration.Instance.LogRpcTraffic)
+                {
+                    Log.Instance.Write(Log_Severity.None, "HTTP RESPONSE:");
+                    Log.Instance.Write(Log_Severity.None, returnString);
                 }
 
-                Log.Instance.Write(Log_Severity.None, "HTTP ERROR: {0}", resp.StatusCode);
-                returnString = null;
-                return false;
+                return true;
             }
             catch (Exception ex)
             {
