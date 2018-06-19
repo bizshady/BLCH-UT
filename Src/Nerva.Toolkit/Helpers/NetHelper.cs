@@ -9,19 +9,23 @@ namespace Nerva.Toolkit.Helpers
 {
     public class NetHelper
 	{
-        private int port;
+        private RpcDetails rpc;
+        CredentialCache cc;
+        string baseUrl;
 
-        public NetHelper(int port)
+        public NetHelper(RpcDetails rpc)
         {
-            this.port = port;
+            this.rpc = rpc;
+            this.cc = new CredentialCache();
+            baseUrl = $"http://127.0.0.1:{rpc.Port}";
+            cc.Add(new Uri(baseUrl), "Digest", new NetworkCredential(rpc.Login, rpc.Pass));
         }
 
         public bool MakeJsonRpcRequest(string methodName, string jsonParams, out string jsonString)
         {
             try
             {
-                string url = $"http://127.0.0.1:{port}/json_rpc";
-
+                string url = $"{baseUrl}/json_rpc";
                 string postDataString = $"{{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":\"{methodName}\"}}";
 
                 if (jsonParams != null)
@@ -37,6 +41,7 @@ namespace Nerva.Toolkit.Helpers
                 }
 
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+                //req.Credentials = cc;
                 req.Method = "POST";
                 req.ContentType = "application/json";
 
@@ -45,28 +50,21 @@ namespace Nerva.Toolkit.Helpers
 
                 HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
 
-                if (resp.StatusCode == HttpStatusCode.OK)
+                using (Stream stream = resp.GetResponseStream())
                 {
-                    using (Stream stream = resp.GetResponseStream())
-                    {
-                        StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
-                        jsonString = reader.ReadToEnd();
-                    }
-
-                    if (Configuration.Instance.LogRpcTraffic)
-                    {
-                        Log.Instance.Write(Log_Severity.None, "JSON RPC RESPONSE:");
-                        Log.Instance.Write(Log_Severity.None, jsonString);
-                    }
-
-                    return true;
+                    StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+                    jsonString = reader.ReadToEnd();
                 }
 
-                Log.Instance.Write("JSON RPC ERROR: {0}", resp.StatusCode);
-                jsonString = null;
-                return false;
+                if (Configuration.Instance.LogRpcTraffic)
+                {
+                    Log.Instance.Write(Log_Severity.None, "JSON RPC RESPONSE:");
+                    Log.Instance.Write(Log_Severity.None, jsonString);
+                }
+
+                return true;
             }
-            catch (Exception ex)
+            catch (WebException ex)
             {
                 Log.Instance.Write(Log_Severity.Error, ex.Message);
                 jsonString = null;
@@ -78,8 +76,8 @@ namespace Nerva.Toolkit.Helpers
         {
             try
             {
-                string url = $"http://127.0.0.1:{port}/{methodName}";
-
+                string url = $"{baseUrl}/{methodName}";
+   
                 if (Configuration.Instance.LogRpcTraffic)
                 {
                     Log.Instance.Write(Log_Severity.None, "RPC REQUEST:");
@@ -101,26 +99,19 @@ namespace Nerva.Toolkit.Helpers
 
                 HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
 
-                if (resp.StatusCode == HttpStatusCode.OK)
+                using (Stream stream = resp.GetResponseStream())
                 {
-                    using (Stream stream = resp.GetResponseStream())
-                    {
-                        StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
-                        jsonString = reader.ReadToEnd();
-                    }
-
-                    if (Configuration.Instance.LogRpcTraffic)
-                    {
-                        Log.Instance.Write(Log_Severity.None, "JSON RPC RESPONSE:");
-                        Log.Instance.Write(Log_Severity.None, jsonString);
-                    }
-
-                    return true;
+                    StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+                    jsonString = reader.ReadToEnd();
                 }
 
-                Log.Instance.Write(Log_Severity.None, "JSON RPC ERROR: {0}", resp.StatusCode);
-                jsonString = null;
-                return false;
+                if (Configuration.Instance.LogRpcTraffic)
+                {
+                    Log.Instance.Write(Log_Severity.None, "JSON RPC RESPONSE:");
+                    Log.Instance.Write(Log_Severity.None, jsonString);
+                }
+
+                return true;
             }
             catch (Exception ex)
             {

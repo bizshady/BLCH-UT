@@ -77,7 +77,9 @@ namespace Nerva.Toolkit.CLI
         {
             string arg = $" --rpc-bind-port {d.Port}";
 
-            if (string.IsNullOrEmpty(d.Login))
+            //TODO: How the fuck does .NET handle Digest authentication? Uncomment to enable rpc user:pass
+            //after that is worked out 
+            /*if (string.IsNullOrEmpty(d.Login))
             {
                 Log.Instance.Write(Log_Severity.Error, "RPC username not set. Generating a new random user name");
                 d.Login = StringHelper.GenerateRandomString(24);
@@ -91,7 +93,7 @@ namespace Nerva.Toolkit.CLI
             
             string ip = d.IsPublic ? $" --rpc-bind-ip 0.0.0.0 --confirm-external-bind" : $" --rpc-bind-ip 127.0.0.1";
 
-            arg += $" --rpc-login {d.Login}:{d.Pass}";
+            arg += $" --rpc-login {d.Login}:{d.Pass}";*/
 
             return arg;
         }
@@ -187,7 +189,7 @@ namespace Nerva.Toolkit.CLI
             string arg = GetBaseCommandLine("nerva-wallet-rpc", out exePath);
             arg += GetRpcBindCommandLine(Configuration.Instance.Wallet.Rpc);
 
-            arg += $" --wallet-dir {Configuration.Instance.Wallet.WalletDir}";
+            arg += $" --disable-rpc-login --wallet-dir {Configuration.Instance.Wallet.WalletDir}";
 
             #region Create BackgroundWorker that will do the crash checking
 

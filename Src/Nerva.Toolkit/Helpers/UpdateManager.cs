@@ -52,7 +52,7 @@ namespace Nerva.Toolkit.Helpers
         private static int CheckAvailableVersion()
         {
             string versionString = null;
-            new NetHelper(0).MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
+            new NetHelper(null).MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
 
             if (versionString == null)
             {

@@ -19,7 +19,7 @@ namespace Nerva.Toolkit.CLI
 
         public DaemonInterface()
         {
-            netHelper = new NetHelper(Configuration.Instance.Daemon.Rpc.Port);
+            netHelper = new NetHelper(Configuration.Instance.Daemon.Rpc);
         }
         /// <summary>
         /// Get the current block height seen by the node
@@ -122,7 +122,7 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeRpcRequest("mining_status", null, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
+                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: mining_status");
                 return null;
             }
 
