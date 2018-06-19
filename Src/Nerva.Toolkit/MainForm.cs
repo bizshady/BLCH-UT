@@ -25,6 +25,12 @@ namespace Nerva.Toolkit
 			{
 				StartDaemonUpdateThread();
 			};
+
+			/*EnterPasswordDialog d = new EnterPasswordDialog();
+			if (d.ShowModal() == DialogResult.Ok)
+				MessageBox.Show(d.Password);
+			else
+				MessageBox.Show("ABORTED");*/
 		}
 
 		private void StartDaemonUpdateThread()
