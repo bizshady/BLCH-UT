@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Nerva.Toolkit.CLI.Structures;
 using Nerva.Toolkit.Helpers;
 using System.Linq;
 using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.CLI.Structures.Response;
 
 namespace Nerva.Toolkit.Content
 {

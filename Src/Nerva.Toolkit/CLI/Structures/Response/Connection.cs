@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Nerva.Toolkit.CLI.Structures
+namespace Nerva.Toolkit.CLI.Structures.Response
 {
     [JsonObject]
     public class ConnectionList

@@ -10,12 +10,18 @@ namespace Nerva.Toolkit.Config
 
         public string WalletDir { get; set; }
 
+        public string LastOpenedWallet { get; set; }
+
+        public string LastWalletPassword { get; set; }
+
 		public static Wallet New()
         {
             return new Wallet
             {
                 StopOnExit = false,
                 WalletDir = "./wallets",
+                LastOpenedWallet = null,
+                LastWalletPassword = null,
                 Rpc = RpcDetails.New()
             };
         }

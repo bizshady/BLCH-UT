@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Nerva.Toolkit.CLI.Structures
+namespace Nerva.Toolkit.CLI.Structures.Response
 {
     [JsonObject]
     public class Info

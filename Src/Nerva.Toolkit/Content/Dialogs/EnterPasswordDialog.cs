@@ -58,8 +58,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         public void CreateLayout()
         {
-            
             TextControl textControl;
+            
             if (isShown)
                 textControl = tb;
             else

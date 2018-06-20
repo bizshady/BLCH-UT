@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
-using Nerva.Toolkit.CLI.Structures;
+using Nerva.Toolkit.CLI.Structures.Request;
+using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
 using Newtonsoft.Json;
@@ -21,6 +22,7 @@ namespace Nerva.Toolkit.CLI
         {
             netHelper = new NetHelper(Configuration.Instance.Daemon.Rpc);
         }
+
         /// <summary>
         /// Get the current block height seen by the node
         /// </summary>
@@ -29,7 +31,12 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!netHelper.MakeJsonRpcRequest("get_block_count", null, out result))
+            JsonRequest jr = new JsonRequest
+            {
+                MethodName = "get_block_count"
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_block_count");
                 return -1;
@@ -46,7 +53,12 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!netHelper.MakeJsonRpcRequest("get_info", null, out result))
+            JsonRequest jr = new JsonRequest
+            {
+                MethodName = "get_info"
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_info");
                 return null;
@@ -63,7 +75,12 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            if (!netHelper.MakeJsonRpcRequest("get_connections", null, out result))
+            JsonRequest jr = new JsonRequest
+            {
+                MethodName = "get_connections"
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
                 return null;
@@ -99,14 +116,22 @@ namespace Nerva.Toolkit.CLI
         {
             int threads = MathHelper.Clamp(miningThreads, 1, Environment.ProcessorCount - 1);
 
+            string jsonRequest = JsonConvert.SerializeObject(new StartMining
+                {
+                    BackgroundMining = false,
+                    IgnoreBattery = true,
+                    MinerAddress = Configuration.Instance.Daemon.MiningAddress,
+                    MiningThreads = Configuration.Instance.Daemon.MiningThreads
+                });
+
             //To simplify things we set
             //do_background_mining = false
             //ignore_battery = true
-            string postDataString = $"{{\"do_background_mining\":false,\"ignore_battery\":true,\"miner_address\":\"{Configuration.Instance.Daemon.MiningAddress}\",\"threads_count\":{threads}}}";
+            //string postDataString = $"{{\"do_background_mining\":false,\"ignore_battery\":true,\"miner_address\":\"{Configuration.Instance.Daemon.MiningAddress}\",\"threads_count\":{threads}}}";
 
             string result = null;
 
-            if (!netHelper.MakeRpcRequest("start_mining", postDataString, out result))
+            if (!netHelper.MakeRpcRequest("start_mining", jsonRequest, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: start_mining");
                 return false;

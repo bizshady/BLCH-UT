@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures;
-using Newtonsoft.Json.Linq;
+using Nerva.Toolkit.CLI.Structures.Response;
 
 namespace Nerva.Toolkit.Helpers
 {

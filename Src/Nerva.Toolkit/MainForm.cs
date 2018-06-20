@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures;
+using Nerva.Toolkit.CLI.Structures.Response;
+using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.Helpers;
 
@@ -12,8 +14,11 @@ namespace Nerva.Toolkit
 {
     public partial class MainForm : Form
 	{	
-		Thread updateThread;
-		bool shouldUpdate = true;
+		Thread updateDaemonThread;
+		bool shouldUpdateDaemon = true;
+
+		Thread updateWalletThread;
+		bool shouldUpdateWallet = true;
 
 		public MainForm()
 		{
@@ -21,38 +26,64 @@ namespace Nerva.Toolkit
 			ConstructLayout();
 			ResumeLayout();
 
+			var w = Configuration.Instance.Wallet;
+
+			if (w.LastOpenedWallet != null)
+			{
+				string walletFile = Path.Combine(w.WalletDir, w.LastOpenedWallet);
+
+				if (File.Exists(walletFile))
+				{
+					//Wallet file is saved in config and exists on disk.
+					//Load from the saved password if that exists
+					string password = null;
+					if (w.LastWalletPassword != null)
+						password = w.LastOpenedWallet.DecodeBase64();
+
+					while (true)
+					{
+						if (password == null)
+						{
+							EnterPasswordDialog d = new EnterPasswordDialog();
+							if (d.ShowModal() == DialogResult.Ok)
+								password = d.Password;
+						}
+					}
+				}
+			}
+
 			Application.Instance.Initialized += (s, e) =>
 			{
-				StartDaemonUpdateThread();
+				StartUpdateThread();
 			};
 
-			/*EnterPasswordDialog d = new EnterPasswordDialog();
-			if (d.ShowModal() == DialogResult.Ok)
-				MessageBox.Show(d.Password);
-			else
-				MessageBox.Show("ABORTED");*/
+			/**/
 		}
 
-		private void StartDaemonUpdateThread()
+		private void StartUpdateThread()
 		{
-			updateThread = new Thread(new ThreadStart(UpdateUI));
-			shouldUpdate = true;
-			updateThread.Start();
+			updateDaemonThread = new Thread(new ThreadStart(UpdateDaemonUI));
+			shouldUpdateDaemon = true;
+			updateDaemonThread.Start();
+
+			updateWalletThread = new Thread(new ThreadStart(UpdateWalletUI));
+			shouldUpdateWallet = true;
+			updateWalletThread.Start();
 		}
 
 		private void StopDaemonUpdateThread()
 		{
-			shouldUpdate = false;
+			shouldUpdateDaemon = false;
 		}
 
-		private void UpdateUI()
+		private void UpdateDaemonUI()
 		{
-			while (shouldUpdate)
+			while (shouldUpdateDaemon)
 			{
 				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
 
 				//Condition may have changed. 5 seconds is a long time
-				if (!shouldUpdate)
+				if (!shouldUpdateDaemon)
 					break;
 
 				Info info = null;
@@ -67,13 +98,10 @@ namespace Nerva.Toolkit
 					height = Cli.Instance.Daemon.GetBlockCount();
 					mStatus = Cli.Instance.Daemon.GetMiningStatus();
 				}
-				catch (Exception)
-				{
-					//Log message will have already been written. No need to write another one here
-				}
+				catch (Exception) { }
 
 				//Double check we want to update before we do
-				if (!shouldUpdate)
+				if (!shouldUpdateDaemon)
 					break;
 
 				if (info != null && connections != null && height != -1)
@@ -102,6 +130,20 @@ namespace Nerva.Toolkit
 
 					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
 				}
+			}
+		}
+
+		private void UpdateWalletUI()
+		{
+			while (shouldUpdateWallet)
+			{
+				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
+
+				//Condition may have changed. 5 seconds is a long time
+				if (!shouldUpdateWallet)
+					break;
+
+				//TODO: Update wallet releated GUI elements
 			}
 		}
 

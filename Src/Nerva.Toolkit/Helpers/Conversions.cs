@@ -1,10 +1,21 @@
 using System;
+using System.Text;
 using AngryWasp.Logger;
 
 namespace Nerva.Toolkit.Helpers
 {	
 	public static class Conversions
     {
+        public static string EncodeBase64(this string t)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(t));
+        }
+
+        public static string DecodeBase64(this string t)
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String(t));
+        }
+
         public static int OctetSetToInt(string vs)
         {
             int i = 0;
@@ -39,12 +50,10 @@ namespace Nerva.Toolkit.Helpers
             return i;
         }
 
-        public static DateTime UnixTimeStampToDateTime(ulong unixTimeStamp)
+        public static DateTime UnixTimeStampToDateTime(ulong ts)
         {
-            // Unix timestamp is seconds past epoch
-            System.DateTime dtDateTime = new DateTime(1970,1,1,0,0,0,0,System.DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds( unixTimeStamp ).ToLocalTime();
-            return dtDateTime;
+            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return dt.AddSeconds(ts).ToLocalTime();
         }
     }
 }
