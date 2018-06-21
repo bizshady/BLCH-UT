@@ -123,12 +123,7 @@ namespace Nerva.Toolkit.CLI
                     MinerAddress = Configuration.Instance.Daemon.MiningAddress,
                     MiningThreads = Configuration.Instance.Daemon.MiningThreads
                 });
-
-            //To simplify things we set
-            //do_background_mining = false
-            //ignore_battery = true
-            //string postDataString = $"{{\"do_background_mining\":false,\"ignore_battery\":true,\"miner_address\":\"{Configuration.Instance.Daemon.MiningAddress}\",\"threads_count\":{threads}}}";
-
+                
             string result = null;
 
             if (!netHelper.MakeRpcRequest("start_mining", jsonRequest, out result))
@@ -156,18 +151,34 @@ namespace Nerva.Toolkit.CLI
 
         public bool BanPeer(string ip)
         {
-            string jsonParams = $"{{\"bans\":[{{\"host\":\"{ip}\",\"ban\":true,\"seconds\":{Constants.BAN_TIME}}}]}}";
+            JsonRequest<BanList> jr = new JsonRequest<BanList>
+            {
+                MethodName = "set_bans",
+                Params = new BanList
+                {
+                    Bans = new List<Ban>(new Ban[] {
+                        new Ban
+                        {
+                            Host = ip
+                        }})
+                }
+            };
 
             string result = null;
 
-            if (!netHelper.MakeJsonRpcRequest("set_bans", jsonParams, out result))
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: set_bans");
                 return false;
             }
 
             var json = JObject.Parse(result);
-            return json["result"]["status"].Value<string>().ToLower() == "ok";
+            bool ok = json["result"]["status"].Value<string>().ToLower() == "ok";
+
+            if (ok)
+                Log.Instance.Write("Peer {0} banned", ip);
+
+            return ok;
         }
     }
 }

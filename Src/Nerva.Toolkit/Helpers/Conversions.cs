@@ -16,30 +16,30 @@ namespace Nerva.Toolkit.Helpers
             return Encoding.UTF8.GetString(Convert.FromBase64String(t));
         }
 
-        public static int OctetSetToInt(string vs)
+        public static ulong OctetSetToInt(string vs)
         {
-            int i = 0;
+            ulong i = 0;
 
             string[] split = vs.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (split.Length != 4)
             {
                 Log.Instance.Write(Log_Severity.Error, "Attempt to convert octet set != 4 values");
-                return -1;
+                return 0;
             }
 
-            int o1, o2, o3, o4;
+            ulong o1, o2, o3, o4;
 
-            if (!int.TryParse(split[0], out o1) || !int.TryParse(split[1], out o2) || !int.TryParse(split[2], out o3) || !int.TryParse(split[3], out o4))
+            if (!ulong.TryParse(split[0], out o1) || !ulong.TryParse(split[1], out o2) || !ulong.TryParse(split[2], out o3) || !ulong.TryParse(split[3], out o4))
             {
                 Log.Instance.Write(Log_Severity.Error, "Attempt to parse poorly formatted octet set");
-                return -1;
+                return 0;
             }
 
             if ((o1 < 0 || o1 > 255) || (o2 < 0 || o2 > 255) || (o3 < 0 || o3 > 255) || (o4 < 0 || o4 > 255))
             {
                 Log.Instance.Write(Log_Severity.Error, "Octet value is out of range");
-                return -1;
+                return 0;
             }
 
             i += o1 * 16777216;

@@ -1,4 +1,5 @@
 using AngryWasp.Logger;
+using Nerva.Toolkit.CLI.Structures.Request;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
@@ -22,10 +23,15 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
+            JsonRequest jr = new JsonRequest
+            {
+                MethodName = "get_accounts"
+            };
+
             //TODO: We can optionally add a filter to only get selected subaddresses.
             //This probably isn't necessary though
 
-            if (!netHelper.MakeJsonRpcRequest("get_accounts", null, out result))
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
                 return null;

@@ -36,25 +36,25 @@ namespace Nerva.Toolkit.Helpers
             
             var version = daemonInfo.Version;
             
-            int localVersion = Conversions.OctetSetToInt(version);
-            int remoteVersion = CheckAvailableVersion();
+            ulong localVersion = Conversions.OctetSetToInt(version);
+            ulong remoteVersion = CheckAvailableVersion();
 
-            if (remoteVersion == -1)
+            if (remoteVersion == 0)
                 return;
 
             Log.Instance.Write("Installed CLI version {0}", version);
             updateStatus = (remoteVersion == localVersion) ? Update_Status_Code.UpToDate : Update_Status_Code.NewVersionAvailable;
         }
         
-        private static int CheckAvailableVersion()
+        private static ulong CheckAvailableVersion()
         {
             string versionString = null;
-            new NetHelper(null).MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
+            NetHelper.MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
 
             if (versionString == null)
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not retrieve available update version");
-                return -1;
+                return 0;
             }
 
             Log.Instance.Write("Available CLI version {0}", versionString);

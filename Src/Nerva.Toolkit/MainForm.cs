@@ -20,6 +20,10 @@ namespace Nerva.Toolkit
 		Thread updateWalletThread;
 		bool shouldUpdateWallet = true;
 
+		Thread pingThread;
+
+		bool pingSuccess = true;
+
 		public MainForm()
 		{
 			SuspendLayout();
@@ -56,8 +60,6 @@ namespace Nerva.Toolkit
 			{
 				StartUpdateThread();
 			};
-
-			/**/
 		}
 
 		private void StartUpdateThread()
@@ -69,6 +71,10 @@ namespace Nerva.Toolkit
 			updateWalletThread = new Thread(new ThreadStart(UpdateWalletUI));
 			shouldUpdateWallet = true;
 			updateWalletThread.Start();
+
+			pingThread = new Thread(new ThreadStart(CheckConnection));
+			pingSuccess = true;
+			pingThread.Start();
 		}
 
 		private void StopDaemonUpdateThread()
@@ -124,11 +130,11 @@ namespace Nerva.Toolkit
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						lblStatus.Text = "ERROR: Could not connect to daemon";
+						lblStatus.Text = "NOT CONNECTED TO DAEMON";
 						daemonPage.Update(null, null, null);
 					});
-
-					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+					
+					//Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
 				}
 			}
 		}
@@ -144,6 +150,45 @@ namespace Nerva.Toolkit
 					break;
 
 				//TODO: Update wallet releated GUI elements
+			}
+		}
+
+		private void CheckConnection()
+		{
+			while (true)
+			{
+				//If last ping failed. speed up this wait time. Do the online check as quick as reasonably possible
+				Thread.Sleep(pingSuccess ? Constants.DAEMON_POLL_INTERVAL * 5 : Constants.DAEMON_POLL_INTERVAL);
+
+				//Try pinging all 3 seed nodes before calling it disconnected
+				bool pingOk = NetHelper.PingServer(SeedNodes.XNV1);
+
+				if (!pingOk)
+					pingOk = NetHelper.PingServer(SeedNodes.XNV2);
+
+				if (!pingOk)
+					pingOk = NetHelper.PingServer(SeedNodes.XNV3);
+
+				pingSuccess = pingOk;
+
+				if (!pingOk)
+				{
+					shouldUpdateDaemon = false;
+					shouldUpdateWallet = false;
+
+					Application.Instance.AsyncInvoke(() =>
+					{
+						lblStatus.Text = "NOT CONNECTED TO INTERNET";
+						daemonPage.Update(null, null, null);
+					});
+
+					continue;
+				}
+				else
+				{
+					shouldUpdateDaemon = true;
+					shouldUpdateWallet = true;
+				}	
 			}
 		}
 
