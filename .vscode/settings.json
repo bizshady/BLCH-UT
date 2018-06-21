@@ -3,6 +3,8 @@
     "files.associations": {
         "*.jeto": "json",
     },
+    "editor.dragAndDrop": false,
+    "editor.occurrencesHighlight": false,
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,

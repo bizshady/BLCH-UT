@@ -3,24 +3,30 @@ using Eto.Forms;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class EnterPasswordDialog : Dialog<DialogResult>
+    public class OpenWalletDialog : Dialog<DialogResult>
 	{
         bool isShown = false;
 
+        private string name;
         private string password;
+
         public string Password => password;
+        public string Name => name;
 
         PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
         TextBox tb = new TextBox();
+
+        TextBox txtName = new TextBox();
+
         TableRow pwr = new TableRow();
 
         Button btnShow = new Button { Text = "Show" };
         Button btnOk = new Button { Text = "OK" };
         Button btnCancel = new Button { Text = "Cancel" };
 
-        public EnterPasswordDialog()
+        public OpenWalletDialog()
         {
-            this.Title = "Enter Password";
+            this.Title = "Create New Wallet";
             ClientSize = new Size(400, 100);
             Topmost = true;
             var scr = Screen.PrimaryScreen;
@@ -49,12 +55,15 @@ namespace Nerva.Toolkit.Content.Dialogs
                 else
                     password = pwb.Text;
 
+                name = txtName.Text;
+
                 this.Close(DialogResult.Ok);
             };
 
             btnCancel.Click += (s, e) =>
             {
                 password = null;
+                name = null;
                 this.Close(DialogResult.Cancel);
             };
         }
@@ -73,6 +82,9 @@ namespace Nerva.Toolkit.Content.Dialogs
                 Padding = 10,
 				Spacing = new Eto.Drawing.Size(10, 10),
                 Rows = {
+                    new Label { Text = "Wallet Name" },
+                    txtName,
+                    new Label { Text = "Password" },
                     textControl,
                     new TableRow (
                         new TableLayout
@@ -88,8 +100,6 @@ namespace Nerva.Toolkit.Content.Dialogs
                     new TableRow { ScaleHeight = true }
                 }
             };
-
-            textControl.Focus();
         }
     }
 }

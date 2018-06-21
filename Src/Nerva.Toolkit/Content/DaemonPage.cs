@@ -26,7 +26,7 @@ namespace Nerva.Toolkit.Content
 		private Label lblNetHash = new Label() { Text = "." };
 		private Label lblNetwork = new Label() { Text = "." };
 
-		private Label lblMinerStatus = new Label { Text = "Miner" };
+		private Label lblMinerStatus = new Label { Text = "Miner (Inactive)" };
 		private Label lblMiningAddress = new Label() { Text = "." };
 		private Label lblMiningThreads = new Label() { Text = "." };
 		private Label lblMiningHashrate = new Label() { Text = "." };
@@ -66,6 +66,9 @@ namespace Nerva.Toolkit.Content
 					new TableRow(
 						new TableCell(new Label { Text = "Network:" }),
 						new TableCell(lblNetwork)),
+					new TableRow(
+						new TableCell(null),
+						new TableCell(null))
 				}
 			};
 
@@ -145,7 +148,7 @@ namespace Nerva.Toolkit.Content
             if (mStatus != null && mStatus.Active)
             {
                 lblMinerStatus.Text = "Miner (Active)";
-                lblMiningAddress.Text = mStatus.Address.Substring(0, 6) + "..." + mStatus.Address.Substring(mStatus.Address.Length - 6, 6);
+                lblMiningAddress.Text = Conversions.WalletAddressShortForm(mStatus.Address);
                 lblMiningThreads.Text = mStatus.ThreadCount.ToString();
 
                 string speed;
@@ -190,9 +193,7 @@ namespace Nerva.Toolkit.Content
                 }
             }
             else
-            {
                 connectionsContainer.Content = null;
-            }
         }
     }
 }

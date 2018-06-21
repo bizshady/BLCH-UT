@@ -25,7 +25,6 @@ namespace Nerva.Toolkit.Helpers
             updateStatus = Update_Status_Code.Undefined;
 
             Log.Instance.Write("Checking for updates...");
-			//JObject j = Cli.Instance.Daemon.GetInfo();
             Info daemonInfo = Cli.Instance.Daemon.GetInfo();
 
             if (daemonInfo == null)

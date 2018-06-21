@@ -30,31 +30,8 @@ namespace Nerva.Toolkit
 			ConstructLayout();
 			ResumeLayout();
 
-			var w = Configuration.Instance.Wallet;
-
-			if (w.LastOpenedWallet != null)
-			{
-				string walletFile = Path.Combine(w.WalletDir, w.LastOpenedWallet);
-
-				if (File.Exists(walletFile))
-				{
-					//Wallet file is saved in config and exists on disk.
-					//Load from the saved password if that exists
-					string password = null;
-					if (w.LastWalletPassword != null)
-						password = w.LastOpenedWallet.DecodeBase64();
-
-					while (true)
-					{
-						if (password == null)
-						{
-							EnterPasswordDialog d = new EnterPasswordDialog();
-							if (d.ShowModal() == DialogResult.Ok)
-								password = d.Password;
-						}
-					}
-				}
-			}
+			if (!WalletHelper.OpenSavedWallet())
+				WalletHelper.ShowWalletWizard();
 
 			Application.Instance.Initialized += (s, e) =>
 			{

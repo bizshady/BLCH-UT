@@ -39,5 +39,51 @@ namespace Nerva.Toolkit.CLI
 
             return JsonConvert.DeserializeObject<JsonValue<Account>>(result).Result;
         }
+
+        public bool CreateWallet(string walletName, string password)
+        {
+            string result = null;
+
+            JsonRequest<CreateWallet> jr = new JsonRequest<CreateWallet>
+            {
+                MethodName = "create_wallet",
+                Params = new CreateWallet
+                {
+                    FileName = walletName,
+                    Password = password
+                }
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: create_wallet");
+                return false;
+            }
+
+            return false;
+        }
+
+        public bool OpenWallet(string walletName, string password)
+        {
+            string result = null;
+
+            JsonRequest<CreateWallet> jr = new JsonRequest<CreateWallet>
+            {
+                MethodName = "create_wallet",
+                Params = new CreateWallet
+                {
+                    FileName = walletName,
+                    Password = password
+                }
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: create_wallet");
+                return false;
+            }
+
+            return true;
+        }
     }
 }

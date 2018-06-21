@@ -16,6 +16,11 @@ namespace Nerva.Toolkit.Helpers
             return Encoding.UTF8.GetString(Convert.FromBase64String(t));
         }
 
+        public static string WalletAddressShortForm(string a)
+        {
+            return $"{a.Substring(0, 6)}...{a.Substring(a.Length - 6, 6)}";
+        }
+
         public static ulong OctetSetToInt(string vs)
         {
             ulong i = 0;
