@@ -28,7 +28,7 @@ namespace Nerva.Toolkit.CLI
                 MethodName = "get_accounts"
             };
 
-            //TODO: We can optionally add a filter to only get selected subaddresses.
+            //todo: We can optionally add a filter to only get selected subaddresses.
             //This probably isn't necessary though
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
@@ -42,6 +42,8 @@ namespace Nerva.Toolkit.CLI
 
         public bool CreateWallet(string walletName, string password)
         {
+            //todo: need to check for an error being returned. 
+            //potentially trying to create a wallet with the same name etc
             string result = null;
 
             JsonRequest<CreateWallet> jr = new JsonRequest<CreateWallet>
@@ -65,6 +67,9 @@ namespace Nerva.Toolkit.CLI
 
         public bool OpenWallet(string walletName, string password)
         {
+            //todo: need to check for an error being returned. 
+            //potentially opening a wallet that doesn't exists
+            //wrong password etc
             string result = null;
 
             JsonRequest<OpenWallet> jr = new JsonRequest<OpenWallet>

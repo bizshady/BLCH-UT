@@ -30,6 +30,8 @@ namespace Nerva.Toolkit
 			ConstructLayout();
 			ResumeLayout();
 
+			//todo: Need to check if the wallet is already running and wait until it is
+			//or we just start the program and ask to start a wallet when available
 			if (!WalletHelper.OpenSavedWallet())
 				WalletHelper.ShowWalletWizard();
 

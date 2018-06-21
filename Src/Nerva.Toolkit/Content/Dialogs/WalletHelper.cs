@@ -67,8 +67,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 					}
 				}
             }
-
-            return false;
         }
 
 		public static bool WalletFileExists(string file)
