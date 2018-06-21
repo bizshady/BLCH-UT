@@ -48,6 +48,7 @@ namespace Nerva.Toolkit.Frontend
 			Cli.CreateInstance();
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
+			Configuration.Instance.NewWalletOnStartup = cmd["new-wallet"] != null;
 
 			Cli.Instance.ProcessStarted += StartupUpdateCheck;
 			Cli.Instance.ProcessConnected += StartupUpdateCheck;
