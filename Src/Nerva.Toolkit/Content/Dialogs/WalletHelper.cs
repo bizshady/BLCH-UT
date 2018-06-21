@@ -36,7 +36,9 @@ namespace Nerva.Toolkit.Content.Dialogs
 			//Load from the saved password if that exists
 			if (w.LastWalletPassword != null)
 			{
-				if (!Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, w.LastOpenedWallet.DecodeBase64()))
+				if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, w.LastWalletPassword.DecodeBase64()))
+					return true;
+				else
 				{
 					Log.Instance.Write(Log_Severity.Warning, "Wallet cannot be opened from saved information");
 					MessageBox.Show("Wallet cannot be opened from saved information");
