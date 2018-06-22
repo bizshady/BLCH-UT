@@ -2,4 +2,4 @@
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-mono $dir/Bin/$1/Nerva.Toolkit.Gtk.exe
+mono $dir/Bin/$1/Nerva.Toolkit.exe

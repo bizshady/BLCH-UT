@@ -1,5 +1,6 @@
 using Eto.Drawing;
 using Eto.Forms;
+using Nerva.Toolkit.CLI;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -29,12 +30,19 @@ namespace Nerva.Toolkit.Content.Dialogs
             CreateLayout();
 
             this.AbortButton = btnCancel;
-            this.DefaultButton = btnOpenWallet;
 
             btnNewWallet.Click += (s, e) =>  { Close(Open_Wallet_Dialog_Result.New); };
             btnOpenWallet.Click += (s, e) =>  { Close(Open_Wallet_Dialog_Result.Open); };
             btnImportWallet.Click += (s, e) => { Close(Open_Wallet_Dialog_Result.Import); };
             btnCancel.Click += (s, e) => { Close(Open_Wallet_Dialog_Result.Cancel); };
+
+            if (WalletHelper.GetWalletFileCount() == 0)
+            {
+                btnOpenWallet.Enabled = false;
+                this.DefaultButton = btnNewWallet;
+            }
+            else
+                this.DefaultButton = btnOpenWallet;
 
             this.Focus();
         }

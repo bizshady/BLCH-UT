@@ -9,6 +9,8 @@ using Nerva.Toolkit.Helpers;
 using System.Timers;
 using Timer = System.Timers.Timer;
 using AngryWasp.Helpers;
+using Nerva.Toolkit.Content.Dialogs;
+using Eto.Forms;
 
 namespace Nerva.Toolkit.CLI
 {
@@ -32,7 +34,27 @@ namespace Nerva.Toolkit.CLI
 
         public WalletInterface Wallet => wi;
 
+        public int DaemonPid => daemonPid;
+
+        public int WalletPid => walletPid;
+
         public static Cli Instance => instance;
+
+        public bool CliProcessIsReady(int pid)
+        {
+            if (pid == -1)
+                return false;
+
+            Process dp = Process.GetProcessById(pid);
+            if (dp == null || dp.HasExited)
+                return false;
+
+            double ms = (DateTime.Now - dp.StartTime).TotalMilliseconds;
+            if (ms < Constants.DAEMON_RESTART_THREAD_INTERVAL)
+                return false;
+
+            return true;
+        }
 
         public static Cli CreateInstance()
         {
@@ -96,6 +118,15 @@ namespace Nerva.Toolkit.CLI
             arg += $" --rpc-login {d.Login}:{d.Pass}";*/
 
             return arg;
+        }
+
+        public void Start()
+        {
+            ProcessStarted += DoCliStartup;
+            ProcessConnected += DoCliStartup;
+
+            StartDaemon();
+            StartWallet();
         }
 
         public void StartDaemon()
@@ -163,7 +194,7 @@ namespace Nerva.Toolkit.CLI
             };
 
             #endregion
-            
+
             //Start crash checking
             daemonWorker.RunWorkerAsync();
         }
@@ -239,7 +270,7 @@ namespace Nerva.Toolkit.CLI
             };
 
             #endregion
-            
+
             //Start crash checking
             walletWorker.RunWorkerAsync();
         }
@@ -306,7 +337,7 @@ namespace Nerva.Toolkit.CLI
                     }
 
                     pid = -1;
-                                
+
                     #endregion
                 }
 
@@ -342,7 +373,7 @@ namespace Nerva.Toolkit.CLI
                 pid = p[0].Id;
                 ProcessStarted?.Invoke(exe, args, proc);
             }
-            else 
+            else
                 Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
         }
 
@@ -359,5 +390,70 @@ namespace Nerva.Toolkit.CLI
             doWalletCrashCheck = false;
             walletWorker.CancelAsync();
         }
+
+        #region Startup events
+
+        private void DoCliStartup(string exe, string arg, Process process)
+        {
+            string exeName = Path.GetFileNameWithoutExtension(exe).ToLower();
+            if (exeName == "nervad")
+                UpdateCheck();
+            else if (exeName == "nerva-wallet-rpc")
+                LoadWallet();
+            else
+                Log.Instance.Write(Log_Severity.Error, "Unknown process connected '{0}'", exeName);
+        }
+
+        private void UpdateCheck()
+        {
+            BackgroundWorker w = new BackgroundWorker();
+
+            w.DoWork += delegate (object sender, DoWorkEventArgs e)
+            {
+                while (!CliProcessIsReady(daemonPid))
+                    Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+
+                UpdateManager.CheckForCliUpdates();
+
+                switch (UpdateManager.UpdateStatus)
+                {
+                    case Update_Status_Code.UpToDate:
+                            Log.Instance.Write("NERVA CLI tools are up to date");
+                        break;
+                    case Update_Status_Code.NewVersionAvailable:
+                            Log.Instance.Write("A new version of the NERVA CLI tools are available");
+                        break;
+                    default:
+                            Log.Instance.Write(Log_Severity.Error, "An error occurred checking for updates.");
+                        break;
+                }
+
+                Log.Instance.Write("Update check complete");
+            };
+
+            if (Configuration.Instance.CheckForUpdateOnStartup)
+                w.RunWorkerAsync();
+        }
+
+        private void LoadWallet()
+        {
+            BackgroundWorker w = new BackgroundWorker();
+
+            w.DoWork += delegate (object sender, DoWorkEventArgs e)
+            {
+                while (!CliProcessIsReady(walletPid))
+                    Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+
+                Application.Instance.AsyncInvoke ( () =>
+				{
+					if (!WalletHelper.OpenSavedWallet())
+                        WalletHelper.ShowWalletWizard();
+				});
+            };
+
+            w.RunWorkerAsync();
+        }
+
+        #endregion
     }
 }

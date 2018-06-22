@@ -8,6 +8,15 @@ using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
+	public enum Wallet_Wizard_Result
+	{
+		Undefined,
+		NewWalletCreated,
+		WalletOpened,
+		WalletImported,
+		Cancelled
+	}
+
     public class WalletHelper
 	{
         public static bool ShowSavePasswordMessage(string password)
@@ -18,8 +27,18 @@ namespace Nerva.Toolkit.Content.Dialogs
                 "Save Password?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No ) == DialogResult.Yes)
 			{
 				Log.Instance.Write(Log_Severity.Warning, "User selected to save password");
-				Configuration.Instance.Wallet.LastWalletPassword = password.EncodeBase64();
+
+				if (string.IsNullOrEmpty(password))
+					Configuration.Instance.Wallet.LastWalletPassword = string.Empty;
+				else
+					Configuration.Instance.Wallet.LastWalletPassword = password.EncodeBase64();
+
                 return true;
+			}
+			else
+			{
+				Log.Instance.Write(Log_Severity.Warning, "User selected not to save password. Wiping previously saved password");
+				Configuration.Instance.Wallet.LastWalletPassword = null;
 			}
             
             return false;
@@ -36,8 +55,12 @@ namespace Nerva.Toolkit.Content.Dialogs
 			//Load from the saved password if that exists
 			if (w.LastWalletPassword != null)
 			{
-				if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, w.LastWalletPassword.DecodeBase64()))
+				string pass = w.LastWalletPassword == string.Empty ? string.Empty : w.LastWalletPassword.DecodeBase64();
+				if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, pass))
+				{
+					Log.Instance.Write("Wallet file '{0}' opened", w.LastOpenedWallet);
 					return true;
+				}
 				else
 				{
 					Log.Instance.Write(Log_Severity.Warning, "Wallet cannot be opened from saved information");
@@ -68,7 +91,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 				}
             }
         }
-
 		public static bool WalletFileExists(string file)
 		{
 			if (!WalletDirExists())
@@ -92,54 +114,89 @@ namespace Nerva.Toolkit.Content.Dialogs
 
 		public static int GetWalletFileCount()
 		{
-			if (!WalletDirExists())
+			var f = GetWalletFiles();
+
+			if (f == null)
 				return 0;
 
-			DirectoryInfo dir = new DirectoryInfo(Configuration.Instance.Wallet.WalletDir);
-			FileInfo[] files = dir.GetFiles("*.keys", SearchOption.TopDirectoryOnly);
-			return files.Length;
+			return f.Length;
 		}
 
-		public static bool ShowWalletWizard()
+		public static FileInfo[] GetWalletFiles()
 		{
-			MainWalletDialog d = new MainWalletDialog();
-			switch (d.ShowModal())
+			if (!WalletDirExists())
+				return null;
+
+			DirectoryInfo dir = new DirectoryInfo(Configuration.Instance.Wallet.WalletDir);
+			return dir.GetFiles("*.keys", SearchOption.TopDirectoryOnly);
+		}
+
+		public static void ShowWalletWizard(out Wallet_Wizard_Result result)
+		{
+			result = Wallet_Wizard_Result.Undefined;
+
+			//We only break this loop if cancel is pressed from the main form
+			while (true)
 			{
-				case Open_Wallet_Dialog_Result.Open:
-					{ //Open an existing wallet
-						//todo: need a dialog to open a wallet from file or select
-						//from a list of files stored in the wallets directory
-					}
-					break;
-				case Open_Wallet_Dialog_Result.New:
-					{ //Create a new wallet
-						NewWalletDialog d2 = new NewWalletDialog();
-						if (d2.ShowModal() == DialogResult.Ok)
-						{
-							string name = d2.Name;
-							string password = d2.Password;
-
-							bool created = Cli.Instance.Wallet.CreateWallet(name, password);
-
-							if (created)
+				MainWalletDialog d = new MainWalletDialog();
+				switch (d.ShowModal())
+				{
+					case Open_Wallet_Dialog_Result.Open:
+						{ //Open an existing wallet
+							while (true)
 							{
-								Configuration.Instance.Wallet.LastOpenedWallet = name;
-								ShowSavePasswordMessage(password);
-							}
+								OpenWalletDialog d2 = new OpenWalletDialog();
+								if (d2.ShowModal() == DialogResult.Ok)
+								{
+									string name = d2.Name;
+									string password = d2.Password;
 
+									bool opened = Cli.Instance.Wallet.OpenWallet(name, password);
+
+									if (opened)
+									{
+										Configuration.Instance.Wallet.LastOpenedWallet = name;
+										ShowSavePasswordMessage(password);
+										result = Wallet_Wizard_Result.WalletOpened;
+										return;
+									}
+								}
+								else
+									return true;
+							}
+						}
+					case Open_Wallet_Dialog_Result.New:
+						{ //Create a new wallet
+							while (true)
+							{
+								NewWalletDialog d2 = new NewWalletDialog();
+								if (d2.ShowModal() == DialogResult.Ok)
+								{
+									string name = d2.Name;
+									string password = d2.Password;
+
+									bool created = Cli.Instance.Wallet.CreateWallet(name, password);
+
+									if (created)
+									{
+										Configuration.Instance.Wallet.LastOpenedWallet = name;
+										ShowSavePasswordMessage(password);
+										return true;
+									}
+								}
+								else
+									return true;
+							}
+						}
+					case Open_Wallet_Dialog_Result.Import:
+						{ //Import a wallet from seed
+							MessageBox.Show("Importing a wallet from seed is not yet supported");
 							return true;
 						}
-					}
-					break;
-				case Open_Wallet_Dialog_Result.Import:
-					{ //Import a wallet from seed
-						MessageBox.Show("Importing a wallet from seed is not yet supported");
-					}
-					break;
-						
+					default:
+						return false;					
+				}
 			}
-
-			return false;
 		}
     }
 }

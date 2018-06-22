@@ -62,7 +62,7 @@ namespace Nerva.Toolkit.CLI
                 return false;
             }
 
-            return false;
+            return true;
         }
 
         public bool OpenWallet(string walletName, string password)

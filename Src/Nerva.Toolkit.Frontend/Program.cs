@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Timers;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
@@ -50,14 +51,6 @@ namespace Nerva.Toolkit.Frontend
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
 			Configuration.Instance.NewWalletOnStartup = cmd["new-wallet"] != null;
 
-			Cli.Instance.ProcessStarted += StartupUpdateCheck;
-			Cli.Instance.ProcessConnected += StartupUpdateCheck;
-
-			//TODO: Check for updates to this application
-
-			Cli.Instance.StartDaemon();
-			Cli.Instance.StartWallet();
-
 			new Application(Eto.Platform.Detect).Run(new MainForm());
 
 			//Prevent the daemon restarting automatically before telling it to stop
@@ -75,64 +68,6 @@ namespace Nerva.Toolkit.Frontend
 
 			Configuration.Save();
 			Log.Instance.Shutdown();
-		}
-
-		private static void StartupUpdateCheck(string exe, string arg, Process process)
-		{
-			string exeName = Path.GetFileNameWithoutExtension(exe).ToLower();
-			if (exeName != "nervad")
-				return;
-
-			//Unsubscribe so we only check for an update at the start
-			Cli.Instance.ProcessStarted -= StartupUpdateCheck;
-			Cli.Instance.ProcessConnected -= StartupUpdateCheck;
-
-			//We need to givew the daemon time to start.
-			//So wait a few seconds, then fire up a backgroudn worker and do a background check
-			BackgroundWorker updateWorker = new BackgroundWorker();
-
-			updateWorker.DoWork += delegate(object sender, DoWorkEventArgs e)
-			{
-				Timer tmr = new Timer(Constants.DAEMON_RESTART_THREAD_INTERVAL);
-				int retries = 0;
-
-				tmr.Elapsed += delegate(object source, ElapsedEventArgs e2)
-				{
-					if (Configuration.Instance.CheckForUpdateOnStartup)
-					{
-						UpdateManager.CheckForCliUpdates();
-
-						switch (UpdateManager.UpdateStatus)
-						{
-							case Update_Status_Code.UpToDate:
-								{
-									Log.Instance.Write("NERVA CLI tools are up to date");
-									tmr.Stop();
-								}
-								break;
-							case Update_Status_Code.NewVersionAvailable:
-								{
-									Log.Instance.Write("A new version of the NERVA CLI tools are available");
-									tmr.Stop();
-								}
-								break;
-							default:
-								{
-									Log.Instance.Write("An error occurred checking for updates");
-									++retries;
-
-									if (retries >= 5)
-										tmr.Stop();
-								}
-								break;
-						}
-					}
-				};
-
-				tmr.Start();
-			};
-
-			updateWorker.RunWorkerAsync();
 		}
 	}
 }

@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
-using Nerva.Toolkit.Config;
-using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit
@@ -30,10 +27,7 @@ namespace Nerva.Toolkit
 			ConstructLayout();
 			ResumeLayout();
 
-			//todo: Need to check if the wallet is already running and wait until it is
-			//or we just start the program and ask to start a wallet when available
-			if (!WalletHelper.OpenSavedWallet())
-				WalletHelper.ShowWalletWizard();
+			Cli.Instance.Start();
 
 			Application.Instance.Initialized += (s, e) =>
 			{
@@ -66,6 +60,10 @@ namespace Nerva.Toolkit
 			while (shouldUpdateDaemon)
 			{
 				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
+
+				//spin the wheels for a bit if we should be updating, but have no daemon
+				while(shouldUpdateDaemon && Cli.Instance.DaemonPid == -1)
+					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
 
 				//Condition may have changed. 5 seconds is a long time
 				if (!shouldUpdateDaemon)

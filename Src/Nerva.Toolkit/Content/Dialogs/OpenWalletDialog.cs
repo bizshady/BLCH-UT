@@ -1,3 +1,4 @@
+using System.IO;
 using Eto.Drawing;
 using Eto.Forms;
 
@@ -16,7 +17,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
         TextBox tb = new TextBox();
 
-        TextBox txtName = new TextBox();
+        DropDown ddName = new DropDown();
 
         TableRow pwr = new TableRow();
 
@@ -26,7 +27,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         public OpenWalletDialog()
         {
-            this.Title = "Create New Wallet";
+            this.Title = "Open Wallet";
             ClientSize = new Size(400, 100);
             Topmost = true;
             var scr = Screen.PrimaryScreen;
@@ -55,7 +56,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                 else
                     password = pwb.Text;
 
-                name = txtName.Text;
+                name = ddName.SelectedValue.ToString();
 
                 this.Close(DialogResult.Ok);
             };
@@ -77,13 +78,19 @@ namespace Nerva.Toolkit.Content.Dialogs
             else
                 textControl = pwb;
 
+            //assume f has values. If it didn't the open wallet button would have been disabled
+            foreach (var f in WalletHelper.GetWalletFiles())
+                ddName.Items.Add(Path.GetFileNameWithoutExtension(f.FullName));
+
+            ddName.SelectedIndex = 0;
+
             Content = new TableLayout
             {
                 Padding = 10,
 				Spacing = new Eto.Drawing.Size(10, 10),
                 Rows = {
                     new Label { Text = "Wallet Name" },
-                    txtName,
+                    ddName,
                     new Label { Text = "Password" },
                     textControl,
                     new TableRow (
