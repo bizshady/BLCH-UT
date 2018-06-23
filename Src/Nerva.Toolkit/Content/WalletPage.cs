@@ -31,13 +31,13 @@ namespace Nerva.Toolkit.Content
 				Rows =
 				{
 					new TableRow (
-						new TableCell(new Label { Text = "Wallet" }),
+						new TableCell(new Label { Text = "Wallet:" }),
 						new TableCell(lblWalletAddress, true)),
 					new TableRow (
-						new TableCell(new Label { Text = "Locked Balance" }),
+						new TableCell(new Label { Text = "Locked Balance:" }),
 						new TableCell(lblLockedBalance, true)),
 					new TableRow (
-						new TableCell(new Label { Text = "Unlocked Balance" }),
+						new TableCell(new Label { Text = "Unlocked Balance:" }),
 						new TableCell(lblUnlockedBalance, true)),	
 				}
 			};

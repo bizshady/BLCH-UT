@@ -136,6 +136,20 @@ namespace Nerva.Toolkit.CLI
             return json["status"].Value<string>().ToLower() == "ok";
         }
 
+        public bool StopMining()
+        {
+            string result = null;
+
+            if (!netHelper.MakeRpcRequest("stop_mining", null, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_mining");
+                return false;
+            }
+
+            var json = JObject.Parse(result);
+            return json["status"].Value<string>().ToLower() == "ok";
+        }
+
         public MiningStatus GetMiningStatus()
         {
             string result = null;

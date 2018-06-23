@@ -63,14 +63,18 @@ namespace Nerva.Toolkit
 				}
 			};
 
-			var daemon_GetInfo = new Command { MenuText = "Show Info", ToolBarText = "Show Info" };
-			daemon_GetInfo.Executed += daemon_GetInfo_Clicked;
+			var file_Preferences = new Command { MenuText = "Preferences", ToolBarText = "Preferences" };	
 
-			var daemon_GetConnections = new Command { MenuText = "Show Connections", ToolBarText = "Show Connections" };
-			daemon_GetConnections.Executed += daemon_GetConnections_Clicked;
+			var daemon_ToggleMining = new Command { MenuText = "Toggle Miner", ToolBarText = "Toggle Miner" };			
+			daemon_ToggleMining.Executed += daemon_ToggleMining_Clicked;
 
 			var daemon_Restart = new Command { MenuText = "Restart", ToolBarText = "Restart" };
 			daemon_Restart.Executed += daemon_Restart_Clicked;
+
+			var wallet_Select = new Command { MenuText = "Select", ToolBarText = "Select" };
+			wallet_Select.Executed += wallet_Select_Clicked;
+
+			var wallet_Refresh = new Command { MenuText = "Refresh", ToolBarText = "Refresh" };
 
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
 			quitCommand.Executed += HandleQuit;
@@ -89,7 +93,7 @@ namespace Nerva.Toolkit
 						Text = "&File",
 						Items =
 						{ 
-							
+							file_Preferences
 						}
 					},
 					new ButtonMenuItem
@@ -97,9 +101,7 @@ namespace Nerva.Toolkit
 						Text = "&Daemon",
 						Items =
 						{
-							daemon_GetInfo,
-							daemon_GetConnections,
-							new SeparatorMenuItem(),
+							daemon_ToggleMining,
 							daemon_Restart
 						}
 					},
@@ -108,16 +110,8 @@ namespace Nerva.Toolkit
 						Text = "&Wallet",
 						Items =
 						{
-							
-						}
-					}
-					,
-					new ButtonMenuItem
-					{
-						Text = "&Advanced",
-						Items =
-						{
-							
+							wallet_Select,
+							wallet_Refresh,
 						}
 					}
 				},

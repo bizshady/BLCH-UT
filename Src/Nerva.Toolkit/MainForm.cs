@@ -5,6 +5,7 @@ using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
+using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit
@@ -112,8 +113,6 @@ namespace Nerva.Toolkit
 						lblStatus.Text = "NOT CONNECTED TO DAEMON";
 						daemonPage.Update(null, null, null);
 					});
-					
-					//Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
 				}
 			}
 		}
@@ -200,14 +199,20 @@ namespace Nerva.Toolkit
 			}
 		}
 
-		protected void daemon_GetInfo_Clicked(object sender, EventArgs e)
+		protected void daemon_ToggleMining_Clicked(object sender, EventArgs e)
 		{
-			MessageBox.Show("I was clicked!");
-		}
+			MiningStatus ms = Cli.Instance.Daemon.GetMiningStatus();
 
-		protected void daemon_GetConnections_Clicked(object sender, EventArgs e)
-		{
-			MessageBox.Show("I was clicked!");
+			if (ms.Active)
+			{
+				Cli.Instance.Daemon.StopMining();
+				Log.Instance.Write("Mining stopped"); 
+			}
+			else
+				if (Cli.Instance.Daemon.StartMining(Configuration.Instance.Daemon.MiningThreads))
+					Log.Instance.Write("Mining started for @ {0} on {1} threads", 
+						Conversions.WalletAddressShortForm(Configuration.Instance.Daemon.MiningAddress),
+						Configuration.Instance.Daemon.MiningThreads);
 		}
 
 		protected void daemon_Restart_Clicked(object sender, EventArgs e)
@@ -216,6 +221,10 @@ namespace Nerva.Toolkit
 			Log.Instance.Write("Restarting daemon");
 			Cli.Instance.Daemon.StopDaemon();
 			//From here the crash handler should reboot the daemon
+		}
+
+		protected void wallet_Select_Clicked(object sender, EventArgs e)
+		{
 		}
 
 		protected void HandleAbout(object sender, EventArgs e)
