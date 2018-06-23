@@ -144,7 +144,7 @@ namespace Nerva.Toolkit.CLI
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
 
-            //arg += " --detach";
+            arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -168,7 +168,7 @@ namespace Nerva.Toolkit.CLI
                         Configuration.Instance.NewDaemonOnStartup = createNew;
 
                         if (daemonPid == -1)
-                            CreateNewProcess(exePath, arg, ref daemonPid);
+                            CreateNewDaemonProcess(exePath, arg);
                         else
                             Log.Instance.Write("Connecting to process {0} with id {1}", exePath, daemonPid);
                     }
@@ -240,7 +240,7 @@ namespace Nerva.Toolkit.CLI
                         ManageExistingProcesses(exePath, arg, false, ref createNew, ref walletPid);
 
                         if (walletPid == -1)
-                            CreateNewProcess(exePath, arg, ref walletPid);
+                            CreateNewWalletProcess(exePath, arg);
                         else
                             Log.Instance.Write("Connecting to process {0} with id {1}", exePath, walletPid);
                     }
@@ -350,40 +350,66 @@ namespace Nerva.Toolkit.CLI
                 Log.Instance.Write("No processes to kill");
         }
 
-        public void CreateNewProcess(string exe, string args, ref int pid)
+        //the daemon gets started with the --detach option. otherwise the process quites when the
+        //gui quits. The problem is however, that the process we start actually spawns a second background
+        //process. So to get the pid of the daemon, we need to start the process, wait for it to finish
+        //then scan the list of running processes for the newly created process.
+        public void CreateNewDaemonProcess(string exe, string args)
         {
-            ProcessStartInfo psi = new ProcessStartInfo(exe, args)
-            {
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-
             Process proc = new Process
             {
-                StartInfo = psi
+                StartInfo = new ProcessStartInfo(exe, args)
+                {
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            Log.Instance.Write("Starting process {0} {1}", exe, args);
+
+            proc.Start();
+            proc.WaitForExit();
+ 
+             string n = Path.GetFileName(exe);
+             var p = Process.GetProcessesByName(n);
+ 
+            if (p.Length == 1)
+            { 
+                daemonPid = p[0].Id;
+                ProcessStarted?.Invoke(exe, args, p[0]);
+            }
+            else
+            {
+                daemonPid = -1;
+                Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
+            }
+        }
+
+        public void CreateNewWalletProcess(string exe, string args)
+        {
+            Process proc = new Process
+            {
+                StartInfo = new ProcessStartInfo(exe, args)
+                {
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                }
             };
 
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
             proc.Start();
 
-            pid = proc.Id;
+            walletPid = proc.Id;
             ProcessStarted?.Invoke(exe, args, proc);
 
-            /*proc.WaitForExit();
+            proc.WaitForExit();
 
-            string n = Path.GetFileName(exe);
-            var p = Process.GetProcessesByName(n);
-
-            if (p.Length == 1)
-            { 
-                pid = p[0].Id;
-                ProcessStarted?.Invoke(exe, args, proc);
-            }
-            else
-                Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);*/
+            walletPid = -1;
         }
 
         public void StopDaemonCheck()

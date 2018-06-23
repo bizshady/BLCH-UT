@@ -38,6 +38,7 @@ namespace Nerva.Toolkit
 			{
 				shouldUpdateDaemon = false;
 				shouldUpdateWallet = false;
+				Cli.Instance.KillRunningProcesses("nerva-wallet-rpc", -1);
 			};
 		}
 
