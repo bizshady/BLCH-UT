@@ -148,23 +148,16 @@ namespace Nerva.Toolkit.Content.Dialogs
 								OpenWalletDialog d2 = new OpenWalletDialog();
 								if (d2.ShowModal() == DialogResult.Ok)
 								{
-									string name = d2.Name;
-									string password = d2.Password;
-
-									bool opened = Cli.Instance.Wallet.OpenWallet(name, password);
-
-									if (opened)
-									{
-										Configuration.Instance.Wallet.LastOpenedWallet = name;
-										ShowSavePasswordMessage(password);
-										result = Wallet_Wizard_Result.WalletOpened;
-										return;
-									}
+									Configuration.Instance.Wallet.LastOpenedWallet = d2.Name;
+									ShowSavePasswordMessage(d2.Password);
+									result = Wallet_Wizard_Result.WalletOpened;
+									return;
 								}
-								else
-									return true;
+								else //break the loop if cancelled
+									break;
 							}
 						}
+						break;
 					case Open_Wallet_Dialog_Result.New:
 						{ //Create a new wallet
 							while (true)
@@ -181,20 +174,26 @@ namespace Nerva.Toolkit.Content.Dialogs
 									{
 										Configuration.Instance.Wallet.LastOpenedWallet = name;
 										ShowSavePasswordMessage(password);
-										return true;
+										result = Wallet_Wizard_Result.NewWalletCreated;
+										return;
 									}
 								}
-								else
-									return true;
+								else //break the loop if cancelled
+									break;
 							}
 						}
+						break;
 					case Open_Wallet_Dialog_Result.Import:
 						{ //Import a wallet from seed
 							MessageBox.Show("Importing a wallet from seed is not yet supported");
-							return true;
+							result = Wallet_Wizard_Result.WalletImported;
+							break; //todo: change to return when implemented
 						}
 					default:
-						return false;					
+						{
+							result = Wallet_Wizard_Result.Cancelled;
+							return;	
+						}				
 				}
 			}
 		}

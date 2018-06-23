@@ -1,9 +1,11 @@
+using System;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI.Structures.Request;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.CLI
 {
@@ -85,6 +87,15 @@ namespace Nerva.Toolkit.CLI
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
                 Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: open_wallet");
+                return false;
+            }
+
+            var error = JObject.Parse(result)["error"];
+            if (error != null)
+            {
+                int code = error["code"].Value<int>();
+                string message = error["message"].Value<string>();
+                Log.Instance.Write(Log_Severity.Error, "Error opening wallet: Code {0}, Message: '{1}'", code, message);
                 return false;
             }
 

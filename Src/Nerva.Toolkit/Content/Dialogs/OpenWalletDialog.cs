@@ -1,6 +1,7 @@
 using System.IO;
 using Eto.Drawing;
 using Eto.Forms;
+using Nerva.Toolkit.CLI;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -10,9 +11,12 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         private string name;
         private string password;
+        private int selectedWalletIndex;
 
         public string Password => password;
         public string Name => name;
+
+        public int SelectedWalletIndex => selectedWalletIndex;
 
         PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
         TextBox tb = new TextBox();
@@ -25,7 +29,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         Button btnOk = new Button { Text = "OK" };
         Button btnCancel = new Button { Text = "Cancel" };
 
-        public OpenWalletDialog()
+        public OpenWalletDialog(int selectedIndex = 0)
         {
             this.Title = "Open Wallet";
             ClientSize = new Size(400, 100);
@@ -58,7 +62,16 @@ namespace Nerva.Toolkit.Content.Dialogs
 
                 name = ddName.SelectedValue.ToString();
 
-                this.Close(DialogResult.Ok);
+                bool opened = Cli.Instance.Wallet.OpenWallet(name, password);
+
+                if (opened)
+                    this.Close(DialogResult.Ok);
+                else
+                {
+                    MessageBox.Show("Could not open wallet", "Open wallet failed", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
+                    tb.Text = null;
+                    pwb.Text = null;
+                }
             };
 
             btnCancel.Click += (s, e) =>
