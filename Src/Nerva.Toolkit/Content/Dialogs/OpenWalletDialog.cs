@@ -11,12 +11,9 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         private string name;
         private string password;
-        private int selectedWalletIndex;
 
         public string Password => password;
         public string Name => name;
-
-        public int SelectedWalletIndex => selectedWalletIndex;
 
         PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
         TextBox tb = new TextBox();
@@ -29,7 +26,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         Button btnOk = new Button { Text = "OK" };
         Button btnCancel = new Button { Text = "Cancel" };
 
-        public OpenWalletDialog(int selectedIndex = 0)
+        public OpenWalletDialog()
         {
             this.Title = "Open Wallet";
             ClientSize = new Size(400, 100);
@@ -91,9 +88,9 @@ namespace Nerva.Toolkit.Content.Dialogs
             else
                 textControl = pwb;
 
-            //assume f has values. If it didn't the open wallet button would have been disabled
-            foreach (var f in WalletHelper.GetWalletFiles())
-                ddName.Items.Add(Path.GetFileNameWithoutExtension(f.FullName));
+            if (ddName.Items.Count == 0)
+                foreach (var f in WalletHelper.GetWalletFiles())
+                    ddName.Items.Add(Path.GetFileNameWithoutExtension(f.FullName));
 
             ddName.SelectedIndex = 0;
 

@@ -33,6 +33,12 @@ namespace Nerva.Toolkit
 			{
 				StartUpdateThread();
 			};
+
+			this.Closing += (s, e) =>
+			{
+				shouldUpdateDaemon = false;
+				shouldUpdateWallet = false;
+			};
 		}
 
 		private void StartUpdateThread()
@@ -48,11 +54,6 @@ namespace Nerva.Toolkit
 			pingThread = new Thread(new ThreadStart(CheckConnection));
 			pingSuccess = true;
 			pingThread.Start();
-		}
-
-		private void StopDaemonUpdateThread()
-		{
-			shouldUpdateDaemon = false;
 		}
 
 		private void UpdateDaemonUI()
@@ -122,11 +123,40 @@ namespace Nerva.Toolkit
 			{
 				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
 
+				//spin the wheels for a bit if we should be updating, but have no wallet
+				while(shouldUpdateWallet && Cli.Instance.WalletPid == -1)
+					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+
 				//Condition may have changed. 5 seconds is a long time
 				if (!shouldUpdateWallet)
 					break;
 
-				//TODO: Update wallet releated GUI elements
+				Account account = null;
+
+				try
+				{
+					account = Cli.Instance.Wallet.GetAccounts();
+				}
+				catch (Exception) { }
+
+				//Double check we want to update before we do
+				if (!shouldUpdateWallet)
+					break;
+
+				if (account != null)
+				{
+					Application.Instance.AsyncInvoke ( () =>
+					{
+						walletPage.Update(account);
+					});
+				}
+				else
+				{
+					Application.Instance.AsyncInvoke ( () =>
+					{
+						walletPage.Update(null);
+					});
+				}
 			}
 		}
 

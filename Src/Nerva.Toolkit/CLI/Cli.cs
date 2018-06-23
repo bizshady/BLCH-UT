@@ -20,7 +20,7 @@ namespace Nerva.Toolkit.CLI
     public class Cli
     {
         public delegate void ProcessStartedEventHandler(string fileName, string args, Process process);
-        public event ProcessStartedEventHandler ProcessStarted, ProcessEnded, ProcessConnected;
+        public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
 
         private int daemonPid = -1, walletPid = -1;
         private bool doDaemonCrashCheck = true, doWalletCrashCheck = true;
@@ -144,7 +144,7 @@ namespace Nerva.Toolkit.CLI
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
 
-            arg += " --detach";
+            //arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -236,12 +236,8 @@ namespace Nerva.Toolkit.CLI
                         if (CheckIsAlreadyRunning(exePath, ref walletPid))
                             return;
 
-                        bool reconnect = Configuration.Instance.ReconnectToWalletProcess;
-                        bool createNew = Configuration.Instance.NewWalletOnStartup;
-
-                        ManageExistingProcesses(exePath, arg, reconnect, ref createNew, ref walletPid);
-
-                        Configuration.Instance.NewWalletOnStartup = createNew;
+                        bool createNew = true;
+                        ManageExistingProcesses(exePath, arg, false, ref createNew, ref walletPid);
 
                         if (walletPid == -1)
                             CreateNewProcess(exePath, arg, ref walletPid);
@@ -318,31 +314,40 @@ namespace Nerva.Toolkit.CLI
                 }
                 else
                 {
-                    #region Kill existing instances
-
-                    foreach (Process p in processes)
-                        if (p.Id != pid)
-                        {
-                            Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
-                            p.Kill();
-                            p.WaitForExit();
-                        }
-
-                    processes = Process.GetProcessesByName(Path.GetFileName(exe));
-
-                    if (processes.Length > 0)
-                    {
-                        Log.Instance.Write(Log_Severity.Fatal, "There are unknown daemon proceses running. Please kill all processes");
-                        return;
-                    }
-
+                    KillRunningProcesses(exe, pid);
                     pid = -1;
-
-                    #endregion
                 }
 
                 createNew = false;
             }
+        }
+
+        public void KillRunningProcesses(string exe, int exceptPid)
+        {
+            Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
+
+            if (processes.Length > 0)
+            {
+                foreach (Process p in processes)
+                {
+                    if (p.Id != exceptPid)
+                    {
+                        Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
+                        p.Kill();
+                        p.WaitForExit();
+                    }
+                }
+
+                processes = Process.GetProcessesByName(Path.GetFileName(exe));
+
+                if (processes.Length > 0)
+                {
+                    Log.Instance.Write(Log_Severity.Fatal, "There are unknown daemon proceses running. Please kill all processes");
+                    return;
+                }
+            }
+            else
+                Log.Instance.Write("No processes to kill");
         }
 
         public void CreateNewProcess(string exe, string args, ref int pid)
@@ -363,18 +368,22 @@ namespace Nerva.Toolkit.CLI
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
             proc.Start();
-            proc.WaitForExit();
+
+            pid = proc.Id;
+            ProcessStarted?.Invoke(exe, args, proc);
+
+            /*proc.WaitForExit();
 
             string n = Path.GetFileName(exe);
             var p = Process.GetProcessesByName(n);
 
             if (p.Length == 1)
-            {
+            { 
                 pid = p[0].Id;
                 ProcessStarted?.Invoke(exe, args, proc);
             }
             else
-                Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
+                Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);*/
         }
 
         public void StopDaemonCheck()

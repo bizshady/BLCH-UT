@@ -1,4 +1,3 @@
-using System;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI.Structures.Request;
 using Nerva.Toolkit.CLI.Structures.Response;
@@ -30,16 +29,34 @@ namespace Nerva.Toolkit.CLI
                 MethodName = "get_accounts"
             };
 
-            //todo: We can optionally add a filter to only get selected subaddresses.
-            //This probably isn't necessary though
-
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
                 return null;
             }
 
+            if (CheckError(jr.MethodName, result, true))
+                return null;
+
             return JsonConvert.DeserializeObject<JsonValue<Account>>(result).Result;
+        }
+
+        public bool StopWallet()
+        {
+            string result = null;
+
+            JsonRequest jr = new JsonRequest
+            {
+                MethodName = "stop_wallet"
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                return false;
+            }
+
+            return !CheckError(jr.MethodName, result);
         }
 
         public bool CreateWallet(string walletName, string password)
@@ -60,18 +77,15 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: create_wallet");
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
                 return false;
             }
 
-            return true;
+            return !CheckError(jr.MethodName, result);
         }
 
         public bool OpenWallet(string walletName, string password)
         {
-            //todo: need to check for an error being returned. 
-            //potentially opening a wallet that doesn't exists
-            //wrong password etc
             string result = null;
 
             JsonRequest<OpenWallet> jr = new JsonRequest<OpenWallet>
@@ -86,20 +100,27 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: open_wallet");
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
                 return false;
             }
 
+            return !CheckError(jr.MethodName, result);
+        }
+
+        private bool CheckError(string methodName, string result, bool suppressErrorMessage = false)
+        {
             var error = JObject.Parse(result)["error"];
+
             if (error != null)
             {
                 int code = error["code"].Value<int>();
                 string message = error["message"].Value<string>();
-                Log.Instance.Write(Log_Severity.Error, "Error opening wallet: Code {0}, Message: '{1}'", code, message);
-                return false;
+                if (!suppressErrorMessage)
+                    Log.Instance.Write(Log_Severity.Error, "Wallet.{0}: Code {1}, Message: '{2}'", methodName, code, message);
+                return true;
             }
 
-            return true;
+            return false;
         }
     }
 }

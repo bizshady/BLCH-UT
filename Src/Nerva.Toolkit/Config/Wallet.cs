@@ -6,8 +6,6 @@ namespace Nerva.Toolkit.Config
 	{
 		public RpcDetails Rpc { get; set; }
 
-        public bool StopOnExit { get; set; }
-
         public string WalletDir { get; set; }
 
         public string LastOpenedWallet { get; set; }
@@ -18,7 +16,6 @@ namespace Nerva.Toolkit.Config
         {
             return new Wallet
             {
-                StopOnExit = false,
                 WalletDir = "./wallets",
                 LastOpenedWallet = null,
                 LastWalletPassword = null,

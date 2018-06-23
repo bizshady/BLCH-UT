@@ -24,17 +24,12 @@ namespace Nerva.Toolkit.Config
 
         public bool ReconnectToDaemonProcess { get; set; }
 
-        public bool ReconnectToWalletProcess { get; set; }
-
         #endregion
 
         #region Not serialized
         
         [SerializerExclude]
         public bool NewDaemonOnStartup { get; set; } = true;
-
-        [SerializerExclude]
-        public bool NewWalletOnStartup { get; set; } = true;
 
         #endregion
 
@@ -48,8 +43,7 @@ namespace Nerva.Toolkit.Config
                 Testnet = false,
                 Daemon = Daemon.New(),
                 Wallet = Wallet.New(),
-                ReconnectToDaemonProcess = true,
-                ReconnectToWalletProcess = true
+                ReconnectToDaemonProcess = true
             };
         }
 

@@ -49,7 +49,6 @@ namespace Nerva.Toolkit.Frontend
 			Cli.CreateInstance();
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
-			Configuration.Instance.NewWalletOnStartup = cmd["new-wallet"] != null;
 
 			new Application(Eto.Platform.Detect).Run(new MainForm());
 
@@ -60,11 +59,8 @@ namespace Nerva.Toolkit.Frontend
 				Cli.Instance.Daemon.StopDaemon();
 			}
 
-			if (Configuration.Instance.Wallet.StopOnExit)
-			{
-				Cli.Instance.StopDaemonCheck();
-				Cli.Instance.Daemon.StopDaemon();
-			}
+			Cli.Instance.StopWalletCheck();
+			Cli.Instance.Wallet.StopWallet();
 
 			Configuration.Save();
 			Log.Instance.Shutdown();

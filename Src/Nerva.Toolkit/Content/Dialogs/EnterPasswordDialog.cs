@@ -20,7 +20,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         public EnterPasswordDialog()
         {
-            this.Title = "Enter Password";
+            this.Title = "Enter Wallet Password";
             ClientSize = new Size(400, 100);
             Topmost = true;
             var scr = Screen.PrimaryScreen;

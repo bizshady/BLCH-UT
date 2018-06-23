@@ -78,11 +78,10 @@ namespace Nerva.Toolkit.Content.Dialogs
 					{
 						case DialogResult.Ok:
 							{
+								//do not ask to save the password here. Only ask once when the wallet is first opened via
+								//the OpenWalletDialog
 								if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, d.Password))
-								{
-									ShowSavePasswordMessage(d.Password);
 									return true;
-								}
 							}
 							break;
 						default:
