@@ -83,10 +83,10 @@ namespace Nerva.Toolkit
 			wallet_Keys_Mnemonic.Executed += wallet_Keys_Mnemonic_Clicked;
 
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
-			quitCommand.Executed += HandleQuit;
+			quitCommand.Executed += quit_Clicked;
 
 			var aboutCommand = new Command { MenuText = "About..." };
-			aboutCommand.Executed += HandleAbout;
+			aboutCommand.Executed += about_Clicked;
 
 			// create menu
 			Menu = new MenuBar

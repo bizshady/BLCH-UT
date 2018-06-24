@@ -233,22 +233,20 @@ namespace Nerva.Toolkit
 
 		protected void wallet_Keys_View_Clicked(object sender, EventArgs e)
 		{
-			string key = Cli.Instance.Wallet.QueryKey(Key_Type.View_Key);
-			MessageBox.Show(this, key, "View Key", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+			new DisplaySeedDialog(Key_Type.View_Key).ShowModal();
 		}
 
 		protected void wallet_Keys_Mnemonic_Clicked(object sender, EventArgs e)
 		{
-			string key = Cli.Instance.Wallet.QueryKey(Key_Type.Mnemonic);
-			MessageBox.Show(this, key, "Mnemonic Seed", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+			new DisplaySeedDialog(Key_Type.Mnemonic).ShowModal();
 		}
 
-		protected void HandleAbout(object sender, EventArgs e)
+		protected void about_Clicked(object sender, EventArgs e)
 		{
 			ad.ShowDialog(this);
 		}
 
-		protected void HandleQuit(object sender, EventArgs e)
+		protected void quit_Clicked(object sender, EventArgs e)
 		{
 			Application.Instance.Quit();
 		}
