@@ -76,6 +76,12 @@ namespace Nerva.Toolkit
 
 			var wallet_Refresh = new Command { MenuText = "Refresh", ToolBarText = "Refresh" };
 
+			var wallet_Keys_View = new Command { MenuText = "View Key", ToolBarText = "View Key" };
+			wallet_Keys_View.Executed += wallet_Keys_View_Clicked;
+
+			var wallet_Keys_Mnemonic = new Command { MenuText = "Seed", ToolBarText = "Seed" };
+			wallet_Keys_Mnemonic.Executed += wallet_Keys_Mnemonic_Clicked;
+
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
 			quitCommand.Executed += HandleQuit;
 
@@ -112,6 +118,15 @@ namespace Nerva.Toolkit
 						{
 							wallet_Select,
 							wallet_Refresh,
+							new ButtonMenuItem
+							{
+								Text = "Keys",
+								Items =
+								{
+									wallet_Keys_View,
+									wallet_Keys_Mnemonic
+								}
+							}
 						}
 					}
 				},

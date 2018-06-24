@@ -21,7 +21,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 	{
         public static bool ShowSavePasswordMessage(string password)
         {
-            if (MessageBox.Show("Would you like to save your wallet password?\r\n" +
+            if (MessageBox.Show(Application.Instance.MainForm, "Would you like to save your wallet password?\r\n" +
 				"You will not be asked for your password to open the wallet again\r\n\r\nSECURITY WARNING:\r\n\r\n" +
 				"The password is stored in an easily decoded format\r\nAnyone with access to this machine can open your wallet without the password",
                 "Save Password?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No ) == DialogResult.Yes)
@@ -64,7 +64,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 				else
 				{
 					Log.Instance.Write(Log_Severity.Warning, "Wallet cannot be opened from saved information");
-					MessageBox.Show("Wallet cannot be opened from saved information");
+					MessageBox.Show(Application.Instance.MainForm, "Wallet cannot be opened from saved information");
 					return false;
 				}
 			}
@@ -164,15 +164,12 @@ namespace Nerva.Toolkit.Content.Dialogs
 								NewWalletDialog d2 = new NewWalletDialog();
 								if (d2.ShowModal() == DialogResult.Ok)
 								{
-									string name = d2.Name;
-									string password = d2.Password;
-
-									bool created = Cli.Instance.Wallet.CreateWallet(name, password);
+									bool created = Cli.Instance.Wallet.CreateWallet(d2.Name, d2.Password);
 
 									if (created)
 									{
-										Configuration.Instance.Wallet.LastOpenedWallet = name;
-										ShowSavePasswordMessage(password);
+										Configuration.Instance.Wallet.LastOpenedWallet = d2.Name;
+										ShowSavePasswordMessage(d2.Password);
 										result = Wallet_Wizard_Result.NewWalletCreated;
 										return;
 									}
@@ -184,7 +181,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 						break;
 					case Open_Wallet_Dialog_Result.Import:
 						{ //Import a wallet from seed
-							MessageBox.Show("Importing a wallet from seed is not yet supported");
+							MessageBox.Show(Application.Instance.MainForm, "Importing a wallet from seed is not yet supported");
 							result = Wallet_Wizard_Result.WalletImported;
 							break; //todo: change to return when implemented
 						}

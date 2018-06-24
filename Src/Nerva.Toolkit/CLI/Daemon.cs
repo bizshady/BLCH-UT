@@ -42,7 +42,8 @@ namespace Nerva.Toolkit.CLI
                 return -1;
             }
 
-            return int.Parse(JObject.Parse(result)["result"]["count"].Value<string>());
+            return JObject.Parse(result)["result"]["count"].Value<int>();
+            //return int.Parse(JObject.Parse(result)["result"]["count"].Value<string>());
         }
 
         /// <summary>
@@ -132,8 +133,7 @@ namespace Nerva.Toolkit.CLI
                 return false;
             }
 
-            var json = JObject.Parse(result);
-            return json["status"].Value<string>().ToLower() == "ok";
+            return JObject.Parse(result)["status"].Value<string>().ToLower() == "ok";
         }
 
         public bool StopMining()
@@ -146,8 +146,7 @@ namespace Nerva.Toolkit.CLI
                 return false;
             }
 
-            var json = JObject.Parse(result);
-            return json["status"].Value<string>().ToLower() == "ok";
+            return JObject.Parse(result)["status"].Value<string>().ToLower() == "ok";
         }
 
         public MiningStatus GetMiningStatus()
@@ -186,8 +185,7 @@ namespace Nerva.Toolkit.CLI
                 return false;
             }
 
-            var json = JObject.Parse(result);
-            bool ok = json["result"]["status"].Value<string>().ToLower() == "ok";
+            bool ok = JObject.Parse(result)["result"]["status"].Value<string>().ToLower() == "ok";
 
             if (ok)
                 Log.Instance.Write("Peer {0} banned", ip);

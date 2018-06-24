@@ -8,6 +8,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.CLI
 {
+    public enum Key_Type
+    {
+        View_Key,
+        Mnemonic
+    }
+
     /// <summary>
     /// Minimal Wallet RPC API.
     /// </summary>
@@ -105,6 +111,31 @@ namespace Nerva.Toolkit.CLI
             }
 
             return !CheckError(jr.MethodName, result);
+        }
+
+        public string QueryKey(Key_Type keyType)
+        {
+            string result = null;
+
+            JsonRequest<QueryKey> jr = new JsonRequest<QueryKey>
+            {
+                MethodName = "query_key",
+                Params = new QueryKey
+                {
+                    KeyType = keyType.ToString().ToLower()
+                }
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                return null;
+            }
+
+            if (CheckError(jr.MethodName, result))
+                return null;
+
+            return JObject.Parse(result)["result"]["key"].Value<string>();
         }
 
         private bool CheckError(string methodName, string result, bool suppressErrorMessage = false)

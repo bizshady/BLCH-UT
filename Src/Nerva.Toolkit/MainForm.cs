@@ -6,6 +6,7 @@ using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
+using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit
@@ -225,6 +226,21 @@ namespace Nerva.Toolkit
 
 		protected void wallet_Select_Clicked(object sender, EventArgs e)
 		{
+			Wallet_Wizard_Result result = Wallet_Wizard_Result.Undefined;
+            WalletHelper.ShowWalletWizard(out result);
+            Log.Instance.Write(result.ToString());
+		}
+
+		protected void wallet_Keys_View_Clicked(object sender, EventArgs e)
+		{
+			string key = Cli.Instance.Wallet.QueryKey(Key_Type.View_Key);
+			MessageBox.Show(this, key, "View Key", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+		}
+
+		protected void wallet_Keys_Mnemonic_Clicked(object sender, EventArgs e)
+		{
+			string key = Cli.Instance.Wallet.QueryKey(Key_Type.Mnemonic);
+			MessageBox.Show(this, key, "Mnemonic Seed", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 		}
 
 		protected void HandleAbout(object sender, EventArgs e)

@@ -65,7 +65,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                     this.Close(DialogResult.Ok);
                 else
                 {
-                    MessageBox.Show("Could not open wallet", "Open wallet failed", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
+                    MessageBox.Show(this, "Could not open wallet", "Open wallet failed", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
                     tb.Text = null;
                     pwb.Text = null;
                 }
