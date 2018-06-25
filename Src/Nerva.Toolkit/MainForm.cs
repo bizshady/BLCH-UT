@@ -54,11 +54,16 @@ namespace Nerva.Toolkit
 			shouldUpdateWallet = true;
 			updateWalletThread.Start();
 
+			//updateTransferListThread = new Thread(new ThreadStart(UpdateTransferListUI));
+			//shouldUpdateTransferList = true;
+			//updateTransferListThread.Start();
+
 			pingThread = new Thread(new ThreadStart(CheckConnection));
 			pingSuccess = true;
 			pingThread.Start();
 		}
 
+		int lastHeight = -1;
 		private void UpdateDaemonUI()
 		{
 			while (shouldUpdateDaemon)
@@ -80,9 +85,9 @@ namespace Nerva.Toolkit
 
 				try
 				{
+					height = Cli.Instance.Daemon.GetBlockCount();
 					info = Cli.Instance.Daemon.GetInfo();
 					connections = Cli.Instance.Daemon.GetConnections();
-					height = Cli.Instance.Daemon.GetBlockCount();
 					mStatus = Cli.Instance.Daemon.GetMiningStatus();
 				}
 				catch (Exception) { }
@@ -133,10 +138,12 @@ namespace Nerva.Toolkit
 					break;
 
 				Account account = null;
+				TransferList transfers = null;
 
 				try
 				{
 					account = Cli.Instance.Wallet.GetAccounts();
+					transfers = Cli.Instance.Wallet.GetTransfers();
 				}
 				catch (Exception ex)
 				{
@@ -151,14 +158,18 @@ namespace Nerva.Toolkit
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						walletPage.Update(account);
+						balancesPage.Update(account);
+						transfersPage.Update(transfers);
+						sendPage.Update(account);
 					});
 				}
 				else
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						walletPage.Update(null);
+						balancesPage.Update(null);
+						transfersPage.Update(null);
+						sendPage.Update(null);
 					});
 				}
 			}

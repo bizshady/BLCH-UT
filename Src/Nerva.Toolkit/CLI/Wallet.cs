@@ -141,6 +141,28 @@ namespace Nerva.Toolkit.CLI
             return JObject.Parse(result)["result"]["key"].Value<string>();
         }
 
+        public TransferList GetTransfers()
+        {
+            string result = null;
+
+            JsonRequest<GetTransfers> jr = new JsonRequest<GetTransfers>
+            {
+                MethodName = "get_transfers",
+                Params = new GetTransfers()
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                return null;
+            }
+
+            if (CheckError(jr.MethodName, result))
+                return null;
+
+            return JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
+        }
+
         private bool CheckError(string methodName, string result, bool suppressErrorMessage = false)
         {
             var error = JObject.Parse(result)["error"];

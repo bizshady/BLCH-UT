@@ -19,7 +19,7 @@ namespace Nerva.Toolkit.Helpers
 
         public static double FromAtomicUnits(ulong i)
         {
-            return ((double)i) / 1000000000000.0d;
+            return Math.Round((double)i / 1000000000000.0d, 4);
         }
 
         public static string WalletAddressShortForm(string a)

@@ -20,6 +20,7 @@ namespace Nerva.Toolkit.Content
 
 		TableLayout infoContainer;
 		Scrollable connectionsContainer = new Scrollable();
+		GridView grid;
 	
 		private Label lblHeight = new Label() { Text = "." };
 		private Label lblRunTime = new Label() { Text = "." };
@@ -72,6 +73,26 @@ namespace Nerva.Toolkit.Content
 				}
 			};
 
+			connectionsContainer = new Scrollable
+			{
+				Content = grid = new GridView
+				{
+					GridLines = GridLines.Horizontal,
+					Columns =
+					{
+						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Address)}, HeaderText = "Address" },
+						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Height.ToString())}, HeaderText = "Height" },
+						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r =>TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
+						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.State.Remove(0, 6))}, HeaderText = "State" },
+					}
+				}
+			};
+
+			grid.SelectedRowsChanged += (s, e) =>
+			{
+				Connection c = (Connection)grid.DataStore.ElementAt(grid.SelectedRow);
+			};
+
 			mainControl = new StackLayout
 			{
 				Orientation = Orientation.Vertical,
@@ -80,6 +101,16 @@ namespace Nerva.Toolkit.Content
 				Items = 
 				{
 					new StackLayoutItem(infoContainer, false),
+					new StackLayoutItem(new TableLayout
+					{
+						Padding = 10,
+						Spacing = new Eto.Drawing.Size(10, 10),
+						Rows =
+						{
+							new TableRow (
+								new TableCell(new Label { Text = "NERVA NETWORK CONNECTIONS" }))
+						}
+					}, false),
 					new StackLayoutItem(connectionsContainer, true)
 				}
 			};
@@ -87,7 +118,7 @@ namespace Nerva.Toolkit.Content
 
         private void CreateConnectionsTable(List<Connection> connections)
 		{
-			List<TableRow> rows = new List<TableRow>();
+			/*List<TableRow> rows = new List<TableRow>();
 
 			rows.Add(new TableRow(
 				new TableCell(new Label { Text = "Connections" })));
@@ -118,7 +149,14 @@ namespace Nerva.Toolkit.Content
 			{
 				Padding = 10,
 				Spacing = new Eto.Drawing.Size(10, 10),
-			};
+			};*/
+
+			//Testing the grid view as opposed to recreating the layout each time
+			grid.DataStore = connections;
+
+			//HACK to refresh grid
+			//for (int i = 0; i < connections.Count; i++)
+			//	grid.ReloadData(i);
 		}
 
         public void Update(Info info, List<Connection> connections, MiningStatus mStatus)
@@ -129,7 +167,7 @@ namespace Nerva.Toolkit.Content
                 //Update the daemon info
                 lblHeight.Text = info.Height.ToString();
                 lblNetHash.Text = nethash.ToString() + " kH/s";
-                lblRunTime.Text = (DateTime.Now - Conversions.UnixTimeStampToDateTime((ulong)info.StartTime)).ToString(@"hh\:mm\:ss");
+                lblRunTime.Text = (DateTime.Now - Conversions.UnixTimeStampToDateTime((ulong)info.StartTime)).ToString(@"hh\:mm");
 
                 if (info.Mainnet)
 					lblNetwork.Text = "MainNet";
@@ -170,7 +208,7 @@ namespace Nerva.Toolkit.Content
             if (connections != null)
             {
                 //Check if we need to update the connections list
-                List<string> a = connections.Select(x => x.Address).ToList();
+                /*List<string> a = connections.Select(x => x.Address).ToList();
 
                 bool needUpdate = false;
                 if (a.Count != la.Count)
@@ -187,10 +225,12 @@ namespace Nerva.Toolkit.Content
                 if (needUpdate)
                 {
                     mainControl.SuspendLayout();
-                    CreateConnectionsTable(connections);
+                    
                     mainControl.ResumeLayout();
                     la = a;
-                }
+				}*/
+
+				CreateConnectionsTable(connections);
             }
             else
                 connectionsContainer.Content = null;

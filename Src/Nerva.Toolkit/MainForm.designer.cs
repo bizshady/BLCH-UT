@@ -14,7 +14,9 @@ namespace Nerva.Toolkit
 		Label lblVersion = new Label { Text = "Version: 0.0.0.0" };
 
 		DaemonPage daemonPage = new DaemonPage();
-		WalletPage walletPage = new WalletPage();
+		BalancesPage balancesPage = new BalancesPage();
+		TransfersPage transfersPage = new TransfersPage();
+		SendPage sendPage = new SendPage();
 
 		#endregion
 
@@ -33,13 +35,17 @@ namespace Nerva.Toolkit
 			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 
 			daemonPage.ConstructLayout();
-			walletPage.ConstructLayout();
+			balancesPage.ConstructLayout();
+			transfersPage.ConstructLayout();
+			sendPage.ConstructLayout();
 
 			TabControl tabs = new TabControl
 			{
 				Pages = {
 					new TabPage { Text = "Daemon", Content = daemonPage.MainControl },
-					new TabPage { Text = "Wallet", Content = walletPage.MainControl }
+					new TabPage { Text = "Balances", Content = balancesPage.MainControl },
+					new TabPage { Text = "Transfers", Content = transfersPage.MainControl },
+					new TabPage { Text = "Send", Content = sendPage.MainControl }
 				}
 			};
 
