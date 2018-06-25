@@ -138,7 +138,10 @@ namespace Nerva.Toolkit
 				{
 					account = Cli.Instance.Wallet.GetAccounts();
 				}
-				catch (Exception) { }
+				catch (Exception ex)
+				{
+					Log.Instance.WriteNonFatalException(ex);
+				}
 
 				//Double check we want to update before we do
 				if (!shouldUpdateWallet)

@@ -11,7 +11,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         Button btnClose = new Button { Text = "Close" };
 
-        TextArea txtKey = new TextArea { ReadOnly = true };
+        TextArea txtKey = new TextArea { ReadOnly = true, Wrap = true };
 
         public DisplaySeedDialog(Key_Type kt)
         {
@@ -23,7 +23,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 
             string key = Cli.Instance.Wallet.QueryKey(kt);
             txtKey.Text = key;
-            txtKey.Wrap = true;
 
             CreateLayout(kt);
 

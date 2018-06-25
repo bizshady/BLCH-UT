@@ -10,10 +10,10 @@ namespace Nerva.Toolkit.CLI.Structures.Response
         public List<SubAddressAccount> Accounts { get; set; }
 
         [JsonProperty("total_balance")]
-        public uint TotalBalance { get; set; }
+        public ulong TotalBalance { get; set; }
 
         [JsonProperty("total_unlocked_balance")]
-        public uint TotalUnlockedBalance { get; set; }
+        public ulong TotalUnlockedBalance { get; set; }
     }
 
     [JsonObject]
@@ -23,7 +23,7 @@ namespace Nerva.Toolkit.CLI.Structures.Response
         public uint Index { get; set; }
 
         [JsonProperty("balance")]
-        public uint Balance { get; set; }
+        public ulong Balance { get; set; }
 
         [JsonProperty("base_address")]
         public string BaseAddress { get; set; }
@@ -35,6 +35,6 @@ namespace Nerva.Toolkit.CLI.Structures.Response
         public string Tag { get; set; }
 
         [JsonProperty("unlocked_balance")]
-        public uint UnlockedBalance { get; set; }
+        public ulong UnlockedBalance { get; set; }
     }
 }

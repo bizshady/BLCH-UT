@@ -152,14 +152,21 @@ namespace Nerva.Toolkit.Helpers
 
         public static bool PingServer(string host)
         {
-            Ping ping = new Ping();
-            IPAddress ip = IPAddress.Parse(host);
-            PingReply reply = ping.Send(ip);
-            
-            if (reply.Status == IPStatus.Success)
-                return true;
+            try
+            {
+                Ping ping = new Ping();
+                IPAddress ip = IPAddress.Parse(host);
+                PingReply reply = ping.Send(ip);
+                
+                if (reply.Status == IPStatus.Success)
+                    return true;
 
-            return false;
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

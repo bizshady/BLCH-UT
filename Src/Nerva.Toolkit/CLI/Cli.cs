@@ -372,8 +372,8 @@ namespace Nerva.Toolkit.CLI
             proc.Start();
             proc.WaitForExit();
  
-             string n = Path.GetFileName(exe);
-             var p = Process.GetProcessesByName(n);
+            string n = Path.GetFileName(exe);
+            var p = Process.GetProcessesByName(n);
  
             if (p.Length == 1)
             { 
@@ -400,16 +400,14 @@ namespace Nerva.Toolkit.CLI
                 }
             };
 
-            Log.Instance.Write("Starting process {0} {1}", exe, args);
-
             proc.Start();
+
+            Log.Instance.Write("Starting process {0} {1} with ID {2}", exe, args, proc.Id);
 
             walletPid = proc.Id;
             ProcessStarted?.Invoke(exe, args, proc);
 
             proc.WaitForExit();
-
-            walletPid = -1;
         }
 
         public void StopDaemonCheck()

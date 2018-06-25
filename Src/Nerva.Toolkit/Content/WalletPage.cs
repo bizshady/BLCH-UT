@@ -60,8 +60,8 @@ namespace Nerva.Toolkit.Content
 			if (a != null)
 			{
 				lblWalletAddress.Text = Conversions.WalletAddressShortForm(a.Accounts[0].BaseAddress);
-				lblLockedBalance.Text = a.Accounts[0].Balance.ToString();
-				lblUnlockedBalance.Text = a.Accounts[0].UnlockedBalance.ToString();
+				lblLockedBalance.Text = Conversions.FromAtomicUnits(a.Accounts[0].Balance).ToString();
+				lblUnlockedBalance.Text = Conversions.FromAtomicUnits(a.Accounts[0].UnlockedBalance).ToString();
 			}
 			else
 			{

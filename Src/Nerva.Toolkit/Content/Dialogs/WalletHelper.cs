@@ -181,10 +181,14 @@ namespace Nerva.Toolkit.Content.Dialogs
 						break;
 					case Open_Wallet_Dialog_Result.Import:
 						{ //Import a wallet from seed
-							MessageBox.Show(Application.Instance.MainForm, "Importing a wallet from seed is not yet supported");
-							result = Wallet_Wizard_Result.WalletImported;
-							break; //todo: change to return when implemented
+							ImportWalletDialog d2 = new ImportWalletDialog();
+							if (d2.ShowModal() == DialogResult.Ok)
+							{
+								result = Wallet_Wizard_Result.WalletImported;
+								return;
+							}
 						}
+						break;
 					default:
 						{
 							result = Wallet_Wizard_Result.Cancelled;
