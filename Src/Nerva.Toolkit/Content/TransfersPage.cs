@@ -14,20 +14,64 @@ namespace Nerva.Toolkit.Content
 		private Scrollable mainControl;
         public Scrollable MainControl => mainControl;
 
-		private int lastRowCount = -1;
+		GridView grid;
+		List<Transfer> txList = new List<Transfer>();
 
 		public TransfersPage() { }
 
         public void ConstructLayout()
 		{
 			mainControl = new Scrollable();
+			grid = new GridView
+			{
+				GridLines = GridLines.Horizontal,
+				Columns =
+				{
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => r.Type)}, HeaderText = "Type" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => r.Height.ToString())}, HeaderText = "Height" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.UnixTimeStampToDateTime(r.Timestamp).ToString())}, HeaderText = "Time" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.FromAtomicUnits(r.Amount).ToString())}, HeaderText = "Amount" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.WalletAddressShortForm(r.TxId))}, HeaderText = "TxID" },
+				}
+			};
 		}
 
-		Dictionary<uint, TableRow> rows = new Dictionary<uint, TableRow>();
+		//Dictionary<uint, TableRow> rows = new Dictionary<uint, TableRow>();
 
 		public void Update(TransferList t)
 		{
 			if (t != null)
+			{
+				List<Transfer> merged = new List<Transfer>();
+				merged.AddRange(t.Incoming);
+				merged.AddRange(t.Outgoing);
+				merged.AddRange(t.Pending);
+
+				if (merged.Count > 0)
+				{
+					//descending order by height and get top 50
+					merged = merged.OrderByDescending(x => x.Height).Take(50).ToList();
+
+					//insert into our list of existing transfers and trim back to 50
+					txList.InsertRange(0, merged);
+					txList = txList.Take(50).ToList();
+
+					grid.DataStore = txList;
+					mainControl.Content = grid;
+				}
+			}
+			else
+			{
+				mainControl.Content = new TableLayout(new TableRow(
+					new TableCell(new Label { Text = "WALLET NOT OPEN" })))
+					{
+						Padding = 10,
+						Spacing = new Eto.Drawing.Size(10, 10),
+					};
+			}
+			//todo: get top n from each list, merge, sort, trim back to top n
+			//make n a config option
+			/*if (t != null)
 			{
 				if (!rows.ContainsKey(0))
 					rows.Add(0, new TableRow(
@@ -66,13 +110,8 @@ namespace Nerva.Toolkit.Content
 			else
 			{
 				lastRowCount = -1;
-				mainControl.Content = new TableLayout(new TableRow(
-					new TableCell(new Label { Text = "WALLET NOT OPEN" })))
-					{
-						Padding = 10,
-						Spacing = new Eto.Drawing.Size(10, 10),
-					};
-			}
+
+			}*/
 		}
     }
 }

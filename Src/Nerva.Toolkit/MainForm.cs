@@ -125,6 +125,7 @@ namespace Nerva.Toolkit
 
 		private void UpdateWalletUI()
 		{
+			uint lastTxHeight = 0;
 			while (shouldUpdateWallet)
 			{
 				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
@@ -143,7 +144,7 @@ namespace Nerva.Toolkit
 				try
 				{
 					account = Cli.Instance.Wallet.GetAccounts();
-					transfers = Cli.Instance.Wallet.GetTransfers();
+					transfers = Cli.Instance.Wallet.GetTransfers(lastTxHeight, out lastTxHeight);
 				}
 				catch (Exception ex)
 				{
@@ -165,6 +166,7 @@ namespace Nerva.Toolkit
 				}
 				else
 				{
+					lastTxHeight = 0;
 					Application.Instance.AsyncInvoke ( () =>
 					{
 						balancesPage.Update(null);

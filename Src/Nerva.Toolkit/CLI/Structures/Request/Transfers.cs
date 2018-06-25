@@ -22,5 +22,11 @@ namespace Nerva.Toolkit.CLI.Structures.Request
 
         [JsonProperty("pool")]
         public bool Pool => false;
+
+        [JsonProperty("filter_by_height")]
+        public bool FilterByHeight => true;
+
+        [JsonProperty("min_height")]
+        public uint ScanFromHeight { get; set; } = 0;
     }
 }

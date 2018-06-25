@@ -141,14 +141,18 @@ namespace Nerva.Toolkit.CLI
             return JObject.Parse(result)["result"]["key"].Value<string>();
         }
 
-        public TransferList GetTransfers()
+        public TransferList GetTransfers(uint scanFromHeight, out uint lastTxHeight)
         {
             string result = null;
+            lastTxHeight = 0;
 
             JsonRequest<GetTransfers> jr = new JsonRequest<GetTransfers>
             {
                 MethodName = "get_transfers",
-                Params = new GetTransfers()
+                Params = new GetTransfers
+                {
+                    ScanFromHeight = scanFromHeight
+                }
             };
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
@@ -160,7 +164,19 @@ namespace Nerva.Toolkit.CLI
             if (CheckError(jr.MethodName, result))
                 return null;
 
-            return JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
+            var txl = JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
+
+            uint i = 0, o = 0;
+
+            if (txl.Incoming != null && txl.Incoming.Count > 0)
+                i = txl.Incoming[txl.Incoming.Count - 1].Height;
+            
+            if (txl.Outgoing != null && txl.Outgoing.Count > 0)
+                o = txl.Outgoing[txl.Outgoing.Count - 1].Height;
+
+            lastTxHeight = Math.Max(i, o);
+
+            return txl;
         }
 
         private bool CheckError(string methodName, string result, bool suppressErrorMessage = false)
