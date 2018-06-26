@@ -219,7 +219,7 @@ namespace Nerva.Toolkit.CLI
             string arg = GetBaseCommandLine(FileNames.RPC_WALLET, out exePath);
             arg += GetRpcBindCommandLine(Configuration.Instance.Wallet.Rpc);
 
-            arg += $" --disable-rpc-login --wallet-dir {Configuration.Instance.Wallet.WalletDir}";
+            arg += $" --disable-rpc-login --wallet-dir {Configuration.Instance.Wallet.WalletDir} --daemon-address 127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
 
             #region Create BackgroundWorker that will do the crash checking
 

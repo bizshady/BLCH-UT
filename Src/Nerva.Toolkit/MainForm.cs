@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using AngryWasp.Logger;
 using Eto.Forms;
@@ -245,6 +246,48 @@ namespace Nerva.Toolkit
 			Wallet_Wizard_Result result = Wallet_Wizard_Result.Undefined;
             WalletHelper.ShowWalletWizard(out result);
             Log.Instance.Write(result.ToString());
+		}
+
+		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
+		{
+			BackgroundWorker w = new BackgroundWorker();
+
+			w.DoWork += (ws, we) =>
+			{
+				Log.Instance.Write("Rescanning spent outputs");
+				if (!Cli.Instance.Wallet.RescanSpent())
+					Log.Instance.Write("Rescanning spent outputs failed");
+				else
+					Log.Instance.Write("Rescanning spent outputs success");
+			};
+
+			w.RunWorkerCompleted += (ws, we) =>
+			{
+				MessageBox.Show("Rescanning spent outputs complete");
+			};
+
+			w.RunWorkerAsync();
+		}
+
+		protected void wallet_RescanBlockchain_Clicked(object sender, EventArgs e)
+		{
+			BackgroundWorker w = new BackgroundWorker();
+
+			w.DoWork += (ws, we) =>
+			{
+				Log.Instance.Write("Rescanning blockchain");
+				if (!Cli.Instance.Wallet.RescanBlockchain())
+					Log.Instance.Write("Rescanning blockchain failed");
+				else
+					Log.Instance.Write("Rescanning blockchain success");
+			};
+
+			w.RunWorkerCompleted += (ws, we) =>
+			{
+				MessageBox.Show("Rescanning blockchain complete");
+			};
+
+			w.RunWorkerAsync();
 		}
 
 		protected void wallet_Keys_View_Clicked(object sender, EventArgs e)

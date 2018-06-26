@@ -6,6 +6,7 @@ using Eto.Drawing;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
 using Nerva.Toolkit.CLI.Structures.Response;
+using AngryWasp.Helpers;
 
 namespace Nerva.Toolkit.Content
 {	
@@ -16,6 +17,8 @@ namespace Nerva.Toolkit.Content
 
 		GridView grid;
 		List<Transfer> txList = new List<Transfer>();
+		bool needGridUpdate = false;
+		uint lastHeight = 0;
 
 		public TransfersPage() { }
 
@@ -36,12 +39,11 @@ namespace Nerva.Toolkit.Content
 			};
 		}
 
-		//Dictionary<uint, TableRow> rows = new Dictionary<uint, TableRow>();
-
 		public void Update(TransferList t)
 		{
 			if (t != null)
 			{
+				int i = 0;
 				List<Transfer> merged = new List<Transfer>();
 				merged.AddRange(t.Incoming);
 				merged.AddRange(t.Outgoing);
@@ -50,28 +52,56 @@ namespace Nerva.Toolkit.Content
 				if (merged.Count > 0)
 				{
 					//descending order by height and get top 50
-					merged = merged.OrderByDescending(x => x.Height).Take(50).ToList();
+					merged = merged.OrderByDescending(x => x.Height).ToList();
 
-					//HACK: The RPC request should only return the full transfer list the first time
-					//then only new ones after that, by using the 'filter_by_height' and 'min_height'
-					//RPC params. These appear to be not working. Needs investigation
-					//Until then, we just check if the top transfer is a higher block and then refresh if it is
-					//TODO: if we can't find out why filtering isn't working properly, then we need to prune back
-					//the merged list until it only contains new transfers. then update the selected row
-					//in the grid after inserting the new rows
-					if (txList.Count == 0 || (merged.Count > 0 && merged[0].Height > txList[0].Height))
+					if (txList.Count == 0)
 					{
-						//insert into our list of existing transfers and trim back to 50
-						txList.InsertRange(0, merged);
-						txList = txList.Take(50).ToList();
+						txList = merged;
+						needGridUpdate = true;
+					}
+					else
+					{
+						uint height = 0;
 
+						while ((height = merged[i].Height) > lastHeight)
+						{
+							++i;
+							Log.Instance.Write("Found TX on block {0}", height);
+						}
+
+						if (i > 0)
+						{
+							txList.InsertRange(0, merged.GetRange(0, i));
+							needGridUpdate = true;
+						}
+					}
+
+					if (needGridUpdate)
+					{
+						//todo: make the number of transactions to show a setting
+						int maxRows = 25;
+						
+						txList = txList.Take(maxRows).ToList();
 						grid.DataStore = txList;
+
+						//update the selected row in the grid
+						if (grid.SelectedRow != -1)
+						{
+							int newSelectedRow = grid.SelectedRow + i;
+							MathHelper.Clamp(ref newSelectedRow, 0, maxRows - 1);
+							grid.SelectedRow = newSelectedRow;
+							grid.ScrollToRow(grid.SelectedRow);
+						}
+
 						mainControl.Content = grid;
+						needGridUpdate = false;
+						lastHeight = txList[0].Height;
 					}
 				}
 			}
 			else
 			{
+				needGridUpdate = true;
 				mainControl.Content = new TableLayout(new TableRow(
 					new TableCell(new Label { Text = "WALLET NOT OPEN" })))
 					{

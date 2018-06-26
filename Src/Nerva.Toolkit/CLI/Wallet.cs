@@ -33,18 +33,7 @@ namespace Nerva.Toolkit.CLI
         {
             string result = null;
 
-            JsonRequest jr = new JsonRequest
-            {
-                MethodName = "get_accounts"
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                return null;
-            }
-
-            if (CheckError(jr.MethodName, result, true))
+            if (!BasicRequest("get_accounts", out result))
                 return null;
 
             return JsonConvert.DeserializeObject<JsonValue<Account>>(result).Result;
@@ -52,90 +41,36 @@ namespace Nerva.Toolkit.CLI
 
         public bool StopWallet()
         {
-            string result = null;
-
-            JsonRequest jr = new JsonRequest
-            {
-                MethodName = "stop_wallet"
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                return false;
-            }
-
-            return !CheckError(jr.MethodName, result);
+            return BasicRequest("stop_wallet");
         }
 
         public bool CreateWallet(string walletName, string password)
         {
-            //todo: need to check for an error being returned. 
-            //potentially trying to create a wallet with the same name etc
             string result = null;
 
-            JsonRequest<CreateWallet> jr = new JsonRequest<CreateWallet>
-            {
-                MethodName = "create_wallet",
-                Params = new CreateWallet
-                {
-                    FileName = walletName,
-                    Password = password
-                }
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                return false;
-            }
-
-            return !CheckError(jr.MethodName, result);
+            return BasicRequest<CreateWallet>("create_wallet", new CreateWallet {
+                FileName = walletName,
+                Password = password
+            }, out result);
         }
 
         public bool OpenWallet(string walletName, string password)
         {
             string result = null;
 
-            JsonRequest<OpenWallet> jr = new JsonRequest<OpenWallet>
-            {
-                MethodName = "open_wallet",
-                Params = new OpenWallet
-                {
-                    FileName = walletName,
-                    Password = password
-                }
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                return false;
-            }
-
-            return !CheckError(jr.MethodName, result);
+            return BasicRequest<OpenWallet>("open_wallet", new OpenWallet {
+                FileName = walletName,
+                Password = password
+            }, out result);
         }
 
         public string QueryKey(Key_Type keyType)
         {
             string result = null;
 
-            JsonRequest<QueryKey> jr = new JsonRequest<QueryKey>
-            {
-                MethodName = "query_key",
-                Params = new QueryKey
-                {
-                    KeyType = keyType.ToString().ToLower()
-                }
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                return null;
-            }
-
-            if (CheckError(jr.MethodName, result))
+            if (!BasicRequest<QueryKey>("query_key", new QueryKey {
+                KeyType = keyType.ToString().ToLower()
+            }, out result))
                 return null;
 
             return JObject.Parse(result)["result"]["key"].Value<string>();
@@ -146,22 +81,9 @@ namespace Nerva.Toolkit.CLI
             string result = null;
             lastTxHeight = 0;
 
-            JsonRequest<GetTransfers> jr = new JsonRequest<GetTransfers>
-            {
-                MethodName = "get_transfers",
-                Params = new GetTransfers
-                {
-                    ScanFromHeight = scanFromHeight
-                }
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                return null;
-            }
-
-            if (CheckError(jr.MethodName, result, true))
+            if (!BasicRequest<GetTransfers>("get_transfers", new GetTransfers {
+                ScanFromHeight = scanFromHeight
+            }, out result))
                 return null;
 
             var txl = JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
@@ -177,6 +99,59 @@ namespace Nerva.Toolkit.CLI
             lastTxHeight = Math.Max(i, o);
 
             return txl;
+        }
+
+        public bool RescanSpent()
+        {
+            return BasicRequest("rescan_spent");
+        }
+
+        public bool RescanBlockchain()
+        {
+            return BasicRequest("rescan_blockchain");
+        }
+
+        private bool BasicRequest(string rpc, bool suppressErrorMessage = false)
+        {
+            string result = null;
+            return BasicRequest(rpc, out result, suppressErrorMessage);
+        }
+
+        private bool BasicRequest(string rpc, out string result, bool suppressErrorMessage = false)
+        {
+            result = null;
+
+            JsonRequest jr = new JsonRequest
+            {
+                MethodName = rpc
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                return false;
+            }
+
+            return !CheckError(jr.MethodName, result, suppressErrorMessage);
+        }
+
+        private bool BasicRequest<T>(string rpc, T param, out string result, bool suppressErrorMessage = false)
+        {
+            result = null;
+
+            JsonRequest<T> jr = new JsonRequest<T>
+            {
+                MethodName = rpc,
+                Params = param
+            };
+
+            if (!netHelper.MakeJsonRpcRequest(jr, out result))
+            {
+                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                return false;
+            }
+
+            return !CheckError(jr.MethodName, result, suppressErrorMessage);
         }
 
         private bool CheckError(string methodName, string result, bool suppressErrorMessage = false)
