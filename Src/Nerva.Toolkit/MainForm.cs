@@ -248,6 +248,12 @@ namespace Nerva.Toolkit
             Log.Instance.Write(result.ToString());
 		}
 
+		protected void wallet_Store_Clicked(object sender, EventArgs e)
+		{
+			Log.Instance.Write("Storing blockchain");
+			Cli.Instance.Wallet.Store();
+		}
+
 		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
 		{
 			BackgroundWorker w = new BackgroundWorker();

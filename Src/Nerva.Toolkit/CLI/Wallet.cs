@@ -111,6 +111,11 @@ namespace Nerva.Toolkit.CLI
             return BasicRequest("rescan_blockchain");
         }
 
+        public bool Store()
+        {
+            return BasicRequest("store");
+        }
+
         private bool BasicRequest(string rpc, bool suppressErrorMessage = false)
         {
             string result = null;

@@ -80,6 +80,9 @@ namespace Nerva.Toolkit
 			var wallet_Select = new Command { MenuText = "Select", ToolBarText = "Select" };
 			wallet_Select.Executed += wallet_Select_Clicked;
 
+			var wallet_Store = new Command { MenuText = "Store", ToolBarText = "Store" };
+			wallet_Store.Executed += wallet_Store_Clicked;
+
 			var wallet_RescanSpent = new Command { MenuText = "Spent Outputs", ToolBarText = "Spent Outputs" };
 			wallet_RescanSpent.Executed += wallet_RescanSpent_Clicked;
 
@@ -127,6 +130,8 @@ namespace Nerva.Toolkit
 						Items =
 						{
 							wallet_Select,
+							new SeparatorMenuItem(),
+							wallet_Store,
 							new ButtonMenuItem
 							{
 								Text = "Rescan",
