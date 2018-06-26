@@ -16,7 +16,6 @@ namespace Nerva.Toolkit.Helpers
             return Encoding.UTF8.GetString(Convert.FromBase64String(t));
         }
 
-
         public static double FromAtomicUnits(ulong i)
         {
             return Math.Round((double)i / 1000000000000.0d, 4);

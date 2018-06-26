@@ -18,8 +18,6 @@ namespace Nerva.Toolkit.Content
         private StackLayout mainControl;
         public StackLayout MainControl => mainControl;
 
-		TableLayout infoContainer;
-		Scrollable connectionsContainer = new Scrollable();
 		GridView grid;
 	
 		private Label lblHeight = new Label() { Text = "." };
@@ -38,59 +36,35 @@ namespace Nerva.Toolkit.Content
 
         public void ConstructLayout()
         {
-            infoContainer = new TableLayout
+			var peersCtx_Ban = new Command { MenuText = "Ban Peer" };
+
+			grid = new GridView
 			{
-				Padding = 10,
-				Spacing = new Eto.Drawing.Size(10, 10),
-				Rows =
+				GridLines = GridLines.Horizontal,
+				Columns = 
 				{
-					new TableRow (
-						new TableCell(new Label { Text = "Daemon" }),
-						new TableCell(null, true),
-						new TableCell(lblMinerStatus),
-						new TableCell(null, true)),
-					new TableRow(
-						new TableCell(new Label { Text = "Height:" }),
-						new TableCell(lblHeight),
-						new TableCell(new Label { Text = "Address:" }),
-						new TableCell(lblMiningAddress)),
-					new TableRow(
-						new TableCell(new Label { Text = "Run Time:" }),
-						new TableCell(lblRunTime),
-						new TableCell(new Label { Text = "Threads:" }),
-						new TableCell(lblMiningThreads)),
-					new TableRow(
-						new TableCell(new Label { Text = "Net Hash:" }),
-						new TableCell(lblNetHash),
-						new TableCell(new Label { Text = "Hash Rate:" }),
-						new TableCell(lblMiningHashrate)),
-					new TableRow(
-						new TableCell(new Label { Text = "Network:" }),
-						new TableCell(lblNetwork)),
-					new TableRow(
-						new TableCell(null),
-						new TableCell(null))
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Address)}, HeaderText = "Address" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Height.ToString())}, HeaderText = "Height" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r =>TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.State.Remove(0, 6))}, HeaderText = "State" }
 				}
 			};
 
-			connectionsContainer = new Scrollable
+			grid.ContextMenu = new ContextMenu
 			{
-				Content = grid = new GridView
-				{
-					GridLines = GridLines.Horizontal,
-					Columns =
+					Items = 
 					{
-						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Address)}, HeaderText = "Address" },
-						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Height.ToString())}, HeaderText = "Height" },
-						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r =>TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
-						new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.State.Remove(0, 6))}, HeaderText = "State" },
+						peersCtx_Ban
 					}
-				}
 			};
 
-			grid.SelectedRowsChanged += (s, e) =>
+			peersCtx_Ban.Executed += (s, e) =>
 			{
+				if (grid.SelectedRow == -1)
+					return;
+				
 				Connection c = (Connection)grid.DataStore.ElementAt(grid.SelectedRow);
+				Cli.Instance.Daemon.BanPeer(c.IP);
 			};
 
 			mainControl = new StackLayout
@@ -100,7 +74,6 @@ namespace Nerva.Toolkit.Content
 				VerticalContentAlignment = VerticalAlignment.Stretch,
 				Items = 
 				{
-					new StackLayoutItem(infoContainer, false),
 					new StackLayoutItem(new TableLayout
 					{
 						Padding = 10,
@@ -108,56 +81,40 @@ namespace Nerva.Toolkit.Content
 						Rows =
 						{
 							new TableRow (
-								new TableCell(new Label { Text = "NERVA NETWORK CONNECTIONS" }))
+								new TableCell(new Label { Text = "Daemon" }),
+								new TableCell(null, true),
+								new TableCell(lblMinerStatus),
+								new TableCell(null, true)),
+							new TableRow(
+								new TableCell(new Label { Text = "Height:" }),
+								new TableCell(lblHeight),
+								new TableCell(new Label { Text = "Address:" }),
+								new TableCell(lblMiningAddress)),
+							new TableRow(
+								new TableCell(new Label { Text = "Run Time:" }),
+								new TableCell(lblRunTime),
+								new TableCell(new Label { Text = "Threads:" }),
+								new TableCell(lblMiningThreads)),
+							new TableRow(
+								new TableCell(new Label { Text = "Net Hash:" }),
+								new TableCell(lblNetHash),
+								new TableCell(new Label { Text = "Hash Rate:" }),
+								new TableCell(lblMiningHashrate)),
+							new TableRow(
+								new TableCell(new Label { Text = "Network:" }),
+								new TableCell(lblNetwork)),
+							new TableRow(
+								new TableCell(null),
+								new TableCell(null))
 						}
 					}, false),
-					new StackLayoutItem(connectionsContainer, true)
+					new StackLayoutItem(new Scrollable
+					{
+						Content = grid
+					}, true)
 				}
 			};
         }
-
-        private void CreateConnectionsTable(List<Connection> connections)
-		{
-			/*List<TableRow> rows = new List<TableRow>();
-
-			rows.Add(new TableRow(
-				new TableCell(new Label { Text = "Connections" })));
-
-			rows.Add(new TableRow(
-				new TableCell(new Label { Text = "Address" }),
-				new TableCell(new Label { Text = "Height" }),
-				new TableCell(new Label { Text = "Live Time" }),
-				new TableCell(new Label { Text = "State" }),
-				new TableCell(null, true),
-				new TableCell(null)));
-
-			foreach (var c in connections)
-			{
-				Button btn = new Button { Text = "Ban" };
-				btn.Click += (sender, e) => { Cli.Instance.Daemon.BanPeer(c.Host); };
-
-				rows.Add(new TableRow(
-					new TableCell(new Label { Text = c.Address }),
-					new TableCell(new Label { Text = c.Height.ToString() }),
-					new TableCell(new Label { Text = TimeSpan.FromSeconds(c.LiveTime).ToString(@"hh\:mm\:ss") }),
-					new TableCell(new Label { Text = c.State.Remove(0, 6) }),
-					new TableCell(null, true),
-					TableLayout.AutoSized(btn)));
-			}
-
-			connectionsContainer.Content = new TableLayout(rows)
-			{
-				Padding = 10,
-				Spacing = new Eto.Drawing.Size(10, 10),
-			};*/
-
-			//Testing the grid view as opposed to recreating the layout each time
-			grid.DataStore = connections;
-
-			//HACK to refresh grid
-			//for (int i = 0; i < connections.Count; i++)
-			//	grid.ReloadData(i);
-		}
 
         public void Update(Info info, List<Connection> connections, MiningStatus mStatus)
         {
@@ -205,35 +162,7 @@ namespace Nerva.Toolkit.Content
                 lblMiningHashrate.Text = "-";
             }
 
-            if (connections != null)
-            {
-                //Check if we need to update the connections list
-                /*List<string> a = connections.Select(x => x.Address).ToList();
-
-                bool needUpdate = false;
-                if (a.Count != la.Count)
-                    needUpdate = true;
-
-                if (!needUpdate)
-                    for (int i = 0; i < a.Count; i++)
-                        if (a[i] != la[i])
-                        {
-                            needUpdate = true;
-                            break;
-                        }
-
-                if (needUpdate)
-                {
-                    mainControl.SuspendLayout();
-                    
-                    mainControl.ResumeLayout();
-                    la = a;
-				}*/
-
-				CreateConnectionsTable(connections);
-            }
-            else
-                connectionsContainer.Content = null;
+			grid.DataStore = connections;
         }
     }
 }

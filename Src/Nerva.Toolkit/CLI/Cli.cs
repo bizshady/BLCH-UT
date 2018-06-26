@@ -81,8 +81,7 @@ namespace Nerva.Toolkit.CLI
 
         private string GetBaseCommandLine(string exe, out string formattedExePath)
         {
-            string exeName = (Environment.OSVersion.Platform == PlatformID.Win32NT) ? $"{exe}.exe" : exe;
-            formattedExePath = $"{Configuration.Instance.ToolsPath}{exeName}";
+            formattedExePath = FileNames.GetCliExePath(exe);
 
             string arg = $"--log-file {CycleLogFile(formattedExePath)}";
 
@@ -133,7 +132,7 @@ namespace Nerva.Toolkit.CLI
         {
             string exePath;
 
-            string arg = GetBaseCommandLine("nervad", out exePath);
+            string arg = GetBaseCommandLine(FileNames.NERVAD, out exePath);
             arg += GetRpcBindCommandLine(Configuration.Instance.Daemon.Rpc);
 
             if (Configuration.Instance.Daemon.AutoStartMining)
@@ -217,7 +216,7 @@ namespace Nerva.Toolkit.CLI
 
             string exePath;
 
-            string arg = GetBaseCommandLine("nerva-wallet-rpc", out exePath);
+            string arg = GetBaseCommandLine(FileNames.RPC_WALLET, out exePath);
             arg += GetRpcBindCommandLine(Configuration.Instance.Wallet.Rpc);
 
             arg += $" --disable-rpc-login --wallet-dir {Configuration.Instance.Wallet.WalletDir}";
@@ -428,13 +427,18 @@ namespace Nerva.Toolkit.CLI
 
         private void DoCliStartup(string exe, string arg, Process process)
         {
-            string exeName = Path.GetFileNameWithoutExtension(exe).ToLower();
-            if (exeName == "nervad")
-                UpdateCheck();
-            else if (exeName == "nerva-wallet-rpc")
-                LoadWallet();
-            else
-                Log.Instance.Write(Log_Severity.Error, "Unknown process connected '{0}'", exeName);
+            switch (FileNames.GetCliExeBaseName(exe))
+            {
+                case FileNames.NERVAD:
+                    UpdateCheck();
+                    break;
+                case FileNames.RPC_WALLET:
+                    LoadWallet();
+                    break;
+                default:
+                    Log.Instance.Write(Log_Severity.Error, "CLI exe file {0} is invalid", exe);
+                    break;
+            }
         }
 
         private void UpdateCheck()

@@ -79,49 +79,6 @@ namespace Nerva.Toolkit.Content
 						Spacing = new Eto.Drawing.Size(10, 10),
 					};
 			}
-			//todo: get top n from each list, merge, sort, trim back to top n
-			//make n a config option
-			/*if (t != null)
-			{
-				if (!rows.ContainsKey(0))
-					rows.Add(0, new TableRow(
-						new TableCell(new Label { Text = "Height" }),
-						new TableCell(new Label { Text = "Time" }),
-						new TableCell(new Label { Text = "Amount" }),
-						new TableCell(new Label { Text = "TxID" }),
-						new TableCell(null, true),
-						new TableCell(null)));
-
-				foreach (var i in t.Incoming)
-				{
-					if (rows.ContainsKey(i.Height))
-						continue;
-
-					rows.Add(i.Height, new TableRow(
-						new TableCell(new Label { Text = i.Height.ToString() }),
-						new TableCell(new Label { Text = Conversions.UnixTimeStampToDateTime(i.Timestamp).ToString() }),
-						new TableCell(new Label { Text = Conversions.FromAtomicUnits(i.Amount).ToString() }),
-						new TableCell(new Label { Text = Conversions.WalletAddressShortForm(i.TxId) }),
-						new TableCell(null, true),
-						new TableCell(new Button { Text = "Details"} )));
-				}
-
-				if (rows.Count != lastRowCount)
-				{
-					lastRowCount = rows.Count;
-					var sortedRows = rows.OrderByDescending(x => x.Key).Take(20).ToDictionary(pair => pair.Key, pair => pair.Value);
-					mainControl.Content = new TableLayout(sortedRows.Values)
-					{
-						Padding = 10,
-						Spacing = new Eto.Drawing.Size(10, 10),
-					};
-				}
-			}
-			else
-			{
-				lastRowCount = -1;
-
-			}*/
 		}
     }
 }

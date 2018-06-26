@@ -161,7 +161,7 @@ namespace Nerva.Toolkit.CLI
                 return null;
             }
 
-            if (CheckError(jr.MethodName, result))
+            if (CheckError(jr.MethodName, result, true))
                 return null;
 
             var txl = JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
@@ -236,7 +236,7 @@ namespace Nerva.Toolkit.CLI
             //The RPC wallet does not contain a function to restore a wallet from seed,
             //So we have to do some shady shit and call nerva-wallet-cli to restore the wallet for us
 
-            string cliPath = Path.Combine(Configuration.Instance.ToolsPath, "nerva-wallet-cli");
+            string cliPath = FileNames.GetCliExePath(FileNames.CLI_WALLET);
             string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
             string jsonPath = $"{walletPath}.json";
             string daemon = $"127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
@@ -258,6 +258,8 @@ namespace Nerva.Toolkit.CLI
 
             string exe = cliPath;
             string args = $"--daemon-address {daemon} --generate-from-json {jsonPath}";
+            if (Configuration.Instance.Testnet)
+                args += " --testnet";
 
             Process proc = new Process
             {
