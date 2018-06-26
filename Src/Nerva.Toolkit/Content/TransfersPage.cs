@@ -52,12 +52,22 @@ namespace Nerva.Toolkit.Content
 					//descending order by height and get top 50
 					merged = merged.OrderByDescending(x => x.Height).Take(50).ToList();
 
-					//insert into our list of existing transfers and trim back to 50
-					txList.InsertRange(0, merged);
-					txList = txList.Take(50).ToList();
+					//HACK: The RPC request should only return the full transfer list the first time
+					//then only new ones after that, by using the 'filter_by_height' and 'min_height'
+					//RPC params. These appear to be not working. Needs investigation
+					//Until then, we just check if the top transfer is a higher block and then refresh if it is
+					//TODO: if we can't find out why filtering isn't working properly, then we need to prune back
+					//the merged list until it only contains new transfers. then update the selected row
+					//in the grid after inserting the new rows
+					if (txList.Count == 0 || (merged.Count > 0 && merged[0].Height > txList[0].Height))
+					{
+						//insert into our list of existing transfers and trim back to 50
+						txList.InsertRange(0, merged);
+						txList = txList.Take(50).ToList();
 
-					grid.DataStore = txList;
-					mainControl.Content = grid;
+						grid.DataStore = txList;
+						mainControl.Content = grid;
+					}
 				}
 			}
 			else
