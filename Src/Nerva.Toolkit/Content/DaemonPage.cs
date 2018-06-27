@@ -45,7 +45,7 @@ namespace Nerva.Toolkit.Content
 				{
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Address)}, HeaderText = "Address" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Height.ToString())}, HeaderText = "Height" },
-					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r =>TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.State.Remove(0, 6))}, HeaderText = "State" }
 				}
 			};

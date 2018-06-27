@@ -7,6 +7,8 @@ using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
 using Nerva.Toolkit.CLI.Structures.Response;
 using AngryWasp.Helpers;
+using Nerva.Toolkit.Content.Dialogs;
+using Nerva.Toolkit.CLI;
 
 namespace Nerva.Toolkit.Content
 {	
@@ -24,6 +26,18 @@ namespace Nerva.Toolkit.Content
 
         public void ConstructLayout()
 		{
+			var ctx_TxDetails = new Command { MenuText = "Details" };
+
+			ctx_TxDetails.Executed += (s, e) =>
+			{
+				if (grid.SelectedRow == -1)
+					return;
+
+				Transfer t = txList[grid.SelectedRow];
+				ShowTxDialog d = new ShowTxDialog(Cli.Instance.Wallet.GetTransferByTxID(t.TxId));
+				d.ShowModal();
+			};
+
 			mainControl = new Scrollable();
 			grid = new GridView
 			{
@@ -35,6 +49,14 @@ namespace Nerva.Toolkit.Content
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.UnixTimeStampToDateTime(r.Timestamp).ToString())}, HeaderText = "Time" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.FromAtomicUnits(r.Amount).ToString())}, HeaderText = "Amount" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.WalletAddressShortForm(r.TxId))}, HeaderText = "TxID" },
+				}
+			};
+
+			grid.ContextMenu = new ContextMenu
+			{
+				Items = 
+				{
+					ctx_TxDetails
 				}
 			};
 		}
@@ -67,6 +89,9 @@ namespace Nerva.Toolkit.Content
 						{
 							++i;
 							Log.Instance.Write("Found TX on block {0}", height);
+
+							if (i >= merged.Count)
+								break;
 						}
 
 						if (i > 0)

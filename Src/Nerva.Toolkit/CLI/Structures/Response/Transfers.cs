@@ -48,6 +48,39 @@ namespace Nerva.Toolkit.CLI.Structures.Response
     }
 
     [JsonObject]
+    public class TransferTxID : Transfer
+    {
+        [JsonProperty("unlock_time")]
+        public ulong UnlockTime { get; set; } = 0;
+
+        [JsonProperty("subaddr_index")]
+        public SubAddressIndex SubAddressIndex { get; set; } = null;
+
+        [JsonProperty("address")]
+        public string Address { get; set; } = string.Empty;
+
+        [JsonProperty("double_spend_seen")]
+        public bool DoubleSpendSeen { get; set; } = false;
+    }
+
+    [JsonObject]
+    public class TransferContainer
+    {
+        [JsonProperty("transfer")]
+        public TransferTxID Transfer { get; set; }
+    }
+
+    [JsonObject]
+    public class SubAddressIndex
+    {
+        [JsonProperty("major")]
+        public uint Major { get; set; }
+
+        [JsonProperty("minor")]
+        public uint Minor { get; set; }
+    }
+
+    [JsonObject]
     public class Destination
     {
         [JsonProperty("amount")]

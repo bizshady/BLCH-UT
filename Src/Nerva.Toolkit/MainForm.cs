@@ -55,10 +55,6 @@ namespace Nerva.Toolkit
 			shouldUpdateWallet = true;
 			updateWalletThread.Start();
 
-			//updateTransferListThread = new Thread(new ThreadStart(UpdateTransferListUI));
-			//shouldUpdateTransferList = true;
-			//updateTransferListThread.Start();
-
 			pingThread = new Thread(new ThreadStart(CheckConnection));
 			pingSuccess = true;
 			pingThread.Start();

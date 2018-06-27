@@ -116,6 +116,22 @@ namespace Nerva.Toolkit.CLI
             return BasicRequest("store");
         }
 
+        public TransferTxID GetTransferByTxID(string txid)
+        {
+            string result = null;
+
+            var x = new GetTransferByTxID {
+                TxID = txid
+            };
+
+            if (!BasicRequest<GetTransferByTxID>("get_transfer_by_txid", x, out result))
+                return null;
+
+            Console.WriteLine(result);
+
+            return JsonConvert.DeserializeObject<JsonValue<TransferContainer>>(result).Result.Transfer;
+        }
+
         private bool BasicRequest(string rpc, bool suppressErrorMessage = false)
         {
             string result = null;
