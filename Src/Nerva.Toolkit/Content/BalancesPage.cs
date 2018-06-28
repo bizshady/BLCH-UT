@@ -5,68 +5,112 @@ using Eto.Drawing;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
 using Nerva.Toolkit.CLI.Structures.Response;
+using Nerva.Toolkit.Config;
+using Nerva.Toolkit.CLI;
 
 namespace Nerva.Toolkit.Content
 {	
 	public partial class BalancesPage
 	{
-		private Scrollable mainControl;
-        public Scrollable MainControl => mainControl;
+		private StackLayout mainControl;
+        public StackLayout MainControl => mainControl;
+
+		GridView grid;
+
+		Label lblTotalXnv = new Label();
+		Label lblUnlockedXnv = new Label();
+
+		private List<SubAddressAccount> accounts;
 
 		public BalancesPage() { }
 
         public void ConstructLayout()
 		{
-			mainControl = new Scrollable();
+			var ctx_Mine = new Command { MenuText = "Mine" };
+
+			ctx_Mine.Executed += (s, e) =>
+			{
+				if (grid.SelectedRow == -1)
+					return;
+
+				SubAddressAccount a = accounts[grid.SelectedRow];
+				Configuration.Instance.Daemon.MiningAddress = a.BaseAddress;
+				Configuration.Save();
+				
+				Cli.Instance.Daemon.StopMining();
+				Log.Instance.Write("Mining stopped");
+
+				if (Cli.Instance.Daemon.StartMining(Configuration.Instance.Daemon.MiningThreads))
+					Log.Instance.Write("Mining started for @ {0} on {1} threads", 
+						Conversions.WalletAddressShortForm(Configuration.Instance.Daemon.MiningAddress),
+						Configuration.Instance.Daemon.MiningThreads);
+			};
+
+			grid = new GridView
+			{
+				GridLines = GridLines.Horizontal,
+				Columns = 
+				{
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<SubAddressAccount, string>(r => r.Index.ToString())}, HeaderText = "#" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<SubAddressAccount, string>(r => r.Label)}, HeaderText = "Label" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<SubAddressAccount, string>(r => Conversions.WalletAddressShortForm(r.BaseAddress))}, HeaderText = "Address" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<SubAddressAccount, string>(r => Conversions.FromAtomicUnits(r.Balance).ToString())}, HeaderText = "Balance" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<SubAddressAccount, string>(r => Conversions.FromAtomicUnits(r.UnlockedBalance).ToString())}, HeaderText = "Unlocked" },
+				}
+			};
+
+			grid.ContextMenu = new ContextMenu
+			{
+				Items = 
+				{
+					ctx_Mine
+				}
+			};
+
+			mainControl = new StackLayout
+			{
+				Orientation = Orientation.Vertical,
+				HorizontalContentAlignment = HorizontalAlignment.Stretch,
+				VerticalContentAlignment = VerticalAlignment.Stretch,
+				Items = 
+				{
+					new StackLayoutItem(new TableLayout
+					{
+						Padding = 10,
+						Spacing = new Eto.Drawing.Size(10, 10),
+						Rows =
+						{
+							new TableRow(
+								new TableCell(new Label { Text = "Total XNV" }),
+								new TableCell(lblTotalXnv, true),
+								new TableCell(null)),
+							new TableRow(
+								new TableCell(new Label { Text = "Unlocked XNV" }),
+								new TableCell(lblUnlockedXnv, true),
+								new TableCell(null))
+						}
+					}, false),
+					new StackLayoutItem(grid, true)
+				}
+			};
 		}
 
 		public void Update(Account a)
 		{
-			List<TableRow> rows = new List<TableRow>();
-
 			if (a != null)
 			{
-				rows.Add(new TableRow(
-					new TableCell(new Label { Text = "#" }),
-					new TableCell(new Label { Text = "Label" }),
-					new TableCell(new Label { Text = "Address" }),
-					new TableCell(new Label { Text = "Balance" }),
-					new TableCell(new Label { Text = "Unlocked" }),
-					new TableCell(null, true),
-					new TableCell(null)));
-
-				foreach (var aa in a.Accounts)
-				{
-					rows.Add(new TableRow(
-						new TableCell(new Label { Text = aa.Index.ToString() }),
-						new TableCell(new Label { Text = aa.Label }),
-						new TableCell(new Label { Text = Conversions.WalletAddressShortForm(aa.BaseAddress) }),
-						new TableCell(new Label { Text = Conversions.FromAtomicUnits(aa.Balance).ToString() }),
-						new TableCell(new Label { Text = Conversions.FromAtomicUnits(aa.UnlockedBalance).ToString() }),
-						new TableCell(null, true),
-						new TableCell(null)));
-				}
-
-				rows.Add(new TableRow(
-						new TableCell(null),
-						new TableCell(null),
-						new TableCell(new Label { Text = "TOTAL:" }),
-						new TableCell(new Label { Text = Conversions.FromAtomicUnits(a.TotalBalance).ToString() }),
-						new TableCell(new Label { Text = Conversions.FromAtomicUnits(a.TotalUnlockedBalance).ToString() }),
-						new TableCell(null, true),
-						new TableCell(null)));
+				lblTotalXnv.Text = Conversions.FromAtomicUnits(a.TotalBalance).ToString();
+				lblUnlockedXnv.Text = Conversions.FromAtomicUnits(a.TotalUnlockedBalance).ToString();
+				accounts = a.Accounts;
 			}
 			else
 			{
-				rows.Add(new TableRow(
-					new TableCell(new Label { Text = "WALLET NOT OPEN" })));
+				lblTotalXnv.Text = "-";
+				lblUnlockedXnv.Text = "-";
+				accounts = null;
 			}
 
-			mainControl.Content = new TableLayout(rows)
-			{
-				Padding = 10,
-				Spacing = new Eto.Drawing.Size(10, 10),
-			};
+			grid.DataStore = accounts;
 		}
     }
 }

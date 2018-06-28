@@ -126,9 +126,10 @@ namespace Nerva.Toolkit.Content
 			}
 			else
 			{
+				txList.Clear();
 				needGridUpdate = true;
 				mainControl.Content = new TableLayout(new TableRow(
-					new TableCell(new Label { Text = "WALLET NOT OPEN" })))
+					new TableCell(new Label { Text = "NO TRANSFERS" })))
 					{
 						Padding = 10,
 						Spacing = new Eto.Drawing.Size(10, 10),

@@ -241,6 +241,10 @@ namespace Nerva.Toolkit
 		{
 			Wallet_Wizard_Result result = Wallet_Wizard_Result.Undefined;
             WalletHelper.ShowWalletWizard(out result);
+
+			if (result != Wallet_Wizard_Result.Cancelled && result != Wallet_Wizard_Result.Undefined)
+				transfersPage.Update(null);
+				
             Log.Instance.Write(result.ToString());
 		}
 
