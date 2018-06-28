@@ -16,7 +16,6 @@ namespace Nerva.Toolkit
 		DaemonPage daemonPage = new DaemonPage();
 		BalancesPage balancesPage = new BalancesPage();
 		TransfersPage transfersPage = new TransfersPage();
-		SendPage sendPage = new SendPage();
 
 		#endregion
 
@@ -37,7 +36,6 @@ namespace Nerva.Toolkit
 			daemonPage.ConstructLayout();
 			balancesPage.ConstructLayout();
 			transfersPage.ConstructLayout();
-			sendPage.ConstructLayout();
 
 			TabControl tabs = new TabControl
 			{
@@ -45,7 +43,6 @@ namespace Nerva.Toolkit
 					new TabPage { Text = "Daemon", Content = daemonPage.MainControl },
 					new TabPage { Text = "Balances", Content = balancesPage.MainControl },
 					new TabPage { Text = "Transfers", Content = transfersPage.MainControl },
-					new TabPage { Text = "Send", Content = sendPage.MainControl }
 				}
 			};
 
@@ -80,7 +77,7 @@ namespace Nerva.Toolkit
 			var wallet_Select = new Command { MenuText = "Select", ToolBarText = "Select" };
 			wallet_Select.Executed += wallet_Select_Clicked;
 
-			var wallet_Store = new Command { MenuText = "Store", ToolBarText = "Store" };
+			var wallet_Store = new Command { MenuText = "Save", ToolBarText = "Save" };
 			wallet_Store.Executed += wallet_Store_Clicked;
 
 			var wallet_RescanSpent = new Command { MenuText = "Spent Outputs", ToolBarText = "Spent Outputs" };
@@ -94,6 +91,9 @@ namespace Nerva.Toolkit
 
 			var wallet_Keys_Mnemonic = new Command { MenuText = "Seed", ToolBarText = "Seed" };
 			wallet_Keys_Mnemonic.Executed += wallet_Keys_Mnemonic_Clicked;
+
+			var wallet_Account_Create = new Command { MenuText = "Create Account", ToolBarText = "Create Account" };
+			wallet_Account_Create.Executed += wallet_Account_Create_Clicked;
 
 			var quitCommand = new Command { MenuText = "Quit", Shortcut = Application.Instance.CommonModifier | Keys.Q };
 			quitCommand.Executed += quit_Clicked;
@@ -132,6 +132,7 @@ namespace Nerva.Toolkit
 							wallet_Select,
 							new SeparatorMenuItem(),
 							wallet_Store,
+							wallet_Account_Create,
 							new ButtonMenuItem
 							{
 								Text = "Rescan",

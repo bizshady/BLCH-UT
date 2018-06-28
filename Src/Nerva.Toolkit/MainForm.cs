@@ -60,7 +60,6 @@ namespace Nerva.Toolkit
 			pingThread.Start();
 		}
 
-		int lastHeight = -1;
 		private void UpdateDaemonUI()
 		{
 			while (shouldUpdateDaemon)
@@ -158,7 +157,6 @@ namespace Nerva.Toolkit
 					{
 						balancesPage.Update(account);
 						transfersPage.Update(transfers);
-						sendPage.Update(account);
 					});
 				}
 				else
@@ -168,7 +166,6 @@ namespace Nerva.Toolkit
 					{
 						balancesPage.Update(null);
 						transfersPage.Update(null);
-						sendPage.Update(null);
 					});
 				}
 			}
@@ -304,6 +301,14 @@ namespace Nerva.Toolkit
 		protected void wallet_Keys_Mnemonic_Clicked(object sender, EventArgs e)
 		{
 			new DisplaySeedDialog(Key_Type.Mnemonic).ShowModal();
+		}
+
+		protected void wallet_Account_Create_Clicked(object sender, EventArgs e)
+		{
+			EnterTextDialog d = new EnterTextDialog("Enter Account Name");
+			if (d.ShowModal() == DialogResult.Ok)
+				if (Cli.Instance.Wallet.CreateAccount(d.Text) == null)
+					MessageBox.Show("Failed to create new account", MessageBoxType.Error);
 		}
 
 		protected void about_Clicked(object sender, EventArgs e)

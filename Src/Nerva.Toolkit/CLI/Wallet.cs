@@ -116,18 +116,44 @@ namespace Nerva.Toolkit.CLI
             return BasicRequest("store");
         }
 
+        public NewAccount CreateAccount(string label)
+        {
+            string result = null;
+
+            if (string.IsNullOrEmpty(label))
+            {
+                if (!BasicRequest("create_account", out result))
+                    return null;
+            }
+            else
+            {
+                if (!BasicRequest<CreateAccount>("create_account", new CreateAccount {
+                    Label = label
+                }, out result))
+                    return null;
+            }
+
+            return JsonConvert.DeserializeObject<JsonValue<NewAccount>>(result).Result;
+        }
+
+        public bool LabelAccount(uint index, string label)
+        {
+            string result = null;
+
+            return BasicRequest<LabelAccount>("label_account", new LabelAccount {
+                Index = index,
+                Label = label
+            }, out result);
+        }
+
         public TransferTxID GetTransferByTxID(string txid)
         {
             string result = null;
 
-            var x = new GetTransferByTxID {
+            if (!BasicRequest<GetTransferByTxID>("get_transfer_by_txid", new GetTransferByTxID {
                 TxID = txid
-            };
-
-            if (!BasicRequest<GetTransferByTxID>("get_transfer_by_txid", x, out result))
+            }, out result))
                 return null;
-
-            Console.WriteLine(result);
 
             return JsonConvert.DeserializeObject<JsonValue<TransferContainer>>(result).Result.Transfer;
         }

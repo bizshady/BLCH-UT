@@ -7,6 +7,7 @@ using Nerva.Toolkit.Helpers;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.Content.Dialogs;
 
 namespace Nerva.Toolkit.Content
 {	
@@ -27,6 +28,8 @@ namespace Nerva.Toolkit.Content
         public void ConstructLayout()
 		{
 			var ctx_Mine = new Command { MenuText = "Mine" };
+			var ctx_Transfer = new Command { MenuText = "Transfer" };
+			var ctx_Rename = new Command { MenuText = "Rename" };
 
 			ctx_Mine.Executed += (s, e) =>
 			{
@@ -36,7 +39,7 @@ namespace Nerva.Toolkit.Content
 				SubAddressAccount a = accounts[grid.SelectedRow];
 				Configuration.Instance.Daemon.MiningAddress = a.BaseAddress;
 				Configuration.Save();
-				
+
 				Cli.Instance.Daemon.StopMining();
 				Log.Instance.Write("Mining stopped");
 
@@ -44,6 +47,23 @@ namespace Nerva.Toolkit.Content
 					Log.Instance.Write("Mining started for @ {0} on {1} threads", 
 						Conversions.WalletAddressShortForm(Configuration.Instance.Daemon.MiningAddress),
 						Configuration.Instance.Daemon.MiningThreads);
+			};
+
+			ctx_Transfer.Executed += (s, e) =>
+			{
+
+			};
+
+			ctx_Rename.Executed += (s, e) =>
+			{
+				if (grid.SelectedRow == -1)
+					return;
+
+				EnterTextDialog d = new EnterTextDialog("Select Account Name");
+
+				if (d.ShowModal() == DialogResult.Ok)
+					if (!Cli.Instance.Wallet.LabelAccount((uint)grid.SelectedRow, d.Text))
+						MessageBox.Show("Failed to rename account", MessageBoxType.Error);
 			};
 
 			grid = new GridView
@@ -63,7 +83,9 @@ namespace Nerva.Toolkit.Content
 			{
 				Items = 
 				{
-					ctx_Mine
+					ctx_Mine,
+					ctx_Transfer,
+					ctx_Rename
 				}
 			};
 

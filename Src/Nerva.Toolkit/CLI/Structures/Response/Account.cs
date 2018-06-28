@@ -3,7 +3,17 @@ using Newtonsoft.Json;
 
 namespace Nerva.Toolkit.CLI.Structures.Response
 {
-     [JsonObject]
+    [JsonObject]
+    public class NewAccount
+    {
+        [JsonProperty("account_index")]
+        public uint Index { get; set; } = uint.MaxValue;
+        
+        [JsonProperty("address")]
+        public string Address { get; set; } = string.Empty;
+    }
+
+    [JsonObject]
     public class Account
     {
         [JsonProperty("subaddress_accounts")]
