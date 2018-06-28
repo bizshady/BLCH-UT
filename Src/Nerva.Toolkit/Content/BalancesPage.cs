@@ -66,6 +66,16 @@ namespace Nerva.Toolkit.Content
 						MessageBox.Show("Failed to rename account", MessageBoxType.Error);
 			};
 
+			ContextMenu ctx = new ContextMenu
+			{
+				Items = 
+				{
+					ctx_Mine,
+					ctx_Transfer,
+					ctx_Rename
+				}
+			};
+
 			grid = new GridView
 			{
 				GridLines = GridLines.Horizontal,
@@ -79,14 +89,22 @@ namespace Nerva.Toolkit.Content
 				}
 			};
 
-			grid.ContextMenu = new ContextMenu
+			grid.MouseDown += (s, e) =>
 			{
-				Items = 
+				var cell = grid.GetCellAt(e.Location);
+				if (cell.RowIndex == -1)
 				{
-					ctx_Mine,
-					ctx_Transfer,
-					ctx_Rename
+					grid.UnselectAll();
+					return;
 				}
+
+				if (e.Buttons != MouseButtons.Alternate)
+					return;
+
+				if (grid.SelectedRow == -1)
+					return;
+
+				ctx.Show(grid);
 			};
 
 			mainControl = new StackLayout
