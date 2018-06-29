@@ -3,93 +3,64 @@ using Eto.Forms;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class EnterPasswordDialog : Dialog<DialogResult>
+    public class EnterPasswordDialog : DialogBase<DialogResult>
 	{
         bool isShown = false;
-
         private string password;
         public string Password => password;
 
         PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
         TextBox tb = new TextBox();
         TableRow pwr = new TableRow();
+        private TextControl txtCtrl;
 
         Button btnShow = new Button { Text = "Show" };
-        Button btnOk = new Button { Text = "OK" };
-        Button btnCancel = new Button { Text = "Cancel" };
 
-        public EnterPasswordDialog()
+        public EnterPasswordDialog() : base("Enter Wallet Password")
         {
-            this.Title = "Enter Wallet Password";
-            ClientSize = new Size(400, 100);
-            Topmost = true;
-            var scr = Screen.PrimaryScreen;
-            Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);
-
-            CreateLayout();
-
-            this.AbortButton = btnCancel;
-            this.DefaultButton = btnOk;
-
-            btnShow.Click += (s, e) =>
-            {
-                isShown = !isShown;
-                if (isShown)
-                    tb.Text = pwb.Text;
-                else
-                    pwb.Text = tb.Text;
-
-                CreateLayout();
-            };
-
-            btnOk.Click += (s, e) =>
-            {
-                if (isShown)
-                    password = tb.Text;
-                else
-                    password = pwb.Text;
-
-                this.Close(DialogResult.Ok);
-            };
-
-            btnCancel.Click += (s, e) =>
-            {
-                password = null;
-                this.Close(DialogResult.Cancel);
-            };
+            btnShow.Click += (s, e) => OnShow();
         }
 
-        public void CreateLayout()
+        private void OnShow()
         {
-            TextControl textControl;
-            
+            isShown = !isShown;
             if (isShown)
-                textControl = tb;
+                tb.Text = pwb.Text;
             else
-                textControl = pwb;
+                pwb.Text = tb.Text;
 
-            Content = new TableLayout
+            ConstructContent();
+        }
+
+        protected override void OnOk()
+        {
+            password = isShown ? tb.Text : pwb.Text;
+            this.Close(DialogResult.Ok);
+        }
+
+        protected override void OnCancel()
+        {
+            password = null;
+            this.Close(DialogResult.Cancel);
+        }
+
+        protected override void ConstructContent()
+        {
+            txtCtrl = isShown ? (TextControl)tb : (TextControl)pwb;
+            base.ConstructContent();
+            txtCtrl.Focus();
+        }
+
+        protected override Control ConstructChildContent()
+        {
+            return new TableLayout
             {
                 Padding = 10,
 				Spacing = new Eto.Drawing.Size(10, 10),
                 Rows = {
-                    textControl,
-                    new TableRow (
-                        new TableLayout
-                        {
-                            Rows = {
-                                new TableRow (
-                                    btnShow,
-                                    new TableCell(null, true),
-                                    btnOk,
-                                    btnCancel)
-                            }
-                        }),
-                    new TableRow { ScaleHeight = true }
-                }
+                    new TableRow(txtCtrl, btnShow),
+                    new TableRow { ScaleHeight = true }}
             };
-
-            textControl.Focus();
         }
     }
 }

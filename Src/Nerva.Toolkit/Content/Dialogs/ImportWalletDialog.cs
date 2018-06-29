@@ -31,7 +31,8 @@ namespace Nerva.Toolkit.Content.Dialogs
         public ImportWalletDialog()
         {
             this.Title = "Import Wallet";
-            ClientSize = new Size(400, 100);
+            this.Width = 400;
+            this.Resizable = true;
             Topmost = true;
             var scr = Screen.PrimaryScreen;
             Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);

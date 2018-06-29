@@ -15,7 +15,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         public ShowTxDialog(TransferTxID tx)
         {
             this.Title = "Transaction Details";
-            ClientSize = new Size(400, 100);
+            this.Width = 400;
             Topmost = true;
             var scr = Screen.PrimaryScreen;
             Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);

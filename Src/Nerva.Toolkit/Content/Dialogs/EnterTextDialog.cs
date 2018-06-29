@@ -3,69 +3,48 @@ using Eto.Forms;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class EnterTextDialog : Dialog<DialogResult>
+    public class EnterTextDialog : DialogBase<DialogResult>
 	{
-        bool isShown = false;
-
         private string text;
         public string Text => text;
 
-        TextBox tb = new TextBox();
+        TextBox txtText = new TextBox();
 
-        Button btnOk = new Button { Text = "OK" };
-        Button btnCancel = new Button { Text = "Cancel" };
-
-        public EnterTextDialog(string title, string text = null)
+        public EnterTextDialog(string title, string text = null) : base(title)
         {
-            this.Title = title;
-            ClientSize = new Size(400, 100);
-            Topmost = true;
-            var scr = Screen.PrimaryScreen;
-            Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);
-
-            CreateLayout();
-
-            this.AbortButton = btnCancel;
-            this.DefaultButton = btnOk;
-
-            btnOk.Click += (s, e) =>
-            {
-                text = tb.Text;
-                this.Close(DialogResult.Ok);
-            };
-
-            btnCancel.Click += (s, e) =>
-            {
-                text = null;
-                this.Close(DialogResult.Cancel);
-            };
-
-            tb.Text = text;
+            this.text = text;
+            txtText.Text = text;
         }
 
-        public void CreateLayout()
+        protected override void OnOk()
         {
-            Content = new TableLayout
+            this.text = txtText.Text;
+            this.Close(DialogResult.Ok);
+        }
+
+        protected override void OnCancel()
+        {
+            this.text = null;
+            this.Close(DialogResult.Cancel);
+        }
+
+        protected override void ConstructContent()
+        {
+            base.ConstructContent();
+            txtText.Focus();
+        }
+
+        protected override Control ConstructChildContent()
+        {
+            return new TableLayout
             {
                 Padding = 10,
 				Spacing = new Eto.Drawing.Size(10, 10),
                 Rows = {
-                    tb,
-                    new TableRow (
-                        new TableLayout
-                        {
-                            Rows = {
-                                new TableRow (
-                                    new TableCell(null, true),
-                                    btnOk,
-                                    btnCancel)
-                            }
-                        }),
+                    txtText,
                     new TableRow { ScaleHeight = true }
                 }
             };
-
-            tb.Focus();
         }
     }
 }

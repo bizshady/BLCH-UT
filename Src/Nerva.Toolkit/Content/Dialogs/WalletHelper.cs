@@ -17,6 +17,63 @@ namespace Nerva.Toolkit.Content.Dialogs
 		Cancelled
 	}
 
+	public abstract class DialogBase<T> : Dialog<T>
+	{
+		protected Button btnOk = new Button { Text = "Send" };
+        protected Button btnCancel = new Button { Text = "Cancel" };
+
+		public DialogBase(string title)
+		{
+			this.Title = title;
+			this.Width = 400;
+            this.Resizable = true;
+            Topmost = true;
+            var scr = Screen.PrimaryScreen;
+            Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);
+
+			this.AbortButton = btnCancel;
+            this.DefaultButton = btnOk;
+
+			ConstructContent();
+
+			btnOk.Click += (s, e) => OnOk();
+			btnCancel.Click += (s, e) => OnCancel();
+		}
+
+		protected virtual void ConstructContent()
+		{
+			Content = new StackLayout
+			{
+				Orientation = Orientation.Vertical,
+				HorizontalContentAlignment = HorizontalAlignment.Stretch,
+				VerticalContentAlignment = VerticalAlignment.Stretch,
+				Items =
+				{
+					new StackLayoutItem(ConstructChildContent(), true),
+					new StackLayoutItem(new StackLayout
+					{
+						Orientation = Orientation.Horizontal,
+						HorizontalContentAlignment = HorizontalAlignment.Right,
+						VerticalContentAlignment = VerticalAlignment.Center,
+						Padding = 10,
+						Spacing = 10,
+						Items =
+						{
+							new StackLayoutItem(null, true),
+							btnOk,
+							btnCancel
+						}
+					})
+				}
+			};
+		}
+
+		protected abstract Control ConstructChildContent();
+
+		protected abstract void OnOk();
+		protected abstract void OnCancel();
+	}
+
     public class WalletHelper
 	{
         public static bool ShowSavePasswordMessage(string password)

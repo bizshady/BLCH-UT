@@ -30,6 +30,7 @@ namespace Nerva.Toolkit.Content
 			var ctx_Mine = new Command { MenuText = "Mine" };
 			var ctx_Transfer = new Command { MenuText = "Transfer" };
 			var ctx_Rename = new Command { MenuText = "Rename" };
+			var ctx_Info = new Command { MenuText = "Address" };
 
 			ctx_Mine.Executed += (s, e) =>
 			{
@@ -49,9 +50,39 @@ namespace Nerva.Toolkit.Content
 						Configuration.Instance.Daemon.MiningThreads);
 			};
 
+			ctx_Info.Executed += (s, e) =>
+			{
+				if (grid.SelectedRow == -1)
+					return;
+
+				SubAddressAccount a = accounts[grid.SelectedRow];
+
+				string lbl = string.IsNullOrEmpty(a.Label) ? "No Label" : a.Label;
+
+				EnterTextDialog d = new EnterTextDialog($"Address for account '{lbl}'", a.BaseAddress);
+				d.ShowModal();
+			};
+
 			ctx_Transfer.Executed += (s, e) =>
 			{
+				if (grid.SelectedRow == -1)
+					return;
 
+				SubAddressAccount a = accounts[grid.SelectedRow];
+
+				TransferDialog d = new TransferDialog(a);
+				if (d.ShowModal() == DialogResult.Ok)
+				{
+					var x = d.TxData;
+					string amt = Conversions.ToAtomicUnits(x.Amount).ToString();
+					string fee = Conversions.ToAtomicUnits(x.Fee).ToString();
+					string txh = x.TxHash;
+					string txk = x.TxKey;
+
+					string fmt = $"Sent: {amt}\r\nFees: {fee}\r\nHash: {txh}";
+
+					MessageBox.Show(Application.Instance.MainForm, fmt, "TX Results", MessageBoxType.Information);
+				}
 			};
 
 			ctx_Rename.Executed += (s, e) =>
@@ -70,6 +101,7 @@ namespace Nerva.Toolkit.Content
 			{
 				Items = 
 				{
+					ctx_Info,
 					ctx_Mine,
 					ctx_Transfer,
 					ctx_Rename

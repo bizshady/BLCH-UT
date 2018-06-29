@@ -158,6 +158,47 @@ namespace Nerva.Toolkit.CLI
             return JsonConvert.DeserializeObject<JsonValue<TransferContainer>>(result).Result.Transfer;
         }
 
+        public Send TransferFunds(SubAddressAccount acc, string address, string paymentId, double amount, Send_Priority priority)
+        {
+            var dest = new Destination
+            {
+                Address = address,
+                Amount = Conversions.ToAtomicUnits(amount)
+            };
+
+            Send sendResponse = null;
+
+            if (string.IsNullOrEmpty(paymentId))
+            {
+                sendResponse = TransferFunds<SendWithoutPaymentID>(new SendWithoutPaymentID {
+                    AccountIndex = acc.Index,
+                    Priority = (uint)priority
+                }, dest);
+            }
+            else
+            {
+                sendResponse = TransferFunds<SendWithPaymentID>(new SendWithPaymentID {
+                    AccountIndex = acc.Index,
+                    Priority = (uint)priority,
+                    PaymentId = paymentId
+                }, dest);
+            }
+
+            return sendResponse;
+        }
+
+        public Send TransferFunds<T>(T sendData, params Destination[] destinations) where T : SendWithoutPaymentID, new()
+        {
+            string result = null;
+
+            sendData.Destinations.AddRange(destinations);
+
+            if (!BasicRequest<T>("transfer", sendData, out result))
+                return null;
+
+            return JsonConvert.DeserializeObject<JsonValue<Send>>(result).Result;
+        }
+
         private bool BasicRequest(string rpc, bool suppressErrorMessage = false)
         {
             string result = null;

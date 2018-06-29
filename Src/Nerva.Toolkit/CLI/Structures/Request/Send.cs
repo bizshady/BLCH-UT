@@ -4,15 +4,16 @@ using Newtonsoft.Json;
 
 namespace Nerva.Toolkit.CLI.Structures.Request
 {
-    public enum transfer_Priority
+    public enum Send_Priority : uint
     {
-        Default,
+        Default = 0,
         Low,
         Medium,
         High
     }
 
-    public class TransferWithoutPaymentID
+    [JsonObject]
+    public class SendWithoutPaymentID
     {
         [JsonProperty("destinations")]
         public List<Destination> Destinations { get; set; } = new List<Destination>();
@@ -27,10 +28,11 @@ namespace Nerva.Toolkit.CLI.Structures.Request
         public bool GetTxKey => true;
 
         [JsonProperty("priority")]
-        public uint Priority { get; set; }
+        public uint Priority { get; set; } = (uint)Send_Priority.Default;
     }
 
-    public class TransferWithPaymentID : TransferWithoutPaymentID
+    [JsonObject]
+    public class SendWithPaymentID : SendWithoutPaymentID
     {
         [JsonProperty("payment_id")]
         public string PaymentId { get; set; }

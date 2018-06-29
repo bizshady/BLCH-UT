@@ -1,67 +1,46 @@
 using AngryWasp.Logger;
-using Eto.Drawing;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class DisplaySeedDialog : Dialog
+    public class DisplaySeedDialog : DialogBase<DialogResult>
 	{
-        Button btnSave = new Button { Text = "Save" };
-
-        Button btnClose = new Button { Text = "Close" };
-
+        private Key_Type keyType;
         TextArea txtKey = new TextArea { ReadOnly = true, Wrap = true };
 
-        public DisplaySeedDialog(Key_Type kt)
+        public DisplaySeedDialog(Key_Type kt) : base(kt == Key_Type.View_Key ? "View Key" : "Mnemonic Seed")
         {
-            this.Title = (kt == Key_Type.View_Key ? "View Key" : "Mnemonic Seed");
-            ClientSize = new Size(400, 300);
-            Topmost = true;
-            var scr = Screen.PrimaryScreen;
-            Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);
+            this.keyType = kt;
+            txtKey.Text = Cli.Instance.Wallet.QueryKey(kt);
 
-            string key = Cli.Instance.Wallet.QueryKey(kt);
-            txtKey.Text = key;
+            //reuse ok and cancle buttonsa but give a more meaningful label
+            btnOk.Text = "Save";
+            btnCancel.Text = "Close";
 
-            CreateLayout(kt);
-
-            this.AbortButton = btnClose;
-            this.DefaultButton = btnClose;
-
-            btnClose.Click += (s, e) => { this.Close(); };
-
-            btnSave.Click += (s, e) =>
-            {
-                Log.Instance.Write("Saving keys not implemented");
-                this.Close();
-            };
+            this.DefaultButton = btnCancel;
         }
 
-        public void CreateLayout(Key_Type kt)
+        protected override Control ConstructChildContent()
         {
-            Content = new TableLayout
+            return new TableLayout
             {
                 Padding = 10,
 				Spacing = new Eto.Drawing.Size(10, 10),
                 Rows = {
-                    new TableRow(
-                        txtKey)
-                        {
-                            ScaleHeight = true
-                        },
-                    new TableRow (
-                        new TableLayout
-                        {
-                            Rows = {
-                                new TableRow (
-                                    new TableCell(null, true),
-                                    btnSave,
-                                    btnClose)
-                            }
-                        })
-                }
+                    new TableRow(txtKey) { ScaleHeight = true }}
             };
+        }
+
+        protected override void OnOk()
+        {
+            Log.Instance.Write("Saving keys not implemented");
+            this.Close(DialogResult.Ok);
+        }
+
+        protected override void OnCancel()
+        {
+            this.Close(DialogResult.Cancel);
         }
     }
 }
