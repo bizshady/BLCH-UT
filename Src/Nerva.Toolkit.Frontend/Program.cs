@@ -59,8 +59,9 @@ namespace Nerva.Toolkit.Frontend
 				Cli.Instance.Daemon.StopDaemon();
 			}
 
+			//be agressive and make sure it is dead
 			Cli.Instance.StopWalletCheck();
-			Cli.Instance.Wallet.StopWallet();
+			Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
 
 			Configuration.Save();
 			Log.Instance.Shutdown();

@@ -59,7 +59,7 @@ namespace Nerva.Toolkit.Content
 
 				string lbl = string.IsNullOrEmpty(a.Label) ? "No Label" : a.Label;
 
-				EnterTextDialog d = new EnterTextDialog($"Address for account '{lbl}'", a.BaseAddress);
+				TextDialog d = new TextDialog($"Address for account '{lbl}'", true, a.BaseAddress);
 				d.ShowModal();
 			};
 
@@ -73,15 +73,20 @@ namespace Nerva.Toolkit.Content
 				TransferDialog d = new TransferDialog(a);
 				if (d.ShowModal() == DialogResult.Ok)
 				{
-					var x = d.TxData;
-					string amt = Conversions.ToAtomicUnits(x.Amount).ToString();
-					string fee = Conversions.ToAtomicUnits(x.Fee).ToString();
-					string txh = x.TxHash;
-					string txk = x.TxKey;
+					if (d.TxData != null)
+					{
+						var x = d.TxData;
+						string amt = Conversions.FromAtomicUnits(x.Amount).ToString();
+						string fee = Conversions.FromAtomicUnits(x.Fee).ToString();
+						string txh = x.TxHash;
+						string txk = x.TxKey;
 
-					string fmt = $"Sent: {amt}\r\nFees: {fee}\r\nHash: {txh}";
+						string fmt = $"Sent: {amt}\r\nFees: {fee}\r\nHash: {txh}";
 
-					MessageBox.Show(Application.Instance.MainForm, fmt, "TX Results", MessageBoxType.Information);
+						MessageBox.Show(Application.Instance.MainForm, fmt, "TX Results", MessageBoxType.Information);
+					}
+					else
+						Log.Instance.Write(Log_Severity.Fatal, "Failed to create transaction");
 				}
 			};
 
@@ -90,7 +95,7 @@ namespace Nerva.Toolkit.Content
 				if (grid.SelectedRow == -1)
 					return;
 
-				EnterTextDialog d = new EnterTextDialog("Select Account Name");
+				TextDialog d = new TextDialog("Select Account Name", false);
 
 				if (d.ShowModal() == DialogResult.Ok)
 					if (!Cli.Instance.Wallet.LabelAccount((uint)grid.SelectedRow, d.Text))

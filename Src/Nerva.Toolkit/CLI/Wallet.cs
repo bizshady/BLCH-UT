@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using AngryWasp.Logger;
@@ -13,7 +14,11 @@ namespace Nerva.Toolkit.CLI
 {
     public enum Key_Type
     {
-        View_Key,
+        Secret_View_Key,
+        Secret_Spend_Key,
+        Public_View_Key,
+        Public_Spend_Key,
+        All_Keys,
         Mnemonic
     }
 
@@ -64,7 +69,7 @@ namespace Nerva.Toolkit.CLI
             }, out result);
         }
 
-        public string QueryKey(Key_Type keyType)
+        public KeyInfo QueryKey(Key_Type keyType)
         {
             string result = null;
 
@@ -73,7 +78,7 @@ namespace Nerva.Toolkit.CLI
             }, out result))
                 return null;
 
-            return JObject.Parse(result)["result"]["key"].Value<string>();
+            return JsonConvert.DeserializeObject<JsonValue<KeyInfo>>(result).Result;
         }
 
         public TransferList GetTransfers(uint scanFromHeight, out uint lastTxHeight)
@@ -272,13 +277,16 @@ namespace Nerva.Toolkit.CLI
 
             [JsonProperty("scan_from_height")]
             public int ScanHeight => 0;
+
+            [JsonProperty("create_address_file")]
+            public bool CreateAddressFile => true;
         }
 
         [JsonObject]
         private class RestoreJsonKeys : RestoreJson
         {
             [JsonProperty("viewkey")]
-            public string View_Key { get; set; } = string.Empty;
+            public string ViewKey { get; set; } = string.Empty;
 
             [JsonProperty("spendkey")]
             public string SpendKey { get; set; } = string.Empty;
@@ -294,33 +302,51 @@ namespace Nerva.Toolkit.CLI
             public string Passphrase { get; set; } = string.Empty;
         }
 
+        public void RestoreWalletFromKeys(string walletName, string viewKey, string spendKey, string pass)
+        {
+            string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
+
+            CreateJson(walletPath, new RestoreJsonKeys
+            {
+                FileName = walletPath,
+                Password = pass,
+                ViewKey = viewKey,
+                SpendKey = spendKey
+            });
+
+            RestoreWalletFromJson(walletPath);
+        }
+
         public void RestoreWalletFromSeed(string walletName, string seed, string pass)
         {
-            //The RPC wallet does not contain a function to restore a wallet from seed,
-            //So we have to do some shady shit and call nerva-wallet-cli to restore the wallet for us
-
-            string cliPath = FileNames.GetCliExePath(FileNames.CLI_WALLET);
             string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
-            string jsonPath = $"{walletPath}.json";
-            string daemon = $"127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
 
-            var r = new RestoreJsonSeed
+            CreateJson(walletPath, new RestoreJsonSeed
             {
                 FileName = walletPath,
                 Password = pass,
                 Seed = seed,
-            };
+            });
 
+            RestoreWalletFromJson(walletPath);
+        }
+        
+        private void CreateJson(string walletPath, object data)
+        {
             JsonSerializerSettings settings = new JsonSerializerSettings();
             settings.Formatting = Formatting.Indented;
             var serializer = JsonSerializer.Create(settings);
 
-            using (var sw = new StreamWriter(File.OpenWrite(jsonPath)))
+            using (var sw = new StreamWriter(File.OpenWrite($"{walletPath}.json")))
                 using (var jsonTextWriter = new JsonTextWriter(sw))
-                    serializer.Serialize(jsonTextWriter, r);
+                    serializer.Serialize(jsonTextWriter, data);
+        }
 
-            string exe = cliPath;
-            string args = $"--daemon-address {daemon} --generate-from-json {jsonPath}";
+        private void RestoreWalletFromJson(string walletPath)
+        {
+            string daemon = $"127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
+            string exe = FileNames.GetCliExePath(FileNames.CLI_WALLET);
+            string args = $"--daemon-address {daemon} --generate-from-json {walletPath}.json";
             if (Configuration.Instance.Testnet)
                 args += " --testnet";
 
@@ -340,7 +366,7 @@ namespace Nerva.Toolkit.CLI
                 if (e.Data == null)
                     return;
 
-                    Log.Instance.Write(e.Data);
+                Log.Instance.Write(e.Data);
 
                 if (e.Data.Contains("Refresh done"))
                 {

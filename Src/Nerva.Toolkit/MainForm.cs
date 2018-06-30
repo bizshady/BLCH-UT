@@ -41,7 +41,7 @@ namespace Nerva.Toolkit
 			{
 				shouldUpdateDaemon = false;
 				shouldUpdateWallet = false;
-				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET, -1);
+				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
 			};
 		}
 
@@ -295,17 +295,12 @@ namespace Nerva.Toolkit
 
 		protected void wallet_Keys_View_Clicked(object sender, EventArgs e)
 		{
-			new DisplaySeedDialog(Key_Type.View_Key).ShowModal();
-		}
-
-		protected void wallet_Keys_Mnemonic_Clicked(object sender, EventArgs e)
-		{
-			new DisplaySeedDialog(Key_Type.Mnemonic).ShowModal();
+			new DisplayKeysDialog().ShowModal();
 		}
 
 		protected void wallet_Account_Create_Clicked(object sender, EventArgs e)
 		{
-			EnterTextDialog d = new EnterTextDialog("Enter Account Name");
+			TextDialog d = new TextDialog("Enter Account Name", false);
 			if (d.ShowModal() == DialogResult.Ok)
 				if (Cli.Instance.Wallet.CreateAccount(d.Text) == null)
 					MessageBox.Show("Failed to create new account", MessageBoxType.Error);

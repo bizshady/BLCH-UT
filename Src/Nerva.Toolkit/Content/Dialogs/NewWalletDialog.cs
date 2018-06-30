@@ -3,101 +3,51 @@ using Eto.Forms;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class NewWalletDialog : Dialog<DialogResult>
+    public class NewWalletDialog : PasswordDialog
 	{
-        bool isShown = false;
-
-        private string name;
-        private string password;
-
-        public string Password => password;
+        protected string name;
         public string Name => name;
 
-        PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
-        TextBox tb = new TextBox();
+        protected TextBox txtName = new TextBox();
 
-        TextBox txtName = new TextBox();
+        public NewWalletDialog(string title = "Create New Wallet") : base(title) { }
 
-        TableRow pwr = new TableRow();
-
-        Button btnShow = new Button { Text = "Show" };
-        Button btnOk = new Button { Text = "OK" };
-        Button btnCancel = new Button { Text = "Cancel" };
-
-        public NewWalletDialog()
+        protected override void OnOk()
         {
-            this.Title = "Create New Wallet";
-            this.Width = 400;
-            Topmost = true;
-            var scr = Screen.PrimaryScreen;
-            Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);
-
-            CreateLayout();
-
-            this.AbortButton = btnCancel;
-            this.DefaultButton = btnOk;
-
-            btnShow.Click += (s, e) =>
-            {
-                isShown = !isShown;
-                if (isShown)
-                    tb.Text = pwb.Text;
-                else
-                    pwb.Text = tb.Text;
-
-                CreateLayout();
-            };
-
-            btnOk.Click += (s, e) =>
-            {
-                if (isShown)
-                    password = tb.Text;
-                else
-                    password = pwb.Text;
-
-                name = txtName.Text;
-
-                this.Close(DialogResult.Ok);
-            };
-
-            btnCancel.Click += (s, e) =>
-            {
-                password = null;
-                name = null;
-                this.Close(DialogResult.Cancel);
-            };
+            base.OnOk();
+            name = txtName.Text;
+            this.Close(DialogResult.Ok);
         }
 
-        public void CreateLayout()
+        protected override void OnCancel()
         {
-            TextControl textControl;
-            
-            if (isShown)
-                textControl = tb;
-            else
-                textControl = pwb;
+            base.OnCancel();
+            name = null;
+            this.Close(DialogResult.Cancel);
+        }
 
-            Content = new TableLayout
+        protected override void OnShow()
+        {
+            string oldName = txtName.Text;
+            base.OnShow();
+            txtName.Text = oldName;
+        }
+
+        protected override Control ConstructChildContent()
+        {
+            return new StackLayout
             {
                 Padding = 10,
-				Spacing = new Eto.Drawing.Size(10, 10),
-                Rows = {
-                    new Label { Text = "Wallet Name" },
-                    txtName,
-                    new Label { Text = "Password" },
-                    textControl,
-                    new TableRow (
-                        new TableLayout
-                        {
-                            Rows = {
-                                new TableRow (
-                                    btnShow,
-                                    new TableCell(null, true),
-                                    btnOk,
-                                    btnCancel)
-                            }
-                        }),
-                    new TableRow { ScaleHeight = true }
+                Spacing = 10,
+                Orientation = Orientation.Vertical,
+				HorizontalContentAlignment = HorizontalAlignment.Stretch,
+				VerticalContentAlignment = VerticalAlignment.Stretch,
+                Items = 
+                {
+                    new StackLayoutItem(new Label { Text = "Wallet Name" }),
+                    new StackLayoutItem(txtName),
+                    new StackLayoutItem(new Label { Text = "Password" }),
+                    ConstructPasswordControls()
                 }
             };
         }

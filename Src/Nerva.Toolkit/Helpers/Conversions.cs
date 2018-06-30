@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using AngryWasp.Helpers;
 using AngryWasp.Logger;
 
 namespace Nerva.Toolkit.Helpers
@@ -29,6 +30,18 @@ namespace Nerva.Toolkit.Helpers
         public static string WalletAddressShortForm(string a)
         {
             return $"{a.Substring(0, 6)}...{a.Substring(a.Length - 6, 6)}";
+        }
+
+        public static string GenerateRandomPaymentID()
+        {
+            char[] chars = ("0123456789abcdef").ToCharArray();
+
+            string str = string.Empty;
+
+            for (int i = 0; i < 64; i++)
+                str += chars[MathHelper.Random.NextInt(0, chars.Length)];
+
+            return str;
         }
 
         public static ulong OctetSetToInt(string vs)

@@ -19,7 +19,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
 	public abstract class DialogBase<T> : Dialog<T>
 	{
-		protected Button btnOk = new Button { Text = "Send" };
+		protected Button btnOk = new Button { Text = "OK" };
         protected Button btnCancel = new Button { Text = "Cancel" };
 
 		public DialogBase(string title)
@@ -74,31 +74,86 @@ namespace Nerva.Toolkit.Content.Dialogs
 		protected abstract void OnCancel();
 	}
 
+	public abstract class PasswordDialog : DialogBase<DialogResult>
+	{
+		protected bool isShown = false;
+
+		protected string password;
+
+        public string Password => password;
+
+		protected PasswordBox txtPass = new PasswordBox { PasswordChar = '*' };
+        protected TextBox txtPlain = new TextBox();
+        protected TableRow tr = new TableRow();
+
+        protected TextControl txtCtrl;
+
+        protected Button btnShow = new Button { Text = "Show" };
+
+		public PasswordDialog(string title) : base (title)
+		{
+			btnShow.Click += (s, e) => OnShow();
+		}
+
+		protected override void OnOk()
+        {
+            password = isShown ? txtPlain.Text : txtPass.Text;
+        }
+
+        protected override void OnCancel()
+        {
+            password = null;
+        }
+
+		protected virtual void OnShow()
+		{
+			isShown = !isShown;
+            if (isShown)
+                txtPlain.Text = txtPass.Text;
+            else
+                txtPass.Text = txtPlain.Text;
+
+            ConstructContent();
+		}
+
+		protected override void ConstructContent()
+        {
+            txtCtrl = isShown ? (TextControl)txtPlain : (TextControl)txtPass;
+            base.ConstructContent();
+            txtCtrl.Focus();
+        }
+
+		protected StackLayout ConstructPasswordControls()
+		{
+			return new StackLayout
+            {
+                Orientation = Orientation.Horizontal,
+				HorizontalContentAlignment = HorizontalAlignment.Right,
+				VerticalContentAlignment = VerticalAlignment.Center,
+				Spacing = 10,
+                Items = 
+                {
+                    new StackLayoutItem(txtCtrl, true),
+					btnShow
+                }
+            };
+		}
+	}
+
     public class WalletHelper
 	{
-        public static bool ShowSavePasswordMessage(string password)
+        public static void SaveWalletLogin(string walletFile, string password)
         {
-            if (MessageBox.Show(Application.Instance.MainForm, "Would you like to save your wallet password?\r\n" +
-				"You will not be asked for your password to open the wallet again\r\n\r\nSECURITY WARNING:\r\n\r\n" +
-				"The password is stored in an easily decoded format\r\nAnyone with access to this machine can open your wallet without the password",
-                "Save Password?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No ) == DialogResult.Yes)
-			{
-				Log.Instance.Write(Log_Severity.Warning, "User selected to save password");
+			Configuration.Instance.Wallet.LastOpenedWallet = walletFile;
 
-				if (string.IsNullOrEmpty(password))
-					Configuration.Instance.Wallet.LastWalletPassword = string.Empty;
-				else
-					Configuration.Instance.Wallet.LastWalletPassword = password.EncodeBase64();
+			string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : password.EncodeBase64();
 
-                return true;
-			}
+			if (Configuration.Instance.Wallet.SaveWalletPassword)
+				Configuration.Instance.Wallet.LastWalletPassword = formattedPassword;
 			else
-			{
-				Log.Instance.Write(Log_Severity.Warning, "User selected not to save password. Wiping previously saved password");
 				Configuration.Instance.Wallet.LastWalletPassword = null;
-			}
-            
-            return false;
+
+			Configuration.Save();
         }
 
         public static bool OpenSavedWallet()
@@ -204,8 +259,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 								OpenWalletDialog d2 = new OpenWalletDialog();
 								if (d2.ShowModal() == DialogResult.Ok)
 								{
-									Configuration.Instance.Wallet.LastOpenedWallet = d2.Name;
-									ShowSavePasswordMessage(d2.Password);
+									SaveWalletLogin(d2.Name, d2.Password);
 									result = Wallet_Wizard_Result.WalletOpened;
 									return;
 								}
@@ -225,8 +279,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
 									if (created)
 									{
-										Configuration.Instance.Wallet.LastOpenedWallet = d2.Name;
-										ShowSavePasswordMessage(d2.Password);
+										SaveWalletLogin(d2.Name, d2.Password);
 										result = Wallet_Wizard_Result.NewWalletCreated;
 										return;
 									}
@@ -241,6 +294,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 							ImportWalletDialog d2 = new ImportWalletDialog();
 							if (d2.ShowModal() == DialogResult.Ok)
 							{
+								SaveWalletLogin(d2.Name, d2.Password);
 								result = Wallet_Wizard_Result.WalletImported;
 								return;
 							}

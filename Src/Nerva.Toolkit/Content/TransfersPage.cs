@@ -106,7 +106,9 @@ namespace Nerva.Toolkit.Content
 						//todo: make the number of transactions to show a setting
 						int maxRows = 25;
 						
-						txList = txList.Take(maxRows).ToList();
+						if (txList.Count > maxRows)
+							txList = txList.Take(maxRows).ToList();
+
 						grid.DataStore = txList;
 
 						//update the selected row in the grid

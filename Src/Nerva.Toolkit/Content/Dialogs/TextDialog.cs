@@ -3,17 +3,18 @@ using Eto.Forms;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class EnterTextDialog : DialogBase<DialogResult>
+    public class TextDialog : DialogBase<DialogResult>
 	{
         private string text;
         public string Text => text;
 
         TextBox txtText = new TextBox();
 
-        public EnterTextDialog(string title, string text = null) : base(title)
+        public TextDialog(string title, bool readOnly, string text = null) : base(title)
         {
             this.text = text;
             txtText.Text = text;
+            txtText.ReadOnly = readOnly;
         }
 
         protected override void OnOk()

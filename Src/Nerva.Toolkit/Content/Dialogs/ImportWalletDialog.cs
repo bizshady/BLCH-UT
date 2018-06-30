@@ -5,121 +5,82 @@ using Nerva.Toolkit.CLI;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-    public class ImportWalletDialog : Dialog<DialogResult>
-	{
-        bool isShown = false;
-
+    public class ImportWalletDialog : PasswordDialog
+    {
         private string name;
-        private string password;
-
-        public string Password => password;
         public string Name => name;
 
-        PasswordBox pwb = new PasswordBox { PasswordChar = '*' };
-        TextBox tb = new TextBox();
-
         TextBox txtName = new TextBox();
+        TextBox txtViewKey = new TextBox();
+        TextBox txtSpendKey = new TextBox();
 
-        TableRow pwr = new TableRow();
+        public ImportWalletDialog() : base("Import Wallet") { }
 
-        TextArea txtKey = new TextArea { Wrap = true };
-
-        Button btnShow = new Button { Text = "Show" };
-        Button btnOk = new Button { Text = "OK" };
-        Button btnCancel = new Button { Text = "Cancel" };
-
-        public ImportWalletDialog()
+        bool importStarted = false;
+        protected override void OnOk()
         {
-            this.Title = "Import Wallet";
-            this.Width = 400;
-            this.Resizable = true;
-            Topmost = true;
-            var scr = Screen.PrimaryScreen;
-            Location = new Point((int)(scr.WorkingArea.Width - Size.Width) / 2, (int)(scr.WorkingArea.Height - Size.Height) / 2);
-
-            CreateLayout();
-
-            this.AbortButton = btnCancel;
-            this.DefaultButton = btnOk;
-
-            btnShow.Click += (s, e) =>
+            if (importStarted)
             {
-                isShown = !isShown;
-                if (isShown)
-                    tb.Text = pwb.Text;
-                else
-                    pwb.Text = tb.Text;
+                MessageBox.Show("Please wait for the import to complete");
+                return;
+            }
 
-                CreateLayout();
+            base.OnOk();
+
+            BackgroundWorker w = new BackgroundWorker();
+
+            w.DoWork += (ws, we) =>
+            {
+                importStarted = true;
+                Application.Instance.AsyncInvoke ( () =>
+				{
+                    Content.Enabled = false;
+				});
+
+                Cli.Instance.Wallet.RestoreWalletFromKeys(name, txtViewKey.Text, txtSpendKey.Text, password);
             };
 
-            btnOk.Click += (s, e) =>
+            w.RunWorkerCompleted += (ws, we) => 
             {
-                if (isShown)
-                    password = tb.Text;
-                else
-                    password = pwb.Text;
-
-                name = txtName.Text;
-
-                BackgroundWorker w = new BackgroundWorker();
-
-                w.DoWork += (ws, we) =>
-                {
-                    Cli.Instance.Wallet.RestoreWalletFromSeed(name, txtKey.Text, password);
-                };
-
-                w.RunWorkerCompleted += (ws, we) =>
-                {
-                    MessageBox.Show("wallet import complete");
-                };
-
-                w.RunWorkerAsync();
+                MessageBox.Show("wallet import complete");
                 this.Close(DialogResult.Ok);
             };
 
-            btnCancel.Click += (s, e) =>
-            {
-                password = null;
-                name = null;
-                this.Close(DialogResult.Cancel);
-            };
+            w.RunWorkerAsync();
         }
 
-        public void CreateLayout()
+        protected override void OnCancel()
         {
-            TextControl textControl;
-            
-            if (isShown)
-                textControl = tb;
-            else
-                textControl = pwb;
+            if (importStarted)
+            {
+                MessageBox.Show("Please wait for the import to complete");
+                return;
+            }
 
-            Content = new TableLayout
+            base.OnCancel();
+            name = null;
+            this.Close(DialogResult.Cancel);
+        }
+
+        protected override Control ConstructChildContent()
+        {
+            return new StackLayout
             {
                 Padding = 10,
-				Spacing = new Eto.Drawing.Size(10, 10),
-                Rows = {
-                    new Label { Text = "Mnemonic Seed" },
-                    new TableRow(txtKey)
-                    {
-                        ScaleHeight = true
-                    },
-                    new Label { Text = "Wallet Name" },
-                    txtName,
-                    new Label { Text = "Password" },
-                    textControl,
-                    new TableRow (
-                        new TableLayout
-                        {
-                            Rows = {
-                                new TableRow (
-                                    btnShow,
-                                    new TableCell(null, true),
-                                    btnOk,
-                                    btnCancel)
-                            }
-                        })
+                Spacing = 10,
+                Orientation = Orientation.Vertical,
+				HorizontalContentAlignment = HorizontalAlignment.Stretch,
+				VerticalContentAlignment = VerticalAlignment.Stretch,
+                Items = 
+                {
+                    new StackLayoutItem(new Label { Text = "Wallet Name" }),
+                    new StackLayoutItem(txtName),
+                    new StackLayoutItem(new Label { Text = "View Key" }),
+                    new StackLayoutItem(txtViewKey),
+                    new StackLayoutItem(new Label { Text = "Spend Key" }),
+                    new StackLayoutItem(txtSpendKey),
+                    new StackLayoutItem(new Label { Text = "Password" }),
+                    ConstructPasswordControls()
                 }
             };
         }

@@ -86,11 +86,8 @@ namespace Nerva.Toolkit
 			var wallet_RescanBlockchain = new Command { MenuText = "Spent Blockchain", ToolBarText = "Spent Blockchain" };
 			wallet_RescanBlockchain.Executed += wallet_RescanBlockchain_Clicked;
 
-			var wallet_Keys_View = new Command { MenuText = "View Key", ToolBarText = "View Key" };
+			var wallet_Keys_View = new Command { MenuText = "View Keys", ToolBarText = "View Keys" };
 			wallet_Keys_View.Executed += wallet_Keys_View_Clicked;
-
-			var wallet_Keys_Mnemonic = new Command { MenuText = "Seed", ToolBarText = "Seed" };
-			wallet_Keys_Mnemonic.Executed += wallet_Keys_Mnemonic_Clicked;
 
 			var wallet_Account_Create = new Command { MenuText = "Create Account", ToolBarText = "Create Account" };
 			wallet_Account_Create.Executed += wallet_Account_Create_Clicked;
@@ -142,15 +139,7 @@ namespace Nerva.Toolkit
 									wallet_RescanBlockchain
 								}
 							},
-							new ButtonMenuItem
-							{
-								Text = "Keys",
-								Items =
-								{
-									wallet_Keys_View,
-									wallet_Keys_Mnemonic
-								}
-							}
+							wallet_Keys_View
 						}
 					}
 				},

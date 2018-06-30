@@ -321,7 +321,7 @@ namespace Nerva.Toolkit.CLI
             }
         }
 
-        public void KillRunningProcesses(string exe, int exceptPid)
+        public void KillRunningProcesses(string exe, int exceptPid = -1)
         {
             Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
 
@@ -423,6 +423,8 @@ namespace Nerva.Toolkit.CLI
             walletWorker.CancelAsync();
         }
 
+
+
         #region Startup events
 
         private void DoCliStartup(string exe, string arg, Process process)
@@ -448,7 +450,7 @@ namespace Nerva.Toolkit.CLI
             w.DoWork += delegate (object sender, DoWorkEventArgs e)
             {
                 while (!CliProcessIsReady(daemonPid))
-                    Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+                    Thread.Sleep(500); //check as reasonably fast as possible
 
                 UpdateManager.CheckForCliUpdates();
 
@@ -479,7 +481,7 @@ namespace Nerva.Toolkit.CLI
             w.DoWork += delegate (object sender, DoWorkEventArgs e)
             {
                 while (!CliProcessIsReady(walletPid))
-                    Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+                    Thread.Sleep(500);
 
                 Application.Instance.AsyncInvoke ( () =>
 				{
@@ -487,7 +489,6 @@ namespace Nerva.Toolkit.CLI
                     {
                         Wallet_Wizard_Result result = Wallet_Wizard_Result.Undefined;
                         WalletHelper.ShowWalletWizard(out result);
-
                         Log.Instance.Write(result.ToString());
                     }
 				});

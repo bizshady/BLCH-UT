@@ -32,10 +32,10 @@ namespace Nerva.Toolkit.Content.Dialogs
 
             this.AbortButton = btnCancel;
 
-            btnNewWallet.Click += (s, e) =>  { Close(Open_Wallet_Dialog_Result.New); };
-            btnOpenWallet.Click += (s, e) =>  { Close(Open_Wallet_Dialog_Result.Open); };
-            btnImportWallet.Click += (s, e) => { Close(Open_Wallet_Dialog_Result.Import); };
-            btnCancel.Click += (s, e) => { Close(Open_Wallet_Dialog_Result.Cancel); };
+            btnNewWallet.Click += (s, e) => Close(Open_Wallet_Dialog_Result.New);
+            btnOpenWallet.Click += (s, e) => Close(Open_Wallet_Dialog_Result.Open);
+            btnImportWallet.Click += (s, e) =>Close(Open_Wallet_Dialog_Result.Import);
+            btnCancel.Click += (s, e) => Close(Open_Wallet_Dialog_Result.Cancel);
 
             if (WalletHelper.GetWalletFileCount() == 0)
             {
@@ -50,16 +50,22 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         public void CreateLayout()
         {
-            Content = new TableLayout
+            Content = new StackLayout
             {
                 Padding = 10,
-				Spacing = new Eto.Drawing.Size(10, 10),
-                Rows = {
-                    new TableRow (
-                        btnOpenWallet,
-                        btnNewWallet,
-                        btnImportWallet,
-                        btnCancel)}
+                Spacing = 10,
+                Orientation = Orientation.Horizontal,
+				HorizontalContentAlignment = HorizontalAlignment.Center,
+				VerticalContentAlignment = VerticalAlignment.Center,
+                Items = 
+                {
+                    new StackLayoutItem(null, true),
+                    new StackLayoutItem(btnOpenWallet),
+                    new StackLayoutItem(btnNewWallet),
+                    new StackLayoutItem(btnImportWallet),
+                    new StackLayoutItem(btnCancel),
+                    new StackLayoutItem(null, true),
+                }
             };
         }
     }

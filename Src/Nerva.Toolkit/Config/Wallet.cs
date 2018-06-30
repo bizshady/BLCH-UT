@@ -10,6 +10,8 @@ namespace Nerva.Toolkit.Config
 
         public string LastOpenedWallet { get; set; }
 
+        public bool SaveWalletPassword { get; set; } = true;
+
         public string LastWalletPassword { get; set; }
 
 		public static Wallet New()
@@ -19,6 +21,7 @@ namespace Nerva.Toolkit.Config
                 WalletDir = "./wallets",
                 LastOpenedWallet = null,
                 LastWalletPassword = null,
+                SaveWalletPassword = true,
                 Rpc = RpcDetails.New()
             };
         }
