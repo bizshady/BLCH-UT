@@ -55,6 +55,8 @@ namespace Nerva.Toolkit.Frontend
 
 			Cli.CreateInstance();
 
+			Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
+
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
 
 			var platform = Eto.Platform.Detect;
