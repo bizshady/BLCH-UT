@@ -37,8 +37,9 @@ namespace Nerva.Toolkit.CLI
         public Account GetAccounts()
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
-            if (!BasicRequest("get_accounts", out result))
+            if (!BasicRequest("get_accounts", out result, ref e))
                 return null;
 
             return JsonConvert.DeserializeObject<JsonValue<Account>>(result).Result;
@@ -46,36 +47,40 @@ namespace Nerva.Toolkit.CLI
 
         public bool StopWallet()
         {
-            return BasicRequest("stop_wallet");
+            RpcWalletError e = new RpcWalletError();
+            return BasicRequest("stop_wallet", ref e);
         }
 
         public bool CreateWallet(string walletName, string password)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
             return BasicRequest<CreateWallet>("create_wallet", new CreateWallet {
                 FileName = walletName,
                 Password = password
-            }, out result);
+            }, out result, ref e);
         }
 
         public bool OpenWallet(string walletName, string password)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
             return BasicRequest<OpenWallet>("open_wallet", new OpenWallet {
                 FileName = walletName,
                 Password = password
-            }, out result);
+            }, out result, ref e);
         }
 
         public KeyInfo QueryKey(Key_Type keyType)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
             if (!BasicRequest<QueryKey>("query_key", new QueryKey {
                 KeyType = keyType.ToString().ToLower()
-            }, out result))
+            }, out result, ref e))
                 return null;
 
             return JsonConvert.DeserializeObject<JsonValue<KeyInfo>>(result).Result;
@@ -84,11 +89,12 @@ namespace Nerva.Toolkit.CLI
         public TransferList GetTransfers(uint scanFromHeight, out uint lastTxHeight)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
             lastTxHeight = 0;
 
             if (!BasicRequest<GetTransfers>("get_transfers", new GetTransfers {
                 ScanFromHeight = scanFromHeight
-            }, out result))
+            }, out result, ref e))
                 return null;
 
             var txl = JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
@@ -108,33 +114,37 @@ namespace Nerva.Toolkit.CLI
 
         public bool RescanSpent()
         {
-            return BasicRequest("rescan_spent");
+            RpcWalletError e = new RpcWalletError();
+            return BasicRequest("rescan_spent", ref e);
         }
 
         public bool RescanBlockchain()
         {
-            return BasicRequest("rescan_blockchain");
+            RpcWalletError e = new RpcWalletError();
+            return BasicRequest("rescan_blockchain", ref e);
         }
 
         public bool Store()
         {
-            return BasicRequest("store");
+            RpcWalletError e = new RpcWalletError();
+            return BasicRequest("store", ref e);
         }
 
         public NewAccount CreateAccount(string label)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
             if (string.IsNullOrEmpty(label))
             {
-                if (!BasicRequest("create_account", out result))
+                if (!BasicRequest("create_account", out result, ref e))
                     return null;
             }
             else
             {
                 if (!BasicRequest<CreateAccount>("create_account", new CreateAccount {
                     Label = label
-                }, out result))
+                }, out result, ref e))
                     return null;
             }
 
@@ -144,26 +154,28 @@ namespace Nerva.Toolkit.CLI
         public bool LabelAccount(uint index, string label)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
             return BasicRequest<LabelAccount>("label_account", new LabelAccount {
                 Index = index,
                 Label = label
-            }, out result);
+            }, out result, ref e);
         }
 
         public TransferTxID GetTransferByTxID(string txid)
         {
             string result = null;
+            RpcWalletError e = new RpcWalletError();
 
             if (!BasicRequest<GetTransferByTxID>("get_transfer_by_txid", new GetTransferByTxID {
                 TxID = txid
-            }, out result))
+            }, out result, ref e))
                 return null;
 
             return JsonConvert.DeserializeObject<JsonValue<TransferContainer>>(result).Result.Transfer;
         }
 
-        public Send TransferFunds(SubAddressAccount acc, string address, string paymentId, double amount, Send_Priority priority)
+        public Send TransferFunds(SubAddressAccount acc, string address, string paymentId, double amount, Send_Priority priority, ref RpcWalletError e)
         {
             var dest = new Destination
             {
@@ -178,7 +190,7 @@ namespace Nerva.Toolkit.CLI
                 sendResponse = TransferFunds<SendWithoutPaymentID>(new SendWithoutPaymentID {
                     AccountIndex = acc.Index,
                     Priority = (uint)priority
-                }, dest);
+                }, ref e, dest);
             }
             else
             {
@@ -186,31 +198,31 @@ namespace Nerva.Toolkit.CLI
                     AccountIndex = acc.Index,
                     Priority = (uint)priority,
                     PaymentId = paymentId
-                }, dest);
+                }, ref e, dest);
             }
 
             return sendResponse;
         }
 
-        public Send TransferFunds<T>(T sendData, params Destination[] destinations) where T : SendWithoutPaymentID, new()
+        public Send TransferFunds<T>(T sendData, ref RpcWalletError e, params Destination[] destinations) where T : SendWithoutPaymentID, new()
         {
             string result = null;
 
             sendData.Destinations.AddRange(destinations);
 
-            if (!BasicRequest<T>("transfer", sendData, out result))
+            if (!BasicRequest<T>("transfer", sendData, out result, ref e))
                 return null;
 
             return JsonConvert.DeserializeObject<JsonValue<Send>>(result).Result;
         }
 
-        private bool BasicRequest(string rpc, bool suppressErrorMessage = false)
+        private bool BasicRequest(string rpc, ref RpcWalletError e)
         {
             string result = null;
-            return BasicRequest(rpc, out result, suppressErrorMessage);
+            return BasicRequest(rpc, out result, ref e);
         }
 
-        private bool BasicRequest(string rpc, out string result, bool suppressErrorMessage = false)
+        private bool BasicRequest(string rpc, out string result, ref RpcWalletError e)
         {
             result = null;
 
@@ -225,10 +237,10 @@ namespace Nerva.Toolkit.CLI
                 return false;
             }
 
-            return !CheckError(jr.MethodName, result, suppressErrorMessage);
+            return !CheckError(jr.MethodName, result, ref e);
         }
 
-        private bool BasicRequest<T>(string rpc, T param, out string result, bool suppressErrorMessage = false)
+        private bool BasicRequest<T>(string rpc, T param, out string result, ref RpcWalletError e)
         {
             result = null;
 
@@ -244,10 +256,10 @@ namespace Nerva.Toolkit.CLI
                 return false;
             }
 
-            return !CheckError(jr.MethodName, result, suppressErrorMessage);
+            return !CheckError(jr.MethodName, result, ref e);
         }
 
-        private bool CheckError(string methodName, string result, bool suppressErrorMessage = false)
+        private bool CheckError(string methodName, string result, ref RpcWalletError e)
         {
             var error = JObject.Parse(result)["error"];
 
@@ -255,12 +267,24 @@ namespace Nerva.Toolkit.CLI
             {
                 int code = error["code"].Value<int>();
                 string message = error["message"].Value<string>();
-                if (!suppressErrorMessage)
+
+                e.Code = code;
+                e.Message = message;
+
+                if (!e.SupressLogging)
                     Log.Instance.Write(Log_Severity.Error, "Wallet.{0}: Code {1}, Message: '{2}'", methodName, code, message);
                 return true;
             }
 
             return false;
+        }
+
+        public class RpcWalletError
+        {
+            public bool SupressLogging { get; set; } = true;
+
+            public int Code { get; set; }
+            public string Message { get; set; }
         }
 
         [JsonObject]
@@ -279,7 +303,7 @@ namespace Nerva.Toolkit.CLI
             public int ScanHeight => 0;
 
             [JsonProperty("create_address_file")]
-            public bool CreateAddressFile => true;
+            public int CreateAddressFile => 1;
         }
 
         [JsonObject]
@@ -363,15 +387,15 @@ namespace Nerva.Toolkit.CLI
 
             proc.OutputDataReceived += (s, e) =>
             {
-                if (e.Data == null)
-                    return;
-
-                Log.Instance.Write(e.Data);
-
-                if (e.Data.Contains("Refresh done"))
+                if (e.Data != null)
                 {
-                    Log.Instance.Write("Wallet import complete");
-                    proc.StandardInput.WriteLine("exit");
+                    Log.Instance.Write(e.Data);
+
+                    if (e.Data.Contains("Refresh done"))
+                    {
+                        Log.Instance.Write("Wallet import complete");
+                        proc.StandardInput.WriteLine("exit");
+                    }
                 }
             };
 

@@ -288,7 +288,7 @@ namespace Nerva.Toolkit.CLI
                 }
                 catch (Exception ex)
                 {
-                    Log.Instance.WriteNonFatalException(ex);
+                    Log.Instance.Write(Log_Severity.Warning, ex.Message);
                     pid = -1;
                     return false;
                 }

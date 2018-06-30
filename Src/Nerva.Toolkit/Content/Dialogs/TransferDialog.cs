@@ -6,6 +6,7 @@ using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Request;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Helpers;
+using static Nerva.Toolkit.CLI.WalletInterface;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -48,6 +49,13 @@ namespace Nerva.Toolkit.Content.Dialogs
                     return;
                 }
 
+                //todo: need to validate address that it is correct format
+                if (string.IsNullOrEmpty(txtAddress.Text))
+                {
+                    MessageBox.Show(this, "Address not provided", MessageBoxType.Error);
+                    return;
+                }
+
                 if (txtPaymentId.Text.Length != 0 && (txtPaymentId.Text.Length != 16 && txtPaymentId.Text.Length != 64))
                 {
                     MessageBox.Show(this, "Payment ID must be 16 or 64 characters long\r\nCurrent Payment ID length is " + 
@@ -55,7 +63,16 @@ namespace Nerva.Toolkit.Content.Dialogs
                     return;
                 }  
 
-                txData = Cli.Instance.Wallet.TransferFunds(accData, txtAddress.Text, txtPaymentId.Text, amt, (Send_Priority)cbxPriority.SelectedIndex);
+                RpcWalletError e = new RpcWalletError();
+
+                txData = Cli.Instance.Wallet.TransferFunds(accData, txtAddress.Text, txtPaymentId.Text, amt, (Send_Priority)cbxPriority.SelectedIndex, ref e);
+
+                if (e.Code != 0)
+                {
+                    MessageBox.Show(this, $"The transfer request returned RPC error:\r\n{e.Message}", MessageBoxType.Error);
+                    return;
+                }
+
                 this.Close(DialogResult.Ok);
             }
         }

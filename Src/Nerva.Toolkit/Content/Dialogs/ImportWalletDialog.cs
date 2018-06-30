@@ -32,12 +32,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             w.DoWork += (ws, we) =>
             {
                 importStarted = true;
-                Application.Instance.AsyncInvoke ( () =>
-				{
-                    Content.Enabled = false;
-				});
-
-                Cli.Instance.Wallet.RestoreWalletFromKeys(name, txtViewKey.Text, txtSpendKey.Text, password);
+                Cli.Instance.Wallet.RestoreWalletFromKeys(txtName.Text, txtViewKey.Text, txtSpendKey.Text, password);
             };
 
             w.RunWorkerCompleted += (ws, we) => 

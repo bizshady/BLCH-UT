@@ -27,7 +27,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
             name = ddName.SelectedValue.ToString();
 
-            bool opened = Cli.Instance.Wallet.OpenWallet(name, password);
+            /*bool opened = Cli.Instance.Wallet.OpenWallet(name, password);
 
             if (opened)
                 this.Close(DialogResult.Ok);
@@ -35,7 +35,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             {
                 MessageBox.Show(this, "Could not open wallet", "Open wallet failed", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
                 return;
-            }
+            }*/
 
             this.Close(DialogResult.Ok);
         }

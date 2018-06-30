@@ -240,7 +240,12 @@ namespace Nerva.Toolkit
             WalletHelper.ShowWalletWizard(out result);
 
 			if (result != Wallet_Wizard_Result.Cancelled && result != Wallet_Wizard_Result.Undefined)
+			{
+				//HACK: RPC wallet sometimes hangs after opening a new wallet. So the wizard will 
+				//save the wallet info and we Kill the process and let it relaunch
+				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
 				transfersPage.Update(null);
+			}
 				
             Log.Instance.Write(result.ToString());
 		}
