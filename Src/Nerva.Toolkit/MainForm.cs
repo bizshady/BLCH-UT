@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using AngryWasp.Logger;
 using Eto.Forms;
@@ -96,14 +97,15 @@ namespace Nerva.Toolkit
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						lblStatus.Text = $"Height: {height} | Connections (In/Out): {info.IncomingConnectionsCount} / {info.OutgoingConnectionsCount}";
-						lblVersion.Text = $"Version: {info.Version}";
-						ad.Version = $"GUI: {Constants.VERSION}\r\nCLI: {info.Version}";
+						lblDaemonStatus.Text = $"DAEMON > Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
 
 						if (info.TargetHeight != 0 && info.Height < info.TargetHeight)
-							lblStatus.Text += " | Syncing";
+							lblDaemonStatus.Text += " | Syncing";
 						else
-							lblStatus.Text += " | Sync OK";
+							lblDaemonStatus.Text += " | Sync OK";
+
+						lblVersion.Text = $"Version: {info.Version}";
+						ad.Version = $"GUI: {Constants.VERSION}\r\nCLI: {info.Version}";
 
 						daemonPage.Update(info, connections, mStatus);
 					});
@@ -112,7 +114,7 @@ namespace Nerva.Toolkit
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						lblStatus.Text = "NOT CONNECTED TO DAEMON";
+						lblDaemonStatus.Text = "DAEMON > OFFLINE";
 						daemonPage.Update(null, null, null);
 					});
 				}
@@ -150,24 +152,17 @@ namespace Nerva.Toolkit
 				//Double check we want to update before we do
 				if (!shouldUpdateWallet)
 					break;
+				
+				string wOffline = ((Cli.Instance.WalletPid == -1)) ? "OFFLINE" : "ONLINE";
+				string wOpen = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "CLOSED";
 
-				if (account != null)
+				Application.Instance.AsyncInvoke ( () =>
 				{
-					Application.Instance.AsyncInvoke ( () =>
-					{
-						balancesPage.Update(account);
-						transfersPage.Update(transfers);
-					});
-				}
-				else
-				{
-					lastTxHeight = 0;
-					Application.Instance.AsyncInvoke ( () =>
-					{
-						balancesPage.Update(null);
-						transfersPage.Update(null);
-					});
-				}
+					lblWalletStatus.Text = $"WALLET > {wOffline} | {wOpen}";
+
+					balancesPage.Update(account);
+					transfersPage.Update(transfers);
+				});
 			}
 		}
 
@@ -196,7 +191,7 @@ namespace Nerva.Toolkit
 
 					Application.Instance.AsyncInvoke(() =>
 					{
-						lblStatus.Text = "NOT CONNECTED TO INTERNET";
+						lblDaemonStatus.Text = "NOT CONNECTED TO INTERNET";
 						daemonPage.Update(null, null, null);
 					});
 
@@ -243,6 +238,7 @@ namespace Nerva.Toolkit
 			{
 				//HACK: RPC wallet sometimes hangs after opening a new wallet. So the wizard will 
 				//save the wallet info and we Kill the process and let it relaunch
+				//We have to physically kill the process as calling stop will not work if it is unresponsive
 				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
 				transfersPage.Update(null);
 			}

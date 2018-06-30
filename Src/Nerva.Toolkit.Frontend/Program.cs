@@ -50,7 +50,33 @@ namespace Nerva.Toolkit.Frontend
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
 
-			new Application(Eto.Platform.Detect).Run(new MainForm());
+			var platform = Eto.Platform.Detect;
+
+			if (platform.IsGtk)
+			{
+				GLib.ExceptionManager.UnhandledException += (x) =>
+				{
+					var ex = x.ExceptionObject as Exception;
+					Log.Instance.WriteFatalException(ex);
+				};
+			}
+
+			try
+			{
+				new Application(platform).Run(new MainForm());
+			}
+			catch (Exception ex)
+			{
+				Cli.Instance.StopDaemonCheck();
+				Cli.Instance.StopWalletCheck();
+				//Error. Force close all CLI tools
+				Cli.Instance.KillRunningProcesses(FileNames.CLI_WALLET);
+				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
+				Cli.Instance.KillRunningProcesses(FileNames.NERVAD);
+
+				Configuration.Save();
+				Log.Instance.WriteFatalException(ex);
+			}
 
 			//Prevent the daemon restarting automatically before telling it to stop
 			if (Configuration.Instance.Daemon.StopOnExit)

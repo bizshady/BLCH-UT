@@ -62,7 +62,7 @@ namespace Nerva.Toolkit.Content
 			{
 				if (grid.SelectedRow == -1)
 					return;
-				
+
 				Connection c = (Connection)grid.DataStore.ElementAt(grid.SelectedRow);
 				Cli.Instance.Daemon.BanPeer(c.IP);
 			};

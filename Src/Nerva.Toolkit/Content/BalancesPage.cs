@@ -8,6 +8,7 @@ using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Content.Dialogs;
+using System.Diagnostics;
 
 namespace Nerva.Toolkit.Content
 {	
@@ -21,7 +22,7 @@ namespace Nerva.Toolkit.Content
 		Label lblTotalXnv = new Label();
 		Label lblUnlockedXnv = new Label();
 
-		private List<SubAddressAccount> accounts;
+		private List<SubAddressAccount> accounts = new List<SubAddressAccount>();
 
 		public BalancesPage() { }
 
@@ -184,7 +185,7 @@ namespace Nerva.Toolkit.Content
 			{
 				lblTotalXnv.Text = "-";
 				lblUnlockedXnv.Text = "-";
-				accounts = null;
+				accounts.Clear();
 			}
 
 			grid.DataStore = accounts;

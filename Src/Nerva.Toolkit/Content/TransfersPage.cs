@@ -9,6 +9,7 @@ using Nerva.Toolkit.CLI.Structures.Response;
 using AngryWasp.Helpers;
 using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.CLI;
+using System.Diagnostics;
 
 namespace Nerva.Toolkit.Content
 {	
@@ -122,14 +123,15 @@ namespace Nerva.Toolkit.Content
 
 						mainControl.Content = grid;
 						needGridUpdate = false;
-						lastHeight = txList[0].Height;
+
+						lastHeight = txList.Count == 0 ? 0 : txList[0].Height;
 					}
 				}
 			}
 			else
 			{
-				txList.Clear();
-				needGridUpdate = true;
+				//txList.Clear();
+				//needGridUpdate = true;
 				mainControl.Content = new TableLayout(new TableRow(
 					new TableCell(new Label { Text = "NO TRANSFERS" })))
 					{
