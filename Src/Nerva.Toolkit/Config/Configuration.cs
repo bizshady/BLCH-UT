@@ -56,7 +56,7 @@ namespace Nerva.Toolkit.Config
 
         public static Configuration Instance => instance;
 
-        public static void Load(string file)
+        public static void Load(string file, out bool newFile)
         {
             loadedConfigFile = file;
 
@@ -68,12 +68,14 @@ namespace Nerva.Toolkit.Config
                 
                 Log.Instance.Write("Configuration created at '{0}'", loadedConfigFile);
                 new ObjectSerializer().Serialize(instance, loadedConfigFile);
+                newFile = true;
             }
             else
             {
                 Log.Instance.Write("Configuration loaded from '{0}'", loadedConfigFile);
                 var os = new ObjectSerializer();
                 instance = os.Deserialize<Configuration>(XHelper.LoadDocument(loadedConfigFile));
+                newFile = false;
             }
         }
 

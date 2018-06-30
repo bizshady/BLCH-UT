@@ -45,7 +45,14 @@ namespace Nerva.Toolkit.Frontend
 				Log.Instance.Write("Writing log to file '{0}'", logPath);
 
 			Serializer.Initialize();
-			Configuration.Load(cmdPath);
+
+			bool newFile;
+
+			Configuration.Load(cmdPath, out newFile);
+
+			if (newFile)
+				Environment.Exit(0);
+
 			Cli.CreateInstance();
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
