@@ -18,6 +18,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         public DisplayKeysDialog() : base("Restore Info")
         {
             KeyInfo ki = Cli.Instance.Wallet.QueryKey(Key_Type.All_Keys);
+            KeyInfo ki2 = Cli.Instance.Wallet.QueryKey(Key_Type.Mnemonic);
 
             if (ki != null)
             {
@@ -26,9 +27,10 @@ namespace Nerva.Toolkit.Content.Dialogs
 
                 txtPublicSpendKey.Text = ki.PublicSpendKey;
                 txtPrivateSpendKey.Text = ki.PrivateSpendKey;
-
-                txtSeed.Text = ki.MnemonicSeed;
             }
+
+            if (ki2 != null)
+                txtSeed.Text = ki2.MnemonicSeed;
 
             //reuse ok and cancel buttons but give a more meaningful label
             btnOk.Text = "Save";

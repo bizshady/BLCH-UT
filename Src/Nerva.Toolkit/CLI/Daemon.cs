@@ -38,7 +38,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_block_count");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+
                 return -1;
             }
 
@@ -61,7 +63,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_info");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+
                 return null;
             }
 
@@ -83,7 +87,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: get_connections");
+               if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+
                 return null;
             }
 
@@ -100,7 +106,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeRpcRequest("stop_daemon", null, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_daemon");
+
                 return false;
             }
 
@@ -129,7 +137,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeRpcRequest("start_mining", jsonRequest, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: start_mining");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: start_mining");
+
                 return false;
             }
 
@@ -142,7 +152,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeRpcRequest("stop_mining", null, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_mining");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: stop_mining");
+
                 return false;
             }
 
@@ -155,7 +167,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeRpcRequest("mining_status", null, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: mining_status");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: mining_status");
+
                 return null;
             }
 
@@ -181,7 +195,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: set_bans");
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete RPC call: set_bans");
+                    
                 return false;
             }
 

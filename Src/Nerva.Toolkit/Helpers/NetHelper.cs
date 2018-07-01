@@ -59,7 +59,6 @@ namespace Nerva.Toolkit.Helpers
             }
             catch (WebException ex)
             {
-                Log.Instance.Write(Log_Severity.Error, ex.Message);
                 jsonString = null;
                 return false;
             }

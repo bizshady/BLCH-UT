@@ -9,6 +9,22 @@ namespace Nerva.Toolkit.Helpers
         public const int DAEMON_RESTART_THREAD_INTERVAL = 15000;
         public const int DAEMON_POLL_INTERVAL = 1000;
         public const int BAN_TIME = 6000;
+
+        public static readonly string[] Languages = new string[]
+        {
+            "Deutsch",
+            "English",
+            "Español",
+            "Français",
+            "Italiano",
+            "Nederlands",
+            "Português",
+            "русский язык",
+            "日本語",
+            "简体中文 (中国)",
+            "Esperanto",
+            "Lojban"
+        };
     }
 
     public static class SeedNodes

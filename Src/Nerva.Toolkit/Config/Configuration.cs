@@ -15,6 +15,7 @@ namespace Nerva.Toolkit.Config
         public bool CheckForUpdateOnStartup { get; set; }
 
         public bool LogRpcTraffic { get; set; }
+        public bool LogRpcErrors { get; set; } = false;
 
         public bool Testnet { get; set; }
         

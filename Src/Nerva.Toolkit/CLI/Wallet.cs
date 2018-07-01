@@ -233,7 +233,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+
                 return false;
             }
 
@@ -252,7 +254,9 @@ namespace Nerva.Toolkit.CLI
 
             if (!netHelper.MakeJsonRpcRequest(jr, out result))
             {
-                Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
+                    
                 return false;
             }
 
@@ -304,6 +308,9 @@ namespace Nerva.Toolkit.CLI
 
             [JsonProperty("create_address_file")]
             public int CreateAddressFile => 1;
+
+            [JsonProperty("seed_language")]
+            public string SeedLanguage { get; set; } = "English";
         }
 
         [JsonObject]
@@ -326,7 +333,7 @@ namespace Nerva.Toolkit.CLI
             public string Passphrase { get; set; } = string.Empty;
         }
 
-        public void RestoreWalletFromKeys(string walletName, string viewKey, string spendKey, string pass)
+        public void RestoreWalletFromKeys(string walletName, string viewKey, string spendKey, string pass, string language)
         {
             string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
 
@@ -335,13 +342,14 @@ namespace Nerva.Toolkit.CLI
                 FileName = walletPath,
                 Password = pass,
                 ViewKey = viewKey,
-                SpendKey = spendKey
+                SpendKey = spendKey,
+                SeedLanguage = language
             });
 
             RestoreWalletFromJson(walletPath);
         }
 
-        public void RestoreWalletFromSeed(string walletName, string seed, string pass)
+        public void RestoreWalletFromSeed(string walletName, string seed, string pass, string language)
         {
             string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
 
@@ -350,6 +358,7 @@ namespace Nerva.Toolkit.CLI
                 FileName = walletPath,
                 Password = pass,
                 Seed = seed,
+                SeedLanguage = language
             });
 
             RestoreWalletFromJson(walletPath);
@@ -373,6 +382,8 @@ namespace Nerva.Toolkit.CLI
             string args = $"--daemon-address {daemon} --generate-from-json {walletPath}.json";
             if (Configuration.Instance.Testnet)
                 args += " --testnet";
+
+            Log.Instance.Write("Restoring wallet with command {0} {1}", exe, args);
 
             Process proc = new Process
             {

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Eto.Drawing;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -13,6 +14,11 @@ namespace Nerva.Toolkit.Content.Dialogs
         TextBox txtName = new TextBox();
         TextBox txtViewKey = new TextBox();
         TextBox txtSpendKey = new TextBox();
+
+        TextArea txtSeed = new TextArea();
+
+        TabControl tc = new TabControl();
+        ComboBox cbxLang = new ComboBox();
 
         public ImportWalletDialog() : base("Import Wallet") { }
 
@@ -29,15 +35,27 @@ namespace Nerva.Toolkit.Content.Dialogs
 
             BackgroundWorker w = new BackgroundWorker();
 
+            int index = tc.SelectedIndex;
+            string lang = cbxLang.SelectedValue.ToString();
+
             w.DoWork += (ws, we) =>
             {
                 importStarted = true;
-                Cli.Instance.Wallet.RestoreWalletFromKeys(txtName.Text, txtViewKey.Text, txtSpendKey.Text, password);
+                switch (index)
+                {
+                    case 0:
+                        Cli.Instance.Wallet.RestoreWalletFromKeys(txtName.Text, txtViewKey.Text, txtSpendKey.Text, password, lang);
+                    break;
+                    case 1:
+                        Cli.Instance.Wallet.RestoreWalletFromSeed(txtName.Text, txtSeed.Text, password, lang);
+                    break;
+                }
+                
             };
 
-            w.RunWorkerCompleted += (ws, we) => 
+            w.RunWorkerCompleted += (ws, we) =>
             {
-                MessageBox.Show("wallet import complete");
+                MessageBox.Show(this, "Wallet import complete", "Wallet Import", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
                 this.Close(DialogResult.Ok);
             };
 
@@ -59,21 +77,70 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         protected override Control ConstructChildContent()
         {
+            cbxLang.Items.Clear();
+
+            foreach (var l in Constants.Languages)
+                cbxLang.Items.Add(l);
+
+            cbxLang.SelectedIndex = 1; //default to english
+
+            tc = new TabControl
+            {
+                Pages =
+                {
+                    new TabPage
+                    {
+                        Text = "Keys",
+                        Content = new StackLayout
+                        {
+                            Padding = 10,
+                            Spacing = 10,
+                            Orientation = Orientation.Vertical,
+                            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                            VerticalContentAlignment = VerticalAlignment.Stretch,
+                            Items =
+                            {
+                                new StackLayoutItem(new Label { Text = "View Key" }),
+                                new StackLayoutItem(txtViewKey, true),
+                                new StackLayoutItem(new Label { Text = "Spend Key" }),
+                                new StackLayoutItem(txtSpendKey, true)
+                            }
+                        }
+                    },
+                    new TabPage
+                    {
+                        Text = "Seed",
+                        Content = new StackLayout
+                        {
+                            Padding = 10,
+                            Spacing = 10,
+                            Orientation = Orientation.Vertical,
+                            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                            VerticalContentAlignment = VerticalAlignment.Stretch,
+                            Items =
+                            {
+                                new StackLayoutItem(new Label { Text = "Seed" }),
+                                new StackLayoutItem(txtSeed, true),
+                            }
+                        }
+                    }
+                }
+            };
+
             return new StackLayout
             {
                 Padding = 10,
                 Spacing = 10,
                 Orientation = Orientation.Vertical,
-				HorizontalContentAlignment = HorizontalAlignment.Stretch,
-				VerticalContentAlignment = VerticalAlignment.Stretch,
-                Items = 
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch,
+                Items =
                 {
+                    new StackLayoutItem(tc),
                     new StackLayoutItem(new Label { Text = "Wallet Name" }),
                     new StackLayoutItem(txtName),
-                    new StackLayoutItem(new Label { Text = "View Key" }),
-                    new StackLayoutItem(txtViewKey),
-                    new StackLayoutItem(new Label { Text = "Spend Key" }),
-                    new StackLayoutItem(txtSpendKey),
+                    new StackLayoutItem(new Label { Text = "Language" }),
+                    new StackLayoutItem(cbxLang),
                     new StackLayoutItem(new Label { Text = "Password" }),
                     ConstructPasswordControls()
                 }

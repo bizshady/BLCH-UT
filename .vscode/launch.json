@@ -5,26 +5,50 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
+            "name": "Debug-Mainnet",
             "type": "mono",
             "request": "launch",
             "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
             "cwd": "${workspaceRoot}/Bin",
             "preLaunchTask": "build-debug",
             "args":[
-                "--log-file", "./debug.log",
-                "--config-file", "./testnet.config"
+                "--log-file", "./app.log",
+                "--config-file", "./mainnet.config"
             ]
         },
         {
-            "name": "Release",
+            "name": "Release-Mainnet",
             "type": "mono",
             "request": "launch",
             "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
             "cwd": "${workspaceRoot}/Bin",
             "preLaunchTask": "build-release",
             "args":[
-                "--log-file", "./release.log",
+                "--log-file", "./app.log",
+                "--config-file", "./mainnet.config"
+            ]
+        },
+        {
+            "name": "Debug-Testnet",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
+            "cwd": "${workspaceRoot}/Bin",
+            "preLaunchTask": "build-debug",
+            "args":[
+                "--log-file", "./app.log",
+                "--config-file", "./testnet.config"
+            ]
+        },
+        {
+            "name": "Release-Testnet",
+            "type": "mono",
+            "request": "launch",
+            "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
+            "cwd": "${workspaceRoot}/Bin",
+            "preLaunchTask": "build-release",
+            "args":[
+                "--log-file", "./app.log",
                 "--config-file", "./testnet.config"
             ]
         },

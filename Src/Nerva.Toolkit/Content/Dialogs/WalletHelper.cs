@@ -242,9 +242,19 @@ namespace Nerva.Toolkit.Content.Dialogs
 			return dir.GetFiles("*.keys", SearchOption.TopDirectoryOnly);
 		}
 
+		private static bool wizardRunning = false;
+
+		public static bool WizardRunning => wizardRunning;
+
 		public static void ShowWalletWizard(out Wallet_Wizard_Result result)
 		{
 			result = Wallet_Wizard_Result.Undefined;
+
+			//prevent other threads starting the wizard if it is already running
+			if (wizardRunning)
+				return;
+
+			wizardRunning = true;
 
 			//We only break this loop if cancel is pressed from the main form
 			while (true)
@@ -261,6 +271,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 								{
 									SaveWalletLogin(d2.Name, d2.Password);
 									result = Wallet_Wizard_Result.WalletOpened;
+									wizardRunning = false;
 									return;
 								}
 								else //break the loop if cancelled
@@ -281,6 +292,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 									{
 										SaveWalletLogin(d2.Name, d2.Password);
 										result = Wallet_Wizard_Result.NewWalletCreated;
+										wizardRunning = false;
 										return;
 									}
 								}
@@ -296,6 +308,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 							{
 								SaveWalletLogin(d2.Name, d2.Password);
 								result = Wallet_Wizard_Result.WalletImported;
+								wizardRunning = false;
 								return;
 							}
 						}
@@ -303,6 +316,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 					default:
 						{
 							result = Wallet_Wizard_Result.Cancelled;
+							wizardRunning = false;
 							return;	
 						}				
 				}
