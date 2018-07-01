@@ -478,7 +478,7 @@ namespace Nerva.Toolkit.CLI
         {
             BackgroundWorker w = new BackgroundWorker();
 
-            w.DoWork += delegate (object sender, DoWorkEventArgs e)
+            w.DoWork += (s, e) =>
             {
                 while (!CliProcessIsReady(walletPid))
                     Thread.Sleep(500);
@@ -487,9 +487,7 @@ namespace Nerva.Toolkit.CLI
 				{
 					if (!WalletHelper.OpenSavedWallet())
                     {
-                        Wallet_Wizard_Result result = Wallet_Wizard_Result.Undefined;
-                        WalletHelper.ShowWalletWizard(out result);
-                        Log.Instance.Write(result.ToString());
+                        WalletHelper.ShowWalletWizard();
                     }
 				});
             };

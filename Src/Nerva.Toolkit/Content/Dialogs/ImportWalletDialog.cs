@@ -56,6 +56,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             w.RunWorkerCompleted += (ws, we) =>
             {
                 MessageBox.Show(this, "Wallet import complete", "Wallet Import", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                name = txtName.Text;
                 this.Close(DialogResult.Ok);
             };
 

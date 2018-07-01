@@ -130,8 +130,8 @@ namespace Nerva.Toolkit.Content
 			}
 			else
 			{
-				//txList.Clear();
-				//needGridUpdate = true;
+				txList.Clear();
+				needGridUpdate = true;
 				mainControl.Content = new TableLayout(new TableRow(
 					new TableCell(new Label { Text = "NO TRANSFERS" })))
 					{

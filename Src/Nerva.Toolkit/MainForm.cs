@@ -24,6 +24,7 @@ namespace Nerva.Toolkit
 		Thread pingThread;
 
 		bool pingSuccess = true;
+		uint lastTxHeight = 0;
 
 		public MainForm()
 		{
@@ -123,7 +124,6 @@ namespace Nerva.Toolkit
 
 		private void UpdateWalletUI()
 		{
-			uint lastTxHeight = 0;
 			while (shouldUpdateWallet)
 			{
 				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
@@ -231,19 +231,15 @@ namespace Nerva.Toolkit
 
 		protected void wallet_Select_Clicked(object sender, EventArgs e)
 		{
-			Wallet_Wizard_Result result = Wallet_Wizard_Result.Undefined;
-            WalletHelper.ShowWalletWizard(out result);
-
-			if (result != Wallet_Wizard_Result.Cancelled && result != Wallet_Wizard_Result.Undefined)
+			if (WalletHelper.ShowWalletWizard())
 			{
 				//HACK: RPC wallet sometimes hangs after opening a new wallet. So the wizard will 
 				//save the wallet info and we Kill the process and let it relaunch
 				//We have to physically kill the process as calling stop will not work if it is unresponsive
+				lastTxHeight = 0;
 				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
 				transfersPage.Update(null);
 			}
-				
-            Log.Instance.Write(result.ToString());
 		}
 
 		protected void wallet_Store_Clicked(object sender, EventArgs e)

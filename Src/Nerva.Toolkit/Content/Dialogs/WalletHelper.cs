@@ -8,15 +8,6 @@ using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
-	public enum Wallet_Wizard_Result
-	{
-		Undefined,
-		NewWalletCreated,
-		WalletOpened,
-		WalletImported,
-		Cancelled
-	}
-
 	public abstract class DialogBase<T> : Dialog<T>
 	{
 		protected Button btnOk = new Button { Text = "OK" };
@@ -190,8 +181,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 					{
 						case DialogResult.Ok:
 							{
-								//do not ask to save the password here. Only ask once when the wallet is first opened via
-								//the OpenWalletDialog
 								if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, d.Password))
 									return true;
 							}
@@ -246,13 +235,15 @@ namespace Nerva.Toolkit.Content.Dialogs
 
 		public static bool WizardRunning => wizardRunning;
 
-		public static void ShowWalletWizard(out Wallet_Wizard_Result result)
+		/// <summary>
+		/// Shows the open wallet wizard
+		/// </summary>
+		/// <returns>Returns true if there is a new wallet to open, else false</returns>
+		public static bool ShowWalletWizard()
 		{
-			result = Wallet_Wizard_Result.Undefined;
-
 			//prevent other threads starting the wizard if it is already running
 			if (wizardRunning)
-				return;
+				return false;
 
 			wizardRunning = true;
 
@@ -269,10 +260,13 @@ namespace Nerva.Toolkit.Content.Dialogs
 								OpenWalletDialog d2 = new OpenWalletDialog();
 								if (d2.ShowModal() == DialogResult.Ok)
 								{
+									bool newWallet = true;
+									if (d2.Name == Configuration.Instance.Wallet.LastOpenedWallet)
+										newWallet = false;
+
 									SaveWalletLogin(d2.Name, d2.Password);
-									result = Wallet_Wizard_Result.WalletOpened;
 									wizardRunning = false;
-									return;
+									return newWallet;
 								}
 								else //break the loop if cancelled
 									break;
@@ -291,9 +285,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 									if (created)
 									{
 										SaveWalletLogin(d2.Name, d2.Password);
-										result = Wallet_Wizard_Result.NewWalletCreated;
 										wizardRunning = false;
-										return;
+										return true;
 									}
 								}
 								else //break the loop if cancelled
@@ -307,17 +300,15 @@ namespace Nerva.Toolkit.Content.Dialogs
 							if (d2.ShowModal() == DialogResult.Ok)
 							{
 								SaveWalletLogin(d2.Name, d2.Password);
-								result = Wallet_Wizard_Result.WalletImported;
 								wizardRunning = false;
-								return;
+								return true;
 							}
 						}
 						break;
 					default:
 						{
-							result = Wallet_Wizard_Result.Cancelled;
 							wizardRunning = false;
-							return;	
+							return false;	
 						}				
 				}
 			}
