@@ -8,12 +8,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>../../Bin/$(Configuration)</OutputPath>
+    <OutputPath>../../Bin/Bin</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
-    <OutputPath>../../Bin/$(Configuration)</OutputPath>
+    <OutputPath>../../Bin/Bin</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer/AngryWasp.Serializer.csproj" />
