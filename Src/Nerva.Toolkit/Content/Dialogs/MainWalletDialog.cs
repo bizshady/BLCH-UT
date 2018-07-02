@@ -1,6 +1,8 @@
+using AngryWasp.Logger;
 using Eto.Drawing;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -22,7 +24,6 @@ namespace Nerva.Toolkit.Content.Dialogs
         public MainWalletDialog()
         {
             this.Title = "Open/Import Wallet";
-            this.Width = 400;
             Topmost = true;
             this.Resizable = true;
             var scr = Screen.PrimaryScreen;
@@ -46,6 +47,12 @@ namespace Nerva.Toolkit.Content.Dialogs
                 this.DefaultButton = btnOpenWallet;
 
             this.Focus();
+        }
+
+        protected override void OnSizeChanged(System.EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            Log.Instance.Write(this.Height.ToString());
         }
 
         public void CreateLayout()

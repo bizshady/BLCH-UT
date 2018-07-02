@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using AngryWasp.Logger;
 using Eto.Drawing;
@@ -16,7 +17,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 		public DialogBase(string title)
 		{
 			this.Title = title;
-			this.Width = 400;
             this.Resizable = true;
             Topmost = true;
             var scr = Screen.PrimaryScreen;
@@ -29,6 +29,13 @@ namespace Nerva.Toolkit.Content.Dialogs
 
 			btnOk.Click += (s, e) => OnOk();
 			btnCancel.Click += (s, e) => OnCancel();
+		}
+
+		protected override void OnShown(System.EventArgs e)
+		{
+			//HACK On Windows, setting the width in the constructor automatically changes the height
+			//So we set the width here and it seems to work
+			this.Width = 400;
 		}
 
 		protected virtual void ConstructContent()
@@ -57,8 +64,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 					})
 				}
 			};
-
-			this.Height = Content.Height;
 		}
 
 		protected abstract Control ConstructChildContent();
