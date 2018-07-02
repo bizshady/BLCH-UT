@@ -76,6 +76,7 @@ namespace Nerva.Toolkit.Frontend
 			}
 			catch (Exception ex)
 			{
+				Log.Instance.WriteNonFatalException(ex);
 				Cli.Instance.StopDaemonCheck();
 				Cli.Instance.StopWalletCheck();
 				//Error. Force close all CLI tools
@@ -84,7 +85,7 @@ namespace Nerva.Toolkit.Frontend
 				Cli.Instance.KillRunningProcesses(FileNames.NERVAD);
 
 				Configuration.Save();
-				Log.Instance.WriteFatalException(ex);
+				Log.Instance.Write(Log_Severity.Fatal, "PROGRAM TERMINATED");
 			}
 
 			//Prevent the daemon restarting automatically before telling it to stop

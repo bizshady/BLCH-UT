@@ -19,7 +19,7 @@ namespace Nerva.Toolkit.CLI
     /// </summary>
     public class Cli
     {
-        public delegate void ProcessStartedEventHandler(string fileName, string args, Process process);
+        public delegate void ProcessStartedEventHandler(string fileName, Process process);
         public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
 
         private int daemonPid = -1, walletPid = -1;
@@ -70,11 +70,20 @@ namespace Nerva.Toolkit.CLI
             string logFile = path + ".log";
             string oldLogFile = logFile + ".old";
 
-            if (File.Exists(oldLogFile))
-                File.Delete(oldLogFile);
+            try
+            {
+                if (File.Exists(oldLogFile))
+                    File.Delete(oldLogFile);
 
-            if (File.Exists(logFile))
-                File.Move(logFile, oldLogFile);
+                if (File.Exists(logFile))
+                    File.Move(logFile, oldLogFile);
+            }
+            catch (Exception)
+            {
+                logFile = FileNames.RenameDuplicateFile(logFile);
+                Log.Instance.Write(Log_Severity.Warning, "Cannot cycle log file. New log will be written to {0}", logFile);
+                return logFile;
+            }
 
             return logFile;
         }
@@ -143,8 +152,8 @@ namespace Nerva.Toolkit.CLI
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
             
-            //if (OS.GetType() == OS_Type.Linux)
-            //    arg += " --detach";
+            if (OS.Type == OS_Type.Linux)
+                arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -300,7 +309,7 @@ namespace Nerva.Toolkit.CLI
 
         public void ManageExistingProcesses(string exe, string args, bool reconnect, ref bool createNew, ref int pid)
         {
-            Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
+            Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
 
             if (processes.Length > 0)
             {
@@ -310,7 +319,7 @@ namespace Nerva.Toolkit.CLI
                 {
                     Process p = processes[0];
                     pid = p.Id;
-                    ProcessConnected?.Invoke(exe, args, p);
+                    ProcessConnected?.Invoke(exe, p);
                 }
                 else
                 {
@@ -356,20 +365,9 @@ namespace Nerva.Toolkit.CLI
         //then scan the list of running processes for the newly created process.
         public void CreateNewDaemonProcess(string exe, string args)
         {
-            /*Process proc = new Process
-            {
-                StartInfo = new ProcessStartInfo(exe, args)
-                {
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                }
-            };*/
-
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
-            switch (OS.GetType())
+            switch (OS.Type)
             {
                 case OS_Type.Linux:
                 {
@@ -387,7 +385,6 @@ namespace Nerva.Toolkit.CLI
                         CreateNoWindow = true
                     });
 
-                    //proc.Start();
                     proc.WaitForExit();
         
                     string n = Path.GetFileName(exe);
@@ -396,7 +393,7 @@ namespace Nerva.Toolkit.CLI
                     if (p.Length == 1)
                     { 
                         daemonPid = p[0].Id;
-                        ProcessStarted?.Invoke(exe, args, p[0]);
+                        ProcessStarted?.Invoke(exe, p[0]);
                     }
                     else
                     {
@@ -416,8 +413,9 @@ namespace Nerva.Toolkit.CLI
                         RedirectStandardOutput = true,
                         CreateNoWindow = true
                     });
+                    
                     daemonPid = proc.Id;
-                    ProcessStarted?.Invoke(exe, args, proc);
+                    ProcessStarted?.Invoke(exe,  proc);
                 }
                 break;
             }
@@ -441,7 +439,7 @@ namespace Nerva.Toolkit.CLI
             Log.Instance.Write("Starting process {0} {1} with ID {2}", exe, args, proc.Id);
 
             walletPid = proc.Id;
-            ProcessStarted?.Invoke(exe, args, proc);
+            ProcessStarted?.Invoke(exe,  proc);
 
             proc.WaitForExit();
         }
@@ -450,19 +448,23 @@ namespace Nerva.Toolkit.CLI
         {
             daemonPid = -1;
             doDaemonCrashCheck = false;
-            daemonWorker.CancelAsync();
+
+            if (daemonWorker != null)
+                daemonWorker.CancelAsync();
         }
 
         public void StopWalletCheck()
         {
             walletPid = -1;
             doWalletCrashCheck = false;
-            walletWorker.CancelAsync();
+
+            if (walletWorker != null)
+                walletWorker.CancelAsync();
         }
 
         #region Startup events
 
-        private void DoCliStartup(string exe, string arg, Process process)
+        private void DoCliStartup(string exe, Process process)
         {
             switch (FileNames.GetCliExeBaseName(exe))
             {

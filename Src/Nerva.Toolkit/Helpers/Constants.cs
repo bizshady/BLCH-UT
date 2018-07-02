@@ -38,20 +38,23 @@ namespace Nerva.Toolkit.Helpers
 
     public static class OS
     {
-        public static OS_Type GetType()
+        public static OS_Type Type
         {
-            var p = Environment.OSVersion.Platform;
-
-            switch (p)
+            get
             {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                    return OS_Type.Windows;
-                case PlatformID.Unix:
-                    return OS_Type.Linux;
-                default:
-                    return OS_Type.Unsupported; 
+                var p = Environment.OSVersion.Platform;
+
+                switch (p)
+                {
+                    case PlatformID.Win32NT:
+                    case PlatformID.Win32S:
+                    case PlatformID.Win32Windows:
+                        return OS_Type.Windows;
+                    case PlatformID.Unix:
+                        return OS_Type.Linux;
+                    default:
+                        return OS_Type.Unsupported; 
+                }
             }
         }
     }
