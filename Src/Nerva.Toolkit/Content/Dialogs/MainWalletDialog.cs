@@ -49,12 +49,6 @@ namespace Nerva.Toolkit.Content.Dialogs
             this.Focus();
         }
 
-        protected override void OnSizeChanged(System.EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            Log.Instance.Write(this.Height.ToString());
-        }
-
         public void CreateLayout()
         {
             Content = new StackLayout

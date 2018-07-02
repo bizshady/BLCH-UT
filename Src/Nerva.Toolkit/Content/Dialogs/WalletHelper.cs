@@ -17,6 +17,10 @@ namespace Nerva.Toolkit.Content.Dialogs
 		public DialogBase(string title)
 		{
 			this.Title = title;
+			
+			if (OS.Type == OS_Type.Linux)
+				this.Width = 400;
+			
             this.Resizable = true;
             Topmost = true;
             var scr = Screen.PrimaryScreen;
@@ -35,7 +39,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 		{
 			//HACK On Windows, setting the width in the constructor automatically changes the height
 			//So we set the width here and it seems to work
-			this.Width = 400;
+			if (OS.Type == OS_Type.Windows)
+				this.Width = 400;
 		}
 
 		protected virtual void ConstructContent()
