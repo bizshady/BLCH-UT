@@ -143,8 +143,8 @@ namespace Nerva.Toolkit.CLI
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
             
-            if (OS.GetType() == OS_Type.Linux)
-                arg += " --detach";
+            //if (OS.GetType() == OS_Type.Linux)
+            //    arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -356,7 +356,7 @@ namespace Nerva.Toolkit.CLI
         //then scan the list of running processes for the newly created process.
         public void CreateNewDaemonProcess(string exe, string args)
         {
-            Process proc = new Process
+            /*Process proc = new Process
             {
                 StartInfo = new ProcessStartInfo(exe, args)
                 {
@@ -365,7 +365,7 @@ namespace Nerva.Toolkit.CLI
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
                 }
-            };
+            };*/
 
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
@@ -379,7 +379,15 @@ namespace Nerva.Toolkit.CLI
                     //spawned on the next line. So we have to wait for that first one to exit, then
                     //do a search for the new nervad process and link to that. 
 
-                    proc.Start();
+                    Process proc = Process.Start(new ProcessStartInfo(exe, args)
+                    {
+                        UseShellExecute = false,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    });
+
+                    //proc.Start();
                     proc.WaitForExit();
         
                     string n = Path.GetFileName(exe);
@@ -401,7 +409,13 @@ namespace Nerva.Toolkit.CLI
                 {
                     //The --detach option is not available on Windows. So we just start the daemon.
                     //todo: need to test if the process remains after exit. quick research suggests it probably will
-                    proc.Start();
+                    Process proc = Process.Start(new ProcessStartInfo(exe, args)
+                    {
+                        UseShellExecute = false,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    });
                     daemonPid = proc.Id;
                     ProcessStarted?.Invoke(exe, args, proc);
                 }
