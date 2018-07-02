@@ -57,6 +57,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 					})
 				}
 			};
+
+			this.Height = Content.Height;
 		}
 
 		protected abstract Control ConstructChildContent();
