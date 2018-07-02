@@ -143,7 +143,7 @@ namespace Nerva.Toolkit.CLI
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
 
-            arg += " --detach";
+            //arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -369,9 +369,11 @@ namespace Nerva.Toolkit.CLI
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
             proc.Start();
+            daemonPid = proc.Id;
             proc.WaitForExit();
+            Log.Instance.Write("{0} exited. Restart coming", Path.GetFileName(exe));
  
-            string n = Path.GetFileName(exe);
+            /*string n = Path.GetFileName(exe);
             var p = Process.GetProcessesByName(n);
  
             if (p.Length == 1)
@@ -383,7 +385,7 @@ namespace Nerva.Toolkit.CLI
             {
                 daemonPid = -1;
                 Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
-            }
+            }*/
         }
 
         public void CreateNewWalletProcess(string exe, string args)
