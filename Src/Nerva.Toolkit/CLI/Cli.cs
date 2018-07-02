@@ -143,7 +143,7 @@ namespace Nerva.Toolkit.CLI
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
             
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            if (OS.GetType() == OS_Type.Linux)
                 arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
@@ -369,26 +369,44 @@ namespace Nerva.Toolkit.CLI
 
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-            {   
-                //Linux specific.
-
-                proc.Start();
-                proc.WaitForExit();
-    
-                string n = Path.GetFileName(exe);
-                var p = Process.GetProcessesByName(n);
-    
-                if (p.Length == 1)
-                { 
-                    daemonPid = p[0].Id;
-                    ProcessStarted?.Invoke(exe, args, p[0]);
-                }
-                else
+            switch (OS.GetType())
+            {
+                case OS_Type.Linux:
                 {
-                    daemonPid = -1;
-                    Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
+                    //On Linux we have to use the --detach option to keep
+                    //the daemon running after the wallet closes
+                    //Using --detach spawns the daemon in a new process, different to the one we originally
+                    //spawned on the next line. So we have to wait for that first one to exit, then
+                    //do a search for the new nervad process and link to that. 
+
+                    proc.Start();
+                    proc.WaitForExit();
+        
+                    string n = Path.GetFileName(exe);
+                    var p = Process.GetProcessesByName(n);
+        
+                    if (p.Length == 1)
+                    { 
+                        daemonPid = p[0].Id;
+                        ProcessStarted?.Invoke(exe, args, p[0]);
+                    }
+                    else
+                    {
+                        daemonPid = -1;
+                        Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
+                    }
                 }
+                break;
+                case OS_Type.Windows:
+                {
+                    //The --detach option is not available on Windows. So we just start the daemon.
+                    //todo: need to test if the process remains after exit. quick research suggests it probably will
+                    proc.Start();
+                    daemonPid = proc.Id;
+                    ProcessStarted?.Invoke(exe, args, proc);
+                }
+                break;
+
             }
         }
 

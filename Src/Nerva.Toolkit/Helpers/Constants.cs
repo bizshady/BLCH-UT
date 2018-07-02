@@ -1,3 +1,5 @@
+using System;
+
 namespace Nerva.Toolkit.Helpers
 {	
 	public static class Constants
@@ -25,6 +27,33 @@ namespace Nerva.Toolkit.Helpers
             "Esperanto",
             "Lojban"
         };
+    }
+
+    public enum OS_Type
+    {
+        Linux,
+        Windows,
+        Unsupported,
+    }
+
+    public static class OS
+    {
+        public static OS_Type GetType()
+        {
+            var p = Environment.OSVersion.Platform;
+
+            switch (p)
+            {
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                    return OS_Type.Windows;
+                case PlatformID.Unix:
+                    return OS_Type.Linux;
+                default:
+                    return OS_Type.Unsupported; 
+            }
+        }
     }
 
     public static class SeedNodes
