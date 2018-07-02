@@ -142,8 +142,9 @@ namespace Nerva.Toolkit.CLI
                 Log.Instance.Write("Enabling startup mining @ {0}", ma);
                 arg += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
-
-            //arg += " --detach";
+            
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+                arg += " --detach";
 
             #region Create BackgroundWorker that will do the crash checking
 
@@ -368,24 +369,27 @@ namespace Nerva.Toolkit.CLI
 
             Log.Instance.Write("Starting process {0} {1}", exe, args);
 
-            proc.Start();
-            daemonPid = proc.Id;
-            proc.WaitForExit();
-            Log.Instance.Write("{0} exited. Restart coming", Path.GetFileName(exe));
- 
-            /*string n = Path.GetFileName(exe);
-            var p = Process.GetProcessesByName(n);
- 
-            if (p.Length == 1)
-            { 
-                daemonPid = p[0].Id;
-                ProcessStarted?.Invoke(exe, args, p[0]);
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {   
+                //Linux specific.
+
+                proc.Start();
+                proc.WaitForExit();
+    
+                string n = Path.GetFileName(exe);
+                var p = Process.GetProcessesByName(n);
+    
+                if (p.Length == 1)
+                { 
+                    daemonPid = p[0].Id;
+                    ProcessStarted?.Invoke(exe, args, p[0]);
+                }
+                else
+                {
+                    daemonPid = -1;
+                    Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
+                }
             }
-            else
-            {
-                daemonPid = -1;
-                Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
-            }*/
         }
 
         public void CreateNewWalletProcess(string exe, string args)
