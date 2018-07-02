@@ -53,7 +53,7 @@ namespace Nerva.Toolkit
 				Rows = {
 					new TableRow (
 						new TableCell(lblDaemonStatus, true),
-						new TableCell(lblVersion)),
+						new TableCell(null)),
 					new TableRow (
 						new TableCell(lblWalletStatus, true),
 						new TableCell(lblVersion))

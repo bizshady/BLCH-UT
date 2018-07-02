@@ -406,7 +406,6 @@ namespace Nerva.Toolkit.CLI
                     ProcessStarted?.Invoke(exe, args, proc);
                 }
                 break;
-
             }
         }
 
@@ -446,8 +445,6 @@ namespace Nerva.Toolkit.CLI
             doWalletCrashCheck = false;
             walletWorker.CancelAsync();
         }
-
-
 
         #region Startup events
 
