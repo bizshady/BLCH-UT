@@ -263,7 +263,8 @@ namespace Nerva.Toolkit
 
 			w.RunWorkerCompleted += (ws, we) =>
 			{
-				MessageBox.Show("Rescanning spent outputs complete");
+				MessageBox.Show(this, "Rescanning spent outputs complete", "Rescan Spent", 
+					MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 			};
 
 			w.RunWorkerAsync();
@@ -284,7 +285,8 @@ namespace Nerva.Toolkit
 
 			w.RunWorkerCompleted += (ws, we) =>
 			{
-				MessageBox.Show("Rescanning blockchain complete");
+				MessageBox.Show(this, "Rescanning blockchain complete", "Rescan Blockchain", 
+					MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 			};
 
 			w.RunWorkerAsync();

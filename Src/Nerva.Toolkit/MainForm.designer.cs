@@ -87,7 +87,7 @@ namespace Nerva.Toolkit
 			var wallet_RescanSpent = new Command { MenuText = "Spent Outputs", ToolBarText = "Spent Outputs" };
 			wallet_RescanSpent.Executed += wallet_RescanSpent_Clicked;
 
-			var wallet_RescanBlockchain = new Command { MenuText = "Spent Blockchain", ToolBarText = "Spent Blockchain" };
+			var wallet_RescanBlockchain = new Command { MenuText = "Blockchain", ToolBarText = "Blockchain" };
 			wallet_RescanBlockchain.Executed += wallet_RescanBlockchain_Clicked;
 
 			var wallet_Keys_View = new Command { MenuText = "View Keys", ToolBarText = "View Keys" };
