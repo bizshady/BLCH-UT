@@ -101,6 +101,8 @@ namespace Nerva.Toolkit.Frontend
 
 			Configuration.Save();
 			Log.Instance.Shutdown();
+
+			Environment.Exit(0);
 		}
 	}
 }
