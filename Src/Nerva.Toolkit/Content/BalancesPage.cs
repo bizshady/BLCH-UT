@@ -188,7 +188,14 @@ namespace Nerva.Toolkit.Content
 				accounts.Clear();
 			}
 
-			grid.DataStore = accounts;
+			if (OS.Type == OS_Type.Windows)
+			{
+				int si = grid.SelectedRow;
+				grid.DataStore = accounts;
+				grid.SelectRow(si);
+			}
+			else
+				grid.DataStore = accounts;
 		}
     }
 }

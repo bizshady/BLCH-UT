@@ -38,19 +38,23 @@ namespace Nerva.Toolkit.Content.Dialogs
             int index = tc.SelectedIndex;
             string lang = cbxLang.SelectedValue.ToString();
 
+            string name = txtName.Text;
+            string viewKey = txtViewKey.Text;
+            string spendKey = txtSpendKey.Text;
+            string seed = txtSeed.Text;
+
             w.DoWork += (ws, we) =>
             {
                 importStarted = true;
                 switch (index)
                 {
                     case 0:
-                        Cli.Instance.Wallet.RestoreWalletFromKeys(txtName.Text, txtViewKey.Text, txtSpendKey.Text, password, lang);
+                        Cli.Instance.Wallet.RestoreWalletFromKeys(name, viewKey, spendKey, password, lang);
                     break;
                     case 1:
-                        Cli.Instance.Wallet.RestoreWalletFromSeed(txtName.Text, txtSeed.Text, password, lang);
+                        Cli.Instance.Wallet.RestoreWalletFromSeed(name, seed, password, lang);
                     break;
-                }
-                
+                } 
             };
 
             w.RunWorkerCompleted += (ws, we) =>

@@ -38,7 +38,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 			lblAmount.Text = Conversions.FromAtomicUnits(tx.Amount).ToString();
 			lblFee.Text = Conversions.FromAtomicUnits(tx.Fee).ToString();
 			lblHeight.Text = tx.Height.ToString();
-			lblUnlockTime.Text = (tx.Height + tx.UnlockTime).ToString();
+			lblUnlockTime.Text = (tx.UnlockTime).ToString();
 			lblIndex.Text = $"{tx.SubAddressIndex.Major}.{tx.SubAddressIndex.Minor}";
 			lblDoubleSpend.Text = tx.DoubleSpendSeen.ToString();
 

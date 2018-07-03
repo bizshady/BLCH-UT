@@ -24,19 +24,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         protected override void OnOk()
         {
             base.OnOk();
-
             name = ddName.SelectedValue.ToString();
-
-            /*bool opened = Cli.Instance.Wallet.OpenWallet(name, password);
-
-            if (opened)
-                this.Close(DialogResult.Ok);
-            else
-            {
-                MessageBox.Show(this, "Could not open wallet", "Open wallet failed", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
-                return;
-            }*/
-
             this.Close(DialogResult.Ok);
         }
 

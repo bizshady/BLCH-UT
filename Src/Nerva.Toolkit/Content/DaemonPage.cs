@@ -52,10 +52,10 @@ namespace Nerva.Toolkit.Content
 
 			grid.ContextMenu = new ContextMenu
 			{
-					Items = 
-					{
-						peersCtx_Ban
-					}
+				Items = 
+				{
+					peersCtx_Ban
+				}
 			};
 
 			peersCtx_Ban.Executed += (s, e) =>
@@ -162,7 +162,14 @@ namespace Nerva.Toolkit.Content
                 lblMiningHashrate.Text = "-";
             }
 
-			grid.DataStore = connections;
+			if (OS.Type == OS_Type.Windows)
+			{
+				int si = grid.SelectedRow;
+				grid.DataStore = connections;
+				grid.SelectRow(si);
+			}
+			else
+				grid.DataStore = connections;
         }
     }
 }
