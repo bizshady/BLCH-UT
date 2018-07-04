@@ -1,3 +1,4 @@
+using AngryWasp.Helpers;
 using AngryWasp.Serializer;
 
 namespace Nerva.Toolkit.Config
@@ -18,11 +19,12 @@ namespace Nerva.Toolkit.Config
         {
             return new Wallet
             {
-                WalletDir = "./wallets",
+                WalletDir = "./Wallets",
                 LastOpenedWallet = null,
                 LastWalletPassword = null,
-                SaveWalletPassword = true,
-                Rpc = RpcDetails.New()
+                SaveWalletPassword = false,
+
+                Rpc = RpcDetails.New(MathHelper.Random.NextInt(10000, 50000))
             };
         }
     }

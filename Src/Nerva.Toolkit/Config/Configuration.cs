@@ -38,12 +38,14 @@ namespace Nerva.Toolkit.Config
         {
             return new Configuration
             {
-                ToolsPath = "./",
-                CheckForUpdateOnStartup = true,
+                ToolsPath = "./CLI/",
+                CheckForUpdateOnStartup = false,
                 LogRpcTraffic = false,
-                Testnet = false,
-                Daemon = Daemon.New(),
+                Testnet = true,
+
+                Daemon = Daemon.New(true),
                 Wallet = Wallet.New(),
+
                 ReconnectToDaemonProcess = true
             };
         }

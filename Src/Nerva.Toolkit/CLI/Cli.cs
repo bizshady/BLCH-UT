@@ -523,9 +523,7 @@ namespace Nerva.Toolkit.CLI
                 Application.Instance.AsyncInvoke ( () =>
 				{
 					if (!WalletHelper.OpenSavedWallet())
-                    {
                         WalletHelper.ShowWalletWizard();
-                    }
 				});
             };
 

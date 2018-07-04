@@ -57,7 +57,7 @@ namespace Nerva.Toolkit.Helpers
 
                 return true;
             }
-            catch (WebException ex)
+            catch (Exception)
             {
                 jsonString = null;
                 return false;

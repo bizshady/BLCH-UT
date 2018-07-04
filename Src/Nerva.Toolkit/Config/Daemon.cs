@@ -1,3 +1,4 @@
+using AngryWasp.Helpers;
 using AngryWasp.Serializer;
 using Nerva.Toolkit.Helpers;
 
@@ -15,7 +16,7 @@ namespace Nerva.Toolkit.Config
 
         public int MiningThreads { get; set; }
 
-        public static Daemon New()
+        public static Daemon New(bool testnet)
         {
             return new Daemon
             {
@@ -23,7 +24,8 @@ namespace Nerva.Toolkit.Config
                 AutoStartMining = true,
                 MiningAddress = Constants.DEV_WALLET_ADDRESS,
                 MiningThreads = 4,
-                Rpc = RpcDetails.New()
+
+                Rpc = RpcDetails.New(testnet ? 18566 : 17566)
             };
         }
     }

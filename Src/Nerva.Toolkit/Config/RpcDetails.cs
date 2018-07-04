@@ -6,23 +6,21 @@ namespace Nerva.Toolkit.Config
     {
         public bool IsPublic { get; set; } = false;
 
-        public int Port { get; set; } = 21566;
+        public int Port { get; set; } = -1;
 
         public string Login { get; set; } = "";
 
         public string Pass { get; set; } = "";
 
-        public static RpcDetails New()
+        public static RpcDetails New(int port)
         {
-            RpcDetails d = new RpcDetails
+            return new RpcDetails
             {
                 IsPublic = false,
-                Port = MathHelper.Random.NextInt(10000, 50000),
+                Port = port,
                 Login = StringHelper.GenerateRandomString(24),
                 Pass = StringHelper.GenerateRandomString(24)
             };
-
-            return d;
         }
     }
 }
