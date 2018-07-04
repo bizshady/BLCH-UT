@@ -13,7 +13,7 @@ using System.Diagnostics;
 
 namespace Nerva.Toolkit.Content
 {	
-	public partial class TransfersPage
+	public class TransfersPage
 	{
 		private Scrollable mainControl;
         public Scrollable MainControl => mainControl;

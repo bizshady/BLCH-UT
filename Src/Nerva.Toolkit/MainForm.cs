@@ -246,6 +246,7 @@ namespace Nerva.Toolkit
 		{
 			Log.Instance.Write("Storing blockchain");
 			Cli.Instance.Wallet.Store();
+			Log.Instance.Write("Storing blockchain");
 		}
 
 		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
@@ -302,7 +303,7 @@ namespace Nerva.Toolkit
 			TextDialog d = new TextDialog("Enter Account Name", false);
 			if (d.ShowModal() == DialogResult.Ok)
 				if (Cli.Instance.Wallet.CreateAccount(d.Text) == null)
-					MessageBox.Show("Failed to create new account", MessageBoxType.Error);
+					MessageBox.Show(this, "Failed to create new account", "Create Account", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
 		}
 
 		protected void about_Clicked(object sender, EventArgs e)

@@ -56,7 +56,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 		protected override void OnOk()
 		{
 			//todo: save TX details
-			MessageBox.Show("Not implemented");
+			MessageBox.Show(this, "Not implemented", "Save Tx",
+                MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 			Close(DialogResult.Ok);
 		}
 

@@ -25,11 +25,8 @@ namespace Nerva.Toolkit.Content.Dialogs
         bool importStarted = false;
         protected override void OnOk()
         {
-            if (importStarted)
-            {
-                MessageBox.Show("Please wait for the import to complete");
+            if (IsImportStarted())
                 return;
-            }
 
             base.OnOk();
 
@@ -59,7 +56,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 
             w.RunWorkerCompleted += (ws, we) =>
             {
-                MessageBox.Show(this, "Wallet import complete", "Wallet Import", MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                MessageBox.Show(this, "Wallet import complete", "Wallet Import",
+                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
                 name = txtName.Text;
                 this.Close(DialogResult.Ok);
             };
@@ -69,15 +67,24 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         protected override void OnCancel()
         {
-            if (importStarted)
-            {
-                MessageBox.Show("Please wait for the import to complete");
+            if (IsImportStarted())
                 return;
-            }
 
             base.OnCancel();
             name = null;
             this.Close(DialogResult.Cancel);
+        }
+
+        private bool IsImportStarted()
+        {
+            if (importStarted)
+            {
+                MessageBox.Show(this, "Please wait for the import to complete", "Wallet Import",
+                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                return true;
+            }
+
+            return false;
         }
 
         protected override Control ConstructChildContent()

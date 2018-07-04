@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace Nerva.Toolkit.Content
 {	
-	public partial class BalancesPage
+	public class BalancesPage
 	{
 		private StackLayout mainControl;
         public StackLayout MainControl => mainControl;
@@ -100,7 +100,8 @@ namespace Nerva.Toolkit.Content
 
 				if (d.ShowModal() == DialogResult.Ok)
 					if (!Cli.Instance.Wallet.LabelAccount((uint)grid.SelectedRow, d.Text))
-						MessageBox.Show("Failed to rename account", MessageBoxType.Error);
+						MessageBox.Show(this.MainControl, "Failed to rename account", "Wallet rename",
+                    		MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
 			};
 
 			ContextMenu ctx = new ContextMenu

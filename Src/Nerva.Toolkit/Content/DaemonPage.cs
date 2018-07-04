@@ -9,7 +9,7 @@ using Nerva.Toolkit.CLI.Structures.Response;
 
 namespace Nerva.Toolkit.Content
 {
-    public partial class DaemonPage
+    public class DaemonPage
 	{
         List<string> la = new List<string>();
 
