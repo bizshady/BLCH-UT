@@ -4,6 +4,9 @@ Unified toolkit for NERVA, written in C#
 
 ## Prerequisites
 
+To run the NERVA GUI, you need .NET 4.7/Mono 5.8 (minimum)  
+To build the GUI from source, you additionally need the .NET Core SDK (All platforms) and the Microsoft Build Tools (Windows) installed
+
 Mono/.NET
 
 - Ubuntu 17.10
@@ -13,40 +16,51 @@ Mono/.NET
     `sudo apt update`  
     `sudo apt install mono-complete`
 
-.NET Core
+The latest Mono release for Ubuntu is broken. The above commands will install a slightly older, but tested working version of Mono  
+For other Linux distributions, please consult the [Mono documentation](https://www.mono-project.com/download/stable/#download-lin) for information specific to your distro.
 
--Ubuntu 17.10
+Windows 10 has .NET 4.7 pre-installed. For older versions of Windows, you can get [here](https://www.microsoft.com/net/download/dotnet-framework-runtime)
 
-	`TODO: Add instructions`
+.NET Core SDK
+
+Please refer to the [.NET Core website](https://www.microsoft.com/net) and follow the instructions specific to your OS.
+
+Microsoft Build Tools (Windows Only)
+
+The Microsoft Built Tools are available for download from the Microsoft [Visual Studio website](https://visualstudio.microsoft.com/downloads/). Look for the download link for *Build Tools for Visual Studio 2017*
+
+When running the installer, select the following workloads
+
+- .NET desktop build tools 
+- .NET Core build tools
+- Visual C++ build tools (Optional, for building the NERVA CLI from source if desired)
 
 ## Building
 
-## Building
+The build instructions are the same for Linux and Windows
 
-Linux requires .NET Core mono to build
-
-- Ubuntu 17.10
-
+- All systems
+    
+    `git clone https://bitbucket.org/nerva-project/nerva-unified-toolkit`  
     `cd ./nerva-unified-toolkit`  
     `dotnet restore`  
-    `msbuild /p:configuration=Release`
+    `msbuild`
 
 ## Development
 
 Development is done entirely within VS Code using the C# extension. A cross platform GUI is made available via Eto.Forms.  
-To set up your environment install the following:
+To set up your environment install the following in addition to the above described dependencies
 
-.NET Core SDK.
-Eto.Forms .Net Core templates
+- VS Code
+- VS Code C# extension
+- Eto.Forms templates  
+`dotnet new -i "Eto.Forms.Templates::*"`
 
-Within VS Code integrated terminal
+## Usage and more information
 
-- Install the Eto.Forms templates
+Please refer to the following documentation for information on the NERVA GUI
 
-    `dotnet new -i "Eto.Forms.Templates::*"`
-
-- Fancy creating an Eto.Forms application?
-
-    `dotnet new etoapp -m json -sln -s`
-    `dotnet restore`
+[NERVA GUI: Getting Started](https://bitbucket.org/snippets/nerva-project/7edAp6)  
+[NERVA GUI: Essentials](https://bitbucket.org/snippets/nerva-project/yedn4X)  
+[NERVA GUI: Known Issues](https://bitbucket.org/snippets/nerva-project/keGne4)
 
