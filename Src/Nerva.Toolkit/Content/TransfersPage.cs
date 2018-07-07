@@ -47,7 +47,7 @@ namespace Nerva.Toolkit.Content
 				{
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => r.Type)}, HeaderText = "Type" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => r.Height.ToString())}, HeaderText = "Height" },
-					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.UnixTimeStampToDateTime(r.Timestamp).ToString())}, HeaderText = "Time" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => StringHelper.UnixTimeStampToDateTime(r.Timestamp).ToString())}, HeaderText = "Time" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.FromAtomicUnits(r.Amount).ToString())}, HeaderText = "Amount" },
 					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.WalletAddressShortForm(r.TxId))}, HeaderText = "TxID" },
 				}

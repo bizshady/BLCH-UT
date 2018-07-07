@@ -385,16 +385,13 @@ namespace Nerva.Toolkit.CLI
 
             Log.Instance.Write("Restoring wallet with command {0} {1}", exe, args);
 
-            Process proc = new Process
+            Process proc = Process.Start(new ProcessStartInfo(exe, args)
             {
-                StartInfo = new ProcessStartInfo(exe, args)
-                {
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    CreateNoWindow = true
-                }
-            };
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
+            });
 
             proc.OutputDataReceived += (s, e) =>
             {
@@ -410,7 +407,6 @@ namespace Nerva.Toolkit.CLI
                 }
             };
 
-            proc.Start();
             proc.BeginOutputReadLine();
             proc.WaitForExit();
 

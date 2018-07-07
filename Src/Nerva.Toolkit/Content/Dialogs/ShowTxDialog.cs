@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using AngryWasp.Helpers;
 using Eto.Drawing;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
@@ -34,7 +35,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 			lblNote.Text = tx.Note;
 
 			lblType.Text = tx.Type;
-			lblTime.Text = Conversions.UnixTimeStampToDateTime(tx.Timestamp).ToString();
+			lblTime.Text = StringHelper.UnixTimeStampToDateTime(tx.Timestamp).ToString();
 			lblAmount.Text = Conversions.FromAtomicUnits(tx.Amount).ToString();
 			lblFee.Text = Conversions.FromAtomicUnits(tx.Fee).ToString();
 			lblHeight.Text = tx.Height.ToString();

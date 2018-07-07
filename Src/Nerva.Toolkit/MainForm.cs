@@ -57,9 +57,9 @@ namespace Nerva.Toolkit
 			shouldUpdateWallet = true;
 			updateWalletThread.Start();
 
-			pingThread = new Thread(new ThreadStart(CheckConnection));
-			pingSuccess = true;
-			pingThread.Start();
+			//pingThread = new Thread(new ThreadStart(CheckConnection));
+			//pingSuccess = true;
+			//pingThread.Start();
 		}
 
 		private void UpdateDaemonUI()

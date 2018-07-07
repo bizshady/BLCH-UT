@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using Eto.Drawing;
 using Eto.Forms;
@@ -149,7 +150,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         {
             Configuration.Instance.Wallet.LastOpenedWallet = walletFile;
 
-            string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : password.EncodeBase64();
+            string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : StringHelper.EncodeBase64(password);
 
             if (Configuration.Instance.Wallet.SaveWalletPassword)
                 Configuration.Instance.Wallet.LastWalletPassword = formattedPassword;
@@ -170,7 +171,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             //Load from the saved password if that exists
             if (w.LastWalletPassword != null)
             {
-                string pass = w.LastWalletPassword == string.Empty ? string.Empty : w.LastWalletPassword.DecodeBase64();
+                string pass = w.LastWalletPassword == string.Empty ? string.Empty : StringHelper.DecodeBase64(w.LastWalletPassword);
                 if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, pass))
                 {
                     Log.Instance.Write("Wallet file '{0}' opened", w.LastOpenedWallet);

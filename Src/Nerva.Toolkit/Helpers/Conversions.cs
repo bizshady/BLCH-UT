@@ -7,16 +7,6 @@ namespace Nerva.Toolkit.Helpers
 {	
 	public static class Conversions
     {
-        public static string EncodeBase64(this string t)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(t));
-        }
-
-        public static string DecodeBase64(this string t)
-        {
-            return Encoding.UTF8.GetString(Convert.FromBase64String(t));
-        }
-
         public static double FromAtomicUnits(ulong i)
         {
             return Math.Round((double)i / 1000000000000.0d, 4);
@@ -30,18 +20,6 @@ namespace Nerva.Toolkit.Helpers
         public static string WalletAddressShortForm(string a)
         {
             return $"{a.Substring(0, 6)}...{a.Substring(a.Length - 6, 6)}";
-        }
-
-        public static string GenerateRandomPaymentID()
-        {
-            char[] chars = ("0123456789abcdef").ToCharArray();
-
-            string str = string.Empty;
-
-            for (int i = 0; i < 64; i++)
-                str += chars[MathHelper.Random.NextInt(0, chars.Length)];
-
-            return str;
         }
 
         public static ulong OctetSetToInt(string vs)
@@ -76,12 +54,6 @@ namespace Nerva.Toolkit.Helpers
             i += o4;
 
             return i;
-        }
-
-        public static DateTime UnixTimeStampToDateTime(ulong ts)
-        {
-            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            return dt.AddSeconds(ts).ToLocalTime();
         }
     }
 }

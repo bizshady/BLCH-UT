@@ -6,6 +6,7 @@ using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
+using AngryWasp.Helpers;
 
 namespace Nerva.Toolkit.Content
 {
@@ -124,7 +125,7 @@ namespace Nerva.Toolkit.Content
                 //Update the daemon info
                 lblHeight.Text = info.Height.ToString();
                 lblNetHash.Text = nethash.ToString() + " kH/s";
-                lblRunTime.Text = (DateTime.Now - Conversions.UnixTimeStampToDateTime((ulong)info.StartTime)).ToString(@"hh\:mm");
+                lblRunTime.Text = (DateTime.Now - StringHelper.UnixTimeStampToDateTime((ulong)info.StartTime)).ToString(@"hh\:mm");
 
                 if (info.Mainnet)
 					lblNetwork.Text = "MainNet";
@@ -161,6 +162,9 @@ namespace Nerva.Toolkit.Content
                 lblMiningThreads.Text = "-";
                 lblMiningHashrate.Text = "-";
             }
+
+			if (connections == null)
+				connections = new List<Connection>();
 
 			if (OS.Type == OS_Type.Windows)
 			{

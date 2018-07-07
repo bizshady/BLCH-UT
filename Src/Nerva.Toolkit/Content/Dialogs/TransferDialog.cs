@@ -34,7 +34,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             cbxPriority.DataStore = Enum.GetNames(typeof(Send_Priority));
             cbxPriority.SelectedIndex = 0;
 
-            btnGenPayId.Click += (s, e) => txtPaymentId.Text = Conversions.GenerateRandomPaymentID();
+            btnGenPayId.Click += (s, e) => txtPaymentId.Text = StringHelper.GenerateRandomHexString(64);
             
         }
 

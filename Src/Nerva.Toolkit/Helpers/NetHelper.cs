@@ -143,7 +143,8 @@ namespace Nerva.Toolkit.Helpers
             }
             catch (Exception ex)
             {
-                Log.Instance.Write(Log_Severity.Error, ex.Message);
+                Log.Instance.Write(Log_Severity.Warning, "Error attempting HTTP request {0}", url);
+                Log.Instance.WriteNonFatalException(ex);
                 returnString = null;
                 return false;
             }
@@ -160,10 +161,13 @@ namespace Nerva.Toolkit.Helpers
                 if (reply.Status == IPStatus.Success)
                     return true;
 
+                Log.Instance.Write(Log_Severity.Warning, "Failed to ping {0} for online check", host);
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Instance.Write(Log_Severity.Warning, "Error attempting to ping {0} for online check", host);
+                Log.Instance.WriteNonFatalException(ex);
                 return false;
             }
         }

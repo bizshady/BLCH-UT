@@ -80,7 +80,7 @@ namespace Nerva.Toolkit.CLI
             }
             catch (Exception)
             {
-                logFile = FileNames.RenameDuplicateFile(logFile);
+                logFile = FileHelper.RenameDuplicateFile(logFile);
                 Log.Instance.Write(Log_Severity.Warning, "Cannot cycle log file. New log will be written to {0}", logFile);
                 return logFile;
             }
