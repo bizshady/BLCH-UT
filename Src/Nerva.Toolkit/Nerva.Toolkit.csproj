@@ -2,9 +2,7 @@
   <Import Project="../Nerva.Toolkit.targets"/>
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net47</TargetFramework>
     <RootNamespace>Nerva.Toolkit</RootNamespace>
-    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Eto.Forms" Version="2.4.1"/>

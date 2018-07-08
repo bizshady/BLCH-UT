@@ -2,12 +2,7 @@
 	<Import Project="../Nerva.Toolkit.targets" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net47</TargetFramework>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <PackageVersion>0.1.0.0</PackageVersion>
-    <Title>NERVA Unified Toolkit</Title>
-    <Copyright>Copyright © AngryWasp 2018</Copyright>
-    <Description>Unified GUI frontend for the NERVA CLI tools</Description>
+    <RootNamespace>Nerva.Toolkit.Frontend</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
