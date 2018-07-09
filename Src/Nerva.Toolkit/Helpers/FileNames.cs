@@ -10,9 +10,9 @@ namespace Nerva.Toolkit.Helpers
         public const string CLI_WALLET = "nerva-wallet-cli";
         public const string RPC_WALLET = "nerva-wallet-rpc";
 
-        public static string GetCliExePath(string exe) => $"{Configuration.Instance.ToolsPath}{GetCliExeName(exe)}";
+        public static string GetCliExePath(string exe) => Path.Combine(Configuration.Instance.ToolsPath, GetCliExeName(exe));
 
-        public static string GetCliExeName(string exe) => (Environment.OSVersion.Platform == PlatformID.Win32NT) ? $"{exe}.exe" : exe;
+        public static string GetCliExeName(string exe) => (OS.Type == OS_Type.Windows) ? $"{exe}.exe" : exe;
 
         public static string GetCliExeBaseName(string exe) => Path.GetFileNameWithoutExtension(exe).ToLower();
     }

@@ -65,7 +65,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
                 RpcWalletError e = new RpcWalletError();
 
-                txData = Cli.Instance.Wallet.TransferFunds(accData, txtAddress.Text, txtPaymentId.Text, amt, (Send_Priority)cbxPriority.SelectedIndex, ref e);
+                txData = Cli.Instance.Wallet.Interface.TransferFunds(accData, txtAddress.Text, txtPaymentId.Text, amt, (Send_Priority)cbxPriority.SelectedIndex, ref e);
 
                 if (e.Code != 0)
                 {

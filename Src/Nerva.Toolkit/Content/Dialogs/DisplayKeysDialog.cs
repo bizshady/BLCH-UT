@@ -17,8 +17,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         public DisplayKeysDialog() : base("Restore Info")
         {
-            KeyInfo ki = Cli.Instance.Wallet.QueryKey(Key_Type.All_Keys);
-            KeyInfo ki2 = Cli.Instance.Wallet.QueryKey(Key_Type.Mnemonic);
+            KeyInfo ki = Cli.Instance.Wallet.Interface.QueryKey(Key_Type.All_Keys);
+            KeyInfo ki2 = Cli.Instance.Wallet.Interface.QueryKey(Key_Type.Mnemonic);
 
             if (ki != null)
             {

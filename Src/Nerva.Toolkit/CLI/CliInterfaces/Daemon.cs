@@ -11,22 +11,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Nerva.Toolkit.CLI
 {
-    /// <summary>
-    /// Minimal Daemon RPC API.
-    /// </summary>
-    public class DaemonInterface
+    public class DaemonInterface : CliInterface
     {
-        private NetHelper netHelper;
-
-        public DaemonInterface()
-        {
-            netHelper = new NetHelper(Configuration.Instance.Daemon.Rpc);
-        }
-
-        /// <summary>
-        /// Get the current block height seen by the node
-        /// </summary>
-        /// <returns></returns>
+        public DaemonInterface() : base(Configuration.Instance.Daemon.Rpc) { }
+        
         public int GetBlockCount()
         {
             string result = null;
@@ -47,10 +35,6 @@ namespace Nerva.Toolkit.CLI
             return JObject.Parse(result)["result"]["count"].Value<int>();
         }
 
-        /// <summary>
-        /// gets node information
-        /// </summary>
-        /// <returns>A JObject containing the node information</returns>
         public Info GetInfo()
         {
             string result = null;
@@ -71,10 +55,6 @@ namespace Nerva.Toolkit.CLI
             return JsonConvert.DeserializeObject<JsonValue<Info>>(result).Result;
         }
 
-        /// <summary>
-        /// gets node connections information
-        /// </summary>
-        /// <returns>A JObject containing the node information</returns>
         public List<Connection> GetConnections()
         {
             string result = null;
@@ -95,10 +75,6 @@ namespace Nerva.Toolkit.CLI
             return JsonConvert.DeserializeObject<JsonValue<ConnectionList>>(result).Result.Connections;
         }
 
-        /// <summary>
-        /// Stops the CLI daemon
-        /// </summary>
-        /// <returns>Returns a bool value indicating if the request was successful</returns>
         public bool StopDaemon()
         {
             string result = null;
@@ -114,21 +90,16 @@ namespace Nerva.Toolkit.CLI
             return JObject.Parse(result)["status"].Value<string>().ToLower() == "ok";
         }
 
-        /// <summary>
-        /// Starts mining on the node
-        /// </summary>
-        /// <param name="miningThreads">The number of threads to set mining</param>
-        /// <returns>Returns a bool value indicating if the request was successful</returns>
-        public bool StartMining(int miningThreads)
+        public bool StartMining()
         {
-            int threads = MathHelper.Clamp(miningThreads, 1, Environment.ProcessorCount - 1);
+            int threads = MathHelper.Clamp(Configuration.Instance.Daemon.MiningThreads, 1, Environment.ProcessorCount);
 
             string jsonRequest = JsonConvert.SerializeObject(new StartMining
                 {
                     BackgroundMining = false,
                     IgnoreBattery = true,
                     MinerAddress = Configuration.Instance.Daemon.MiningAddress,
-                    MiningThreads = Configuration.Instance.Daemon.MiningThreads
+                    MiningThreads = threads
                 });
                 
             string result = null;

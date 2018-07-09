@@ -55,7 +55,7 @@ namespace Nerva.Toolkit.Frontend
 
 			Cli.CreateInstance();
 
-			Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
+			Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
 
@@ -77,12 +77,12 @@ namespace Nerva.Toolkit.Frontend
 			catch (Exception ex)
 			{
 				Log.Instance.WriteNonFatalException(ex);
-				Cli.Instance.StopDaemonCheck();
-				Cli.Instance.StopWalletCheck();
+				Cli.Instance.Daemon.StopCrashCheck();
+				Cli.Instance.Wallet.StopCrashCheck();
 				//Error. Force close all CLI tools
-				Cli.Instance.KillRunningProcesses(FileNames.CLI_WALLET);
-				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
-				Cli.Instance.KillRunningProcesses(FileNames.NERVAD);
+				//Cli.Instance.KillRunningProcesses(FileNames.CLI_WALLET);
+				Cli.Instance.Wallet.ForceClose();
+				Cli.Instance.Daemon.ForceClose();
 
 				Configuration.Save();
 				Log.Instance.Write(Log_Severity.Fatal, "PROGRAM TERMINATED");
@@ -91,13 +91,13 @@ namespace Nerva.Toolkit.Frontend
 			//Prevent the daemon restarting automatically before telling it to stop
 			if (Configuration.Instance.Daemon.StopOnExit)
 			{
-				Cli.Instance.StopDaemonCheck();
-				Cli.Instance.Daemon.StopDaemon();
+				Cli.Instance.Daemon.StopCrashCheck();
+				Cli.Instance.Daemon.Interface.StopDaemon();
 			}
 
 			//be agressive and make sure it is dead
-			Cli.Instance.StopWalletCheck();
-			Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
+			Cli.Instance.Wallet.StopCrashCheck();
+			Cli.Instance.Wallet.ForceClose();
 
 			Configuration.Save();
 			Log.Instance.Shutdown();

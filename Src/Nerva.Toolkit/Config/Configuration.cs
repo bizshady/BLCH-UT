@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
@@ -38,7 +39,7 @@ namespace Nerva.Toolkit.Config
         {
             return new Configuration
             {
-                ToolsPath = "./CLI/",
+                ToolsPath = Path.Combine(Environment.CurrentDirectory, "CLI"),
                 CheckForUpdateOnStartup = false,
                 LogRpcTraffic = false,
                 Testnet = true,

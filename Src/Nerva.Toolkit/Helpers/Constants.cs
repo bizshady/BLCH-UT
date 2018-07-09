@@ -8,8 +8,8 @@ namespace Nerva.Toolkit.Helpers
         public const string DEFAULT_CONFIG_FILENAME = "app.config";
         public const string DEFAULT_LOG_FILENAME = "app.log";
         public const string DEV_WALLET_ADDRESS = "NV1r8P6THPASAQX77re6hXTMJ1ykXXvtYXFXgMv4vFAQNYo3YatUvZ8LFNRu4dPQBjTwqJbMvqoeiipywmREPHpD2AgWnmG7Q";
-        public const int DAEMON_RESTART_THREAD_INTERVAL = 15000;
-        public const int DAEMON_POLL_INTERVAL = 1000;
+        public const int ONE_SECOND = 1000;
+        public const int FIVE_SECONDS = 5000;
         public const int BAN_TIME = 6000;
 
         public static readonly string[] Languages = new string[]

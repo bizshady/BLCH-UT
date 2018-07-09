@@ -172,7 +172,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             if (w.LastWalletPassword != null)
             {
                 string pass = w.LastWalletPassword == string.Empty ? string.Empty : StringHelper.DecodeBase64(w.LastWalletPassword);
-                if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, pass))
+                if (Cli.Instance.Wallet.Interface.OpenWallet(w.LastOpenedWallet, pass))
                 {
                     Log.Instance.Write("Wallet file '{0}' opened", w.LastOpenedWallet);
                     return true;
@@ -194,7 +194,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                     {
                         case DialogResult.Ok:
                             {
-                                if (Cli.Instance.Wallet.OpenWallet(w.LastOpenedWallet, d.Password))
+                                if (Cli.Instance.Wallet.Interface.OpenWallet(w.LastOpenedWallet, d.Password))
                                     return true;
                             }
                             break;
@@ -279,6 +279,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
                                     SaveWalletLogin(d2.Name, d2.Password);
                                     wizardRunning = false;
+                                    Cli.Instance.Wallet.ForceClose();
                                     return newWallet;
                                 }
                                 else //break the loop if cancelled
@@ -293,7 +294,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                                 NewWalletDialog d2 = new NewWalletDialog();
                                 if (d2.ShowModal() == DialogResult.Ok)
                                 {
-                                    bool created = Cli.Instance.Wallet.CreateWallet(d2.Name, d2.Password);
+                                    bool created = Cli.Instance.Wallet.Interface.CreateWallet(d2.Name, d2.Password);
 
                                     if (created)
                                     {

@@ -8,7 +8,7 @@
             "name": "Debug-Windows",
             "type": "clr",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
+            "program": "${workspaceRoot}/Bin/Debug/Nerva.Toolkit.Frontend.exe",
             "cwd": "${workspaceRoot}/Bin",
             "preLaunchTask": "build-debug-windows",
             "args":[
@@ -20,7 +20,7 @@
             "name": "Debug-Linux",
             "type": "mono",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
+            "program": "${workspaceRoot}/Bin/Debug/Nerva.Toolkit.Frontend.exe",
             "cwd": "${workspaceRoot}/Bin",
             "preLaunchTask": "build-debug-linux",
             "args":[
@@ -32,7 +32,7 @@
             "name": "Release",
             "type": "mono",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Bin/Nerva.Toolkit.Frontend.exe",
+            "program": "${workspaceRoot}/Bin/Release/Nerva.Toolkit.Frontend.exe",
             "cwd": "${workspaceRoot}/Bin",
             "preLaunchTask": "build-release",
             "args":[

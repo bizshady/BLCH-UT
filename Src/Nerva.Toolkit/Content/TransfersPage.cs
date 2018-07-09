@@ -35,7 +35,7 @@ namespace Nerva.Toolkit.Content
 					return;
 
 				Transfer t = txList[grid.SelectedRow];
-				ShowTxDialog d = new ShowTxDialog(Cli.Instance.Wallet.GetTransferByTxID(t.TxId));
+				ShowTxDialog d = new ShowTxDialog(Cli.Instance.Wallet.Interface.GetTransferByTxID(t.TxId));
 				d.ShowModal();
 			};
 

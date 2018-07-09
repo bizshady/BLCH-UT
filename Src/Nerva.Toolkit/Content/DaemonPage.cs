@@ -65,7 +65,7 @@ namespace Nerva.Toolkit.Content
 					return;
 
 				Connection c = (Connection)grid.DataStore.ElementAt(grid.SelectedRow);
-				Cli.Instance.Daemon.BanPeer(c.IP);
+				Cli.Instance.Daemon.Interface.BanPeer(c.IP);
 			};
 
 			mainControl = new StackLayout

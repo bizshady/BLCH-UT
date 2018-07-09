@@ -46,10 +46,10 @@ namespace Nerva.Toolkit.Content.Dialogs
                 switch (index)
                 {
                     case 0:
-                        Cli.Instance.Wallet.RestoreWalletFromKeys(name, viewKey, spendKey, password, lang);
+                        Cli.Instance.Wallet.Interface.RestoreWalletFromKeys(name, viewKey, spendKey, password, lang);
                     break;
                     case 1:
-                        Cli.Instance.Wallet.RestoreWalletFromSeed(name, seed, password, lang);
+                        Cli.Instance.Wallet.Interface.RestoreWalletFromSeed(name, seed, password, lang);
                     break;
                 } 
             };

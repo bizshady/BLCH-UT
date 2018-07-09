@@ -43,7 +43,7 @@ namespace Nerva.Toolkit
 			{
 				shouldUpdateDaemon = false;
 				shouldUpdateWallet = false;
-				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
+				Cli.Instance.Wallet.ForceClose();
 			};
 		}
 
@@ -66,11 +66,11 @@ namespace Nerva.Toolkit
 		{
 			while (shouldUpdateDaemon)
 			{
-				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
+				Thread.Sleep(Constants.ONE_SECOND);
 
 				//spin the wheels for a bit if we should be updating, but have no daemon
-				while(shouldUpdateDaemon && Cli.Instance.DaemonPid == -1)
-					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+				while(shouldUpdateDaemon && Cli.Instance.Daemon.Pid == -1)
+					Thread.Sleep(Constants.ONE_SECOND);
 
 				//Condition may have changed. 5 seconds is a long time
 				if (!shouldUpdateDaemon)
@@ -83,10 +83,10 @@ namespace Nerva.Toolkit
 
 				try
 				{
-					height = Cli.Instance.Daemon.GetBlockCount();
-					info = Cli.Instance.Daemon.GetInfo();
-					connections = Cli.Instance.Daemon.GetConnections();
-					mStatus = Cli.Instance.Daemon.GetMiningStatus();
+					height = Cli.Instance.Daemon.Interface.GetBlockCount();
+					info = Cli.Instance.Daemon.Interface.GetInfo();
+					connections = Cli.Instance.Daemon.Interface.GetConnections();
+					mStatus = Cli.Instance.Daemon.Interface.GetMiningStatus();
 				}
 				catch (Exception) { }
 
@@ -126,11 +126,11 @@ namespace Nerva.Toolkit
 		{
 			while (shouldUpdateWallet)
 			{
-				Thread.Sleep(Constants.DAEMON_POLL_INTERVAL);
+				Thread.Sleep(Constants.ONE_SECOND);
 
 				//spin the wheels for a bit if we should be updating, but have no wallet
-				while(shouldUpdateWallet && Cli.Instance.WalletPid == -1)
-					Thread.Sleep(Constants.DAEMON_RESTART_THREAD_INTERVAL);
+				while(shouldUpdateWallet && Cli.Instance.Wallet.Pid == -1)
+					Thread.Sleep(Constants.ONE_SECOND);
 
 				//Condition may have changed. 5 seconds is a long time
 				if (!shouldUpdateWallet)
@@ -141,8 +141,8 @@ namespace Nerva.Toolkit
 
 				try
 				{
-					account = Cli.Instance.Wallet.GetAccounts();
-					transfers = Cli.Instance.Wallet.GetTransfers(lastTxHeight, out lastTxHeight);
+					account = Cli.Instance.Wallet.Interface.GetAccounts();
+					transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
 				}
 				catch (Exception ex)
 				{
@@ -153,7 +153,7 @@ namespace Nerva.Toolkit
 				if (!shouldUpdateWallet)
 					break;
 				
-				string wOffline = ((Cli.Instance.WalletPid == -1)) ? "OFFLINE" : "ONLINE";
+				string wOffline = ((Cli.Instance.Wallet.Pid == -1)) ? "OFFLINE" : "ONLINE";
 				string wOpen = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "CLOSED";
 
 				Application.Instance.AsyncInvoke ( () =>
@@ -171,7 +171,7 @@ namespace Nerva.Toolkit
 			while (true)
 			{
 				//If last ping failed. speed up this wait time. Do the online check as quick as reasonably possible
-				Thread.Sleep(pingSuccess ? Constants.DAEMON_POLL_INTERVAL * 5 : Constants.DAEMON_POLL_INTERVAL);
+				Thread.Sleep(pingSuccess ? Constants.FIVE_SECONDS : Constants.ONE_SECOND);
 
 				//Try pinging all 3 seed nodes before calling it disconnected
 				bool pingOk = NetHelper.PingServer(SeedNodes.XNV1);
@@ -207,15 +207,15 @@ namespace Nerva.Toolkit
 
 		protected void daemon_ToggleMining_Clicked(object sender, EventArgs e)
 		{
-			MiningStatus ms = Cli.Instance.Daemon.GetMiningStatus();
+			MiningStatus ms = Cli.Instance.Daemon.Interface.GetMiningStatus();
 
 			if (ms.Active)
 			{
-				Cli.Instance.Daemon.StopMining();
+				Cli.Instance.Daemon.Interface.StopMining();
 				Log.Instance.Write("Mining stopped"); 
 			}
 			else
-				if (Cli.Instance.Daemon.StartMining(Configuration.Instance.Daemon.MiningThreads))
+				if (Cli.Instance.Daemon.Interface.StartMining())
 					Log.Instance.Write("Mining started for @ {0} on {1} threads", 
 						Conversions.WalletAddressShortForm(Configuration.Instance.Daemon.MiningAddress),
 						Configuration.Instance.Daemon.MiningThreads);
@@ -225,7 +225,7 @@ namespace Nerva.Toolkit
 		{
 			//Log the restart and kill the daemon
 			Log.Instance.Write("Restarting daemon");
-			Cli.Instance.Daemon.StopDaemon();
+			Cli.Instance.Daemon.Interface.StopDaemon();
 			//From here the crash handler should reboot the daemon
 		}
 
@@ -237,7 +237,7 @@ namespace Nerva.Toolkit
 				//save the wallet info and we Kill the process and let it relaunch
 				//We have to physically kill the process as calling stop will not work if it is unresponsive
 				lastTxHeight = 0;
-				Cli.Instance.KillRunningProcesses(FileNames.RPC_WALLET);
+				Cli.Instance.Wallet.ForceClose();
 				transfersPage.Update(null);
 			}
 		}
@@ -245,8 +245,9 @@ namespace Nerva.Toolkit
 		protected void wallet_Store_Clicked(object sender, EventArgs e)
 		{
 			Log.Instance.Write("Storing blockchain");
-			Cli.Instance.Wallet.Store();
-			Log.Instance.Write("Storing blockchain");
+			Cli.Instance.Wallet.Interface.Store();
+			MessageBox.Show(this, "Wallet Save Complete", "NERVA Wallet", MessageBoxButtons.OK, 
+				MessageBoxType.Information, MessageBoxDefaultButton.OK);
 		}
 
 		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
@@ -256,7 +257,7 @@ namespace Nerva.Toolkit
 			w.DoWork += (ws, we) =>
 			{
 				Log.Instance.Write("Rescanning spent outputs");
-				if (!Cli.Instance.Wallet.RescanSpent())
+				if (!Cli.Instance.Wallet.Interface.RescanSpent())
 					Log.Instance.Write("Rescanning spent outputs failed");
 				else
 					Log.Instance.Write("Rescanning spent outputs success");
@@ -278,7 +279,7 @@ namespace Nerva.Toolkit
 			w.DoWork += (ws, we) =>
 			{
 				Log.Instance.Write("Rescanning blockchain");
-				if (!Cli.Instance.Wallet.RescanBlockchain())
+				if (!Cli.Instance.Wallet.Interface.RescanBlockchain())
 					Log.Instance.Write("Rescanning blockchain failed");
 				else
 					Log.Instance.Write("Rescanning blockchain success");
@@ -302,13 +303,50 @@ namespace Nerva.Toolkit
 		{
 			TextDialog d = new TextDialog("Enter Account Name", false);
 			if (d.ShowModal() == DialogResult.Ok)
-				if (Cli.Instance.Wallet.CreateAccount(d.Text) == null)
+				if (Cli.Instance.Wallet.Interface.CreateAccount(d.Text) == null)
 					MessageBox.Show(this, "Failed to create new account", "Create Account", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
 		}
 
 		protected void about_Clicked(object sender, EventArgs e)
 		{
 			ad.ShowDialog(this);
+		}
+
+		protected void file_Preferences_Clicked(object sender, EventArgs e)
+		{
+			PreferencesDialog d = new PreferencesDialog();
+			if (d.ShowModal() == DialogResult.Ok)
+			{
+				Configuration.Save();
+
+				if (d.RestartDaemonRequired)
+				{
+					//if thge daemon has to be restarted, there is a good chance the wallet has to be restarted, so just do it
+					MessageBox.Show(this, "The NERVA daemon will now restart to apply your changes", "NERVA Preferences", 
+						MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+
+					Log.Instance.Write("Restarting daemon");
+					Cli.Instance.Daemon.Interface.StopDaemon();
+
+					Cli.Instance.Wallet.ForceClose();
+				}
+				else
+				{
+					if (d.RestartMinerRequired)
+					{
+						Cli.Instance.Daemon.Interface.StopMining();
+						Cli.Instance.Daemon.Interface.StartMining();
+					}
+				}
+
+				if (d.RestartWalletRequired)
+				{
+					MessageBox.Show(this, "The NERVA RPC wallet will now restart to apply your changes", "NERVA Preferences", 
+						MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+
+					Cli.Instance.Wallet.ForceClose();
+				}
+			}	
 		}
 
 		protected void quit_Clicked(object sender, EventArgs e)

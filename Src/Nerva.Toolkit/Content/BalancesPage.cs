@@ -42,10 +42,10 @@ namespace Nerva.Toolkit.Content
 				Configuration.Instance.Daemon.MiningAddress = a.BaseAddress;
 				Configuration.Save();
 
-				Cli.Instance.Daemon.StopMining();
+				Cli.Instance.Daemon.Interface.StopMining();
 				Log.Instance.Write("Mining stopped");
 
-				if (Cli.Instance.Daemon.StartMining(Configuration.Instance.Daemon.MiningThreads))
+				if (Cli.Instance.Daemon.Interface.StartMining())
 					Log.Instance.Write("Mining started for @ {0} on {1} threads", 
 						Conversions.WalletAddressShortForm(Configuration.Instance.Daemon.MiningAddress),
 						Configuration.Instance.Daemon.MiningThreads);
@@ -99,7 +99,7 @@ namespace Nerva.Toolkit.Content
 				TextDialog d = new TextDialog("Select Account Name", false);
 
 				if (d.ShowModal() == DialogResult.Ok)
-					if (!Cli.Instance.Wallet.LabelAccount((uint)grid.SelectedRow, d.Text))
+					if (!Cli.Instance.Wallet.Interface.LabelAccount((uint)grid.SelectedRow, d.Text))
 						MessageBox.Show(this.MainControl, "Failed to rename account", "Wallet rename",
                     		MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
 			};
