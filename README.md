@@ -27,7 +27,7 @@ Please refer to the [.NET Core website](https://www.microsoft.com/net) and follo
 
 Microsoft Build Tools (Windows Only)
 
-The Microsoft Built Tools are available for download from the Microsoft [Visual Studio website](https://visualstudio.microsoft.com/downloads/). Look for the download link for *Build Tools for Visual Studio 2017*
+The Microsoft Build Tools are available for download from the Microsoft [Visual Studio website](https://visualstudio.microsoft.com/downloads/). Look for the download link for *Build Tools for Visual Studio 2017*
 
 When running the installer, select the following workloads
 
@@ -36,6 +36,12 @@ When running the installer, select the following workloads
 - Visual C++ build tools (Optional, for building the NERVA CLI from source if desired)
 
 ## Building
+
+## CLI
+
+Please refer to the document [Building the NERVA CLI tools](https://bitbucket.org/snippets/nerva-project/kejLB4)
+
+### GUI
 
 The build instructions are the same for Linux and Windows
 
