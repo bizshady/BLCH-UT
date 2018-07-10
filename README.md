@@ -37,7 +37,7 @@ When running the installer, select the following workloads
 
 ## Building
 
-## CLI
+### CLI
 
 Please refer to the document [Building the NERVA CLI tools](https://bitbucket.org/snippets/nerva-project/kejLB4)
 
