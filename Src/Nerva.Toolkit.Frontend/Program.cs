@@ -31,7 +31,7 @@ namespace Nerva.Toolkit.Frontend
 			string logPath = cmd["log-file"] != null ? cmd["log-file"].Value : Constants.DEFAULT_LOG_FILENAME;
 			
 			Log.CreateInstance(true, logPath);
-			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.VERSION);
+			Log.Instance.Write("NERVA Unified Toolkit. Version {0}", Constants.LONG_VERSION);
 
 			//Crash the program if not 64-bit
 			if (!Environment.Is64BitOperatingSystem)
