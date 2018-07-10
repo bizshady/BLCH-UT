@@ -94,11 +94,11 @@ namespace Nerva.Toolkit
 				if (!shouldUpdateDaemon)
 					break;
 
-				if (info != null && connections != null && height != -1)
+				if (info != null)
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						lblDaemonStatus.Text = $"DAEMON > Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
+						lblDaemonStatus.Text = $"Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
 
 						if (info.TargetHeight != 0 && info.Height < info.TargetHeight)
 							lblDaemonStatus.Text += " | Syncing";
@@ -115,7 +115,7 @@ namespace Nerva.Toolkit
 				{
 					Application.Instance.AsyncInvoke ( () =>
 					{
-						lblDaemonStatus.Text = "DAEMON > OFFLINE";
+						lblDaemonStatus.Text = "OFFLINE";
 						daemonPage.Update(null, null, null);
 					});
 				}
@@ -153,12 +153,11 @@ namespace Nerva.Toolkit
 				if (!shouldUpdateWallet)
 					break;
 				
-				string wOffline = ((Cli.Instance.Wallet.Pid == -1)) ? "OFFLINE" : "ONLINE";
-				string wOpen = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "CLOSED";
+				string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
 
 				Application.Instance.AsyncInvoke ( () =>
 				{
-					lblWalletStatus.Text = $"WALLET > {wOffline} | {wOpen}";
+					lblWalletStatus.Text = walletStatus;
 
 					balancesPage.Update(account);
 					transfersPage.Update(transfers);
@@ -326,8 +325,7 @@ namespace Nerva.Toolkit
 						MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 
 					Log.Instance.Write("Restarting daemon");
-					Cli.Instance.Daemon.Interface.StopDaemon();
-
+					Cli.Instance.Daemon.ForceClose();
 					Cli.Instance.Wallet.ForceClose();
 				}
 				else

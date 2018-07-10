@@ -12,7 +12,7 @@ namespace Nerva.Toolkit.Content.Dialogs
     {
         private CheckBox chkCheckForCliUpdate = new CheckBox { Text = "Check for update on start", ToolTip = "Check for updated CLI tools when GUI starts" };
         private CheckBox chkTestnet = new CheckBox { Text = "Testnet", ToolTip = "Connect to the NERVA testnet" };
-        private CheckBox chkReconnectToDaemon = new CheckBox { Text = "Reconnect to daemon", ToolTip = "Reconnec to running nervad instance when GUI starts" };
+        private CheckBox chkReconnectToDaemon = new CheckBox { Text = "Reconnect to daemon", ToolTip = "Reconnect to running nervad instance when GUI starts" };
         private TextBox txtToolsPath = new TextBox { PlaceholderText = "CLI tools path", ToolTip = "Enter the full path to the NERVA CLI tools" };
         private Button btnToolsBrowse = new Button { Text = "Browse", ToolTip = "Find NERVA CLI tools" };
 
@@ -261,6 +261,14 @@ namespace Nerva.Toolkit.Content.Dialogs
             //if restartDaemonRequired == true, we will restart the wallet anyway
             if (nsWalletPort.Value != w.Rpc.Port && !restartDaemonRequired)
                 restartWalletRequired = true;
+                
+            if (chkTestnet.Checked != Configuration.Instance.Testnet)
+            {
+                //switched to/from testnet. wipe the saved wallet information
+                //to force the user to reopen (hopefully) the right wallet
+                w.LastOpenedWallet = null;
+                w.LastWalletPassword = null;
+            }
                 
             c.ToolsPath = txtToolsPath.Text;
             c.CheckForUpdateOnStartup = chkCheckForCliUpdate.Checked.Value;
