@@ -105,6 +105,17 @@ namespace Nerva.Toolkit.CLI
             worker.RunWorkerAsync();
         }
 
+        public virtual void ResumeCrashCheck()
+        {
+            pid = -1;
+            doCrashCheck = true;
+
+            if (worker != null)
+                worker.RunWorkerAsync();
+            else
+                StartCrashCheck();
+        }
+
         public virtual void StopCrashCheck()
         {
             pid = -1;
@@ -150,11 +161,15 @@ namespace Nerva.Toolkit.CLI
             return instance;
         }
 
-        public void Start()
+        public void StartDaemon()
         {
             daemon = new DaemonCliTool(this);
-            wallet = new WalletCliTool(this);
             daemon.StartCrashCheck();
+        }
+
+        public void StartWallet()
+        {
+            wallet = new WalletCliTool(this);
             wallet.StartCrashCheck();
         }
 

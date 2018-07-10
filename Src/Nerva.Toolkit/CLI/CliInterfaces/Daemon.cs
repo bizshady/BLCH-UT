@@ -5,7 +5,6 @@ using AngryWasp.Logger;
 using Nerva.Toolkit.CLI.Structures.Request;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
-using Nerva.Toolkit.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

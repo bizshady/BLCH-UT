@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Threading;
 using AngryWasp.Logger;
 using Eto.Forms;
@@ -32,11 +31,13 @@ namespace Nerva.Toolkit
 			ConstructLayout();
 			ResumeLayout();
 
-			Cli.Instance.Start();
+			Cli.Instance.StartDaemon();
+			Cli.Instance.StartWallet();
 
 			Application.Instance.Initialized += (s, e) =>
 			{
-				StartUpdateThread();
+				StartUpdateDaemonThread();
+				StartUpdateWalletThread();
 			};
 
 			this.Closing += (s, e) =>
@@ -47,19 +48,28 @@ namespace Nerva.Toolkit
 			};
 		}
 
-		private void StartUpdateThread()
+		//private void StartUpdateThread()
+		//{
+			//pingThread = new Thread(new ThreadStart(CheckConnection));
+			//pingSuccess = true;
+			//pingThread.Start();
+		//}
+
+		public void StartUpdateDaemonThread()
 		{
 			updateDaemonThread = new Thread(new ThreadStart(UpdateDaemonUI));
 			shouldUpdateDaemon = true;
 			updateDaemonThread.Start();
+		}
+
+		public void StartUpdateWalletThread()
+		{
+			if (updateWalletThread != null && updateWalletThread.ThreadState == ThreadState.Running)
+				return;
 
 			updateWalletThread = new Thread(new ThreadStart(UpdateWalletUI));
 			shouldUpdateWallet = true;
 			updateWalletThread.Start();
-
-			//pingThread = new Thread(new ThreadStart(CheckConnection));
-			//pingSuccess = true;
-			//pingThread.Start();
 		}
 
 		private void UpdateDaemonUI()
@@ -132,27 +142,22 @@ namespace Nerva.Toolkit
 				while(shouldUpdateWallet && Cli.Instance.Wallet.Pid == -1)
 					Thread.Sleep(Constants.ONE_SECOND);
 
-				//Condition may have changed. 5 seconds is a long time
-				if (!shouldUpdateWallet)
-					break;
-
 				Account account = null;
 				TransferList transfers = null;
 
-				try
+				if (shouldUpdateWallet)
 				{
-					account = Cli.Instance.Wallet.Interface.GetAccounts();
-					transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
-				}
-				catch (Exception ex)
-				{
-					Log.Instance.WriteNonFatalException(ex);
+					try
+					{
+						account = Cli.Instance.Wallet.Interface.GetAccounts();
+						transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
+					}
+					catch (Exception ex)
+					{
+						Log.Instance.WriteNonFatalException(ex);
+					}
 				}
 
-				//Double check we want to update before we do
-				if (!shouldUpdateWallet)
-					break;
-				
 				string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
 
 				Application.Instance.AsyncInvoke ( () =>
@@ -162,6 +167,9 @@ namespace Nerva.Toolkit
 					balancesPage.Update(account);
 					transfersPage.Update(transfers);
 				});
+
+				if (!shouldUpdateWallet)
+					break;
 			}
 		}
 
@@ -237,7 +245,13 @@ namespace Nerva.Toolkit
 				//We have to physically kill the process as calling stop will not work if it is unresponsive
 				lastTxHeight = 0;
 				Cli.Instance.Wallet.ForceClose();
+
+				lblWalletStatus.Text = "WALLET CLOSED";
+				balancesPage.Update(null);
 				transfersPage.Update(null);
+
+				StartUpdateWalletThread();
+				Cli.Instance.Wallet.ResumeCrashCheck();
 			}
 		}
 
@@ -247,6 +261,18 @@ namespace Nerva.Toolkit
 			Cli.Instance.Wallet.Interface.Store();
 			MessageBox.Show(this, "Wallet Save Complete", "NERVA Wallet", MessageBoxButtons.OK, 
 				MessageBoxType.Information, MessageBoxDefaultButton.OK);
+		}
+
+		protected void wallet_Stop_Clicked(object sender, EventArgs e)
+		{
+			Log.Instance.Write("Closing wallet");
+			Cli.Instance.Wallet.StopCrashCheck();
+			shouldUpdateWallet = false;
+			Cli.Instance.Wallet.ForceClose();
+
+			Configuration.Instance.Wallet.LastOpenedWallet = null;
+			Configuration.Instance.Wallet.LastWalletPassword = null;
+			Configuration.Save();
 		}
 
 		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
