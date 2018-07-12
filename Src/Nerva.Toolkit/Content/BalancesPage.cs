@@ -176,27 +176,35 @@ namespace Nerva.Toolkit.Content
 
 		public void Update(Account a)
 		{
-			if (a != null)
+			try
 			{
-				lblTotalXnv.Text = Conversions.FromAtomicUnits(a.TotalBalance).ToString();
-				lblUnlockedXnv.Text = Conversions.FromAtomicUnits(a.TotalUnlockedBalance).ToString();
-				accounts = a.Accounts;
-			}
-			else
-			{
-				lblTotalXnv.Text = "-";
-				lblUnlockedXnv.Text = "-";
-				accounts.Clear();
-			}
+				if (a != null)
+				{
+					lblTotalXnv.Text = Conversions.FromAtomicUnits(a.TotalBalance).ToString();
+					lblUnlockedXnv.Text = Conversions.FromAtomicUnits(a.TotalUnlockedBalance).ToString();
+					accounts = a.Accounts;
+				}
+				else
+				{
+					lblTotalXnv.Text = "-";
+					lblUnlockedXnv.Text = "-";
+					accounts.Clear();
+				}
 
-			if (OS.Type == OS_Type.Windows)
-			{
-				int si = grid.SelectedRow;
-				grid.DataStore = accounts;
-				grid.SelectRow(si);
+				if (OS.Type == OS_Type.Windows)
+				{
+					int si = grid.SelectedRow;
+					grid.DataStore = accounts;
+					grid.SelectRow(si);
+				}
+				else
+					grid.DataStore = accounts;
 			}
-			else
-				grid.DataStore = accounts;
+			catch (Exception ex)
+			{
+				Log.Instance.WriteNonFatalException(ex);
+				Debugger.Break();
+			}
 		}
     }
 }

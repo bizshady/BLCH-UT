@@ -64,80 +64,88 @@ namespace Nerva.Toolkit.Content
 
 		public void Update(TransferList t)
 		{
-			if (t != null)
+			try
 			{
-				int i = 0;
-				List<Transfer> merged = new List<Transfer>();
-				merged.AddRange(t.Incoming);
-				merged.AddRange(t.Outgoing);
-				merged.AddRange(t.Pending);
-
-				if (merged.Count > 0)
+				if (t != null)
 				{
-					//descending order by height and get top 50
-					merged = merged.OrderByDescending(x => x.Height).ToList();
+					int i = 0;
+					List<Transfer> merged = new List<Transfer>();
+					merged.AddRange(t.Incoming);
+					merged.AddRange(t.Outgoing);
+					merged.AddRange(t.Pending);
 
-					if (txList.Count == 0)
+					if (merged.Count > 0)
 					{
-						txList = merged;
-						needGridUpdate = true;
-					}
-					else
-					{
-						uint height = 0;
+						//descending order by height and get top 50
+						merged = merged.OrderByDescending(x => x.Height).ToList();
 
-						while ((height = merged[i].Height) > lastHeight)
+						if (txList.Count == 0)
 						{
-							++i;
-							Log.Instance.Write("Found TX on block {0}", height);
-
-							if (i >= merged.Count)
-								break;
-						}
-
-						if (i > 0)
-						{
-							txList.InsertRange(0, merged.GetRange(0, i));
+							txList = merged;
 							needGridUpdate = true;
 						}
-					}
-
-					if (needGridUpdate)
-					{
-						//todo: make the number of transactions to show a setting
-						int maxRows = 25;
-						
-						if (txList.Count > maxRows)
-							txList = txList.Take(maxRows).ToList();
-
-						grid.DataStore = txList;
-
-						//update the selected row in the grid
-						if (grid.SelectedRow != -1)
+						else
 						{
-							int newSelectedRow = grid.SelectedRow + i;
-							MathHelper.Clamp(ref newSelectedRow, 0, maxRows - 1);
-							grid.SelectedRow = newSelectedRow;
-							grid.ScrollToRow(grid.SelectedRow);
+							uint height = 0;
+
+							while ((height = merged[i].Height) > lastHeight)
+							{
+								++i;
+								Log.Instance.Write("Found TX on block {0}", height);
+
+								if (i >= merged.Count)
+									break;
+							}
+
+							if (i > 0)
+							{
+								txList.InsertRange(0, merged.GetRange(0, i));
+								needGridUpdate = true;
+							}
 						}
 
-						mainControl.Content = grid;
-						needGridUpdate = false;
+						if (needGridUpdate)
+						{
+							//todo: make the number of transactions to show a setting
+							int maxRows = 25;
+							
+							if (txList.Count > maxRows)
+								txList = txList.Take(maxRows).ToList();
 
-						lastHeight = txList.Count == 0 ? 0 : txList[0].Height;
+							grid.DataStore = txList;
+
+							//update the selected row in the grid
+							if (grid.SelectedRow != -1)
+							{
+								int newSelectedRow = grid.SelectedRow + i;
+								MathHelper.Clamp(ref newSelectedRow, 0, maxRows - 1);
+								grid.SelectedRow = newSelectedRow;
+								grid.ScrollToRow(grid.SelectedRow);
+							}
+
+							mainControl.Content = grid;
+							needGridUpdate = false;
+
+							lastHeight = txList.Count == 0 ? 0 : txList[0].Height;
+						}
 					}
 				}
+				else
+				{
+					txList.Clear();
+					needGridUpdate = true;
+					mainControl.Content = new TableLayout(new TableRow(
+						new TableCell(new Label { Text = "NO TRANSFERS" })))
+						{
+							Padding = 10,
+							Spacing = new Eto.Drawing.Size(10, 10),
+						};
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				txList.Clear();
-				needGridUpdate = true;
-				mainControl.Content = new TableLayout(new TableRow(
-					new TableCell(new Label { Text = "NO TRANSFERS" })))
-					{
-						Padding = 10,
-						Spacing = new Eto.Drawing.Size(10, 10),
-					};
+				Log.Instance.WriteNonFatalException(ex);
+				Debugger.Break();
 			}
 		}
     }

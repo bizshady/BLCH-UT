@@ -42,7 +42,7 @@ namespace Nerva.Toolkit.CLI
 
                     proc.WaitForExit();
         
-                    string n = Path.GetFileName(exe);
+                    string n = Path.GetFileNameWithoutExtension(exe);
                     var p = Process.GetProcessesByName(n);
         
                     if (p.Length == 1)

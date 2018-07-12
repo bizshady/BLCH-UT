@@ -265,7 +265,7 @@ namespace Nerva.Toolkit.CLI
 
         public void KillCliProcesses(string exe, int exceptPid = -1)
         {
-            Process[] processes = Process.GetProcessesByName(Path.GetFileName(exe));
+            Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
 
             if (processes.Length > 0)
             {
@@ -279,7 +279,7 @@ namespace Nerva.Toolkit.CLI
                     }
                 }
 
-                processes = Process.GetProcessesByName(Path.GetFileName(exe));
+                processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
 
                 if (processes.Length > 0)
                 {

@@ -24,6 +24,10 @@ namespace Nerva.Toolkit.Content.Dialogs
         protected override void OnOk()
         {
             base.OnOk();
+            
+            if (ddName.SelectedValue == null)
+                return;
+
             name = ddName.SelectedValue.ToString();
             this.Close(DialogResult.Ok);
         }

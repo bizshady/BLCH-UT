@@ -7,6 +7,7 @@ using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
 using AngryWasp.Helpers;
+using System.Diagnostics;
 
 namespace Nerva.Toolkit.Content
 {
@@ -119,61 +120,69 @@ namespace Nerva.Toolkit.Content
 
         public void Update(Info info, List<Connection> connections, MiningStatus mStatus)
         {
-            if (info != null)
-            {
-                double nethash = Math.Round(((info.Difficulty / 60.0d) / 1000.0d), 2);
-                //Update the daemon info
-                lblHeight.Text = info.Height.ToString();
-                lblNetHash.Text = nethash.ToString() + " kH/s";
-                lblRunTime.Text = (DateTime.Now - StringHelper.UnixTimeStampToDateTime((ulong)info.StartTime)).ToString(@"hh\:mm");
-
-                if (info.Mainnet)
-					lblNetwork.Text = "MainNet";
-                else if (info.Testnet)
-                    lblNetwork.Text = "TestNet";
-                else
-                    Log.Instance.Write(Log_Severity.Fatal, "Unknown network connection type");
-            }
-            else
-            {
-                lblHeight.Text = "-";
-                lblNetHash.Text = "-";
-                lblRunTime.Text = "-";
-            }
-
-            if (mStatus != null && mStatus.Active)
-            {
-                lblMinerStatus.Text = "Miner (Active)";
-                lblMiningAddress.Text = Conversions.WalletAddressShortForm(mStatus.Address);
-                lblMiningThreads.Text = mStatus.ThreadCount.ToString();
-
-                string speed;
-                if (mStatus.Speed > 1000)
-                    speed = $"{mStatus.Speed / 1000.0d} kH/s";
-                else
-                    speed = $"{(double)mStatus.Speed} h/s";
-                
-                lblMiningHashrate.Text = speed;
-            }
-            else
-            {
-                lblMinerStatus.Text = "Miner (Inactive)";
-                lblMiningAddress.Text = "-";
-                lblMiningThreads.Text = "-";
-                lblMiningHashrate.Text = "-";
-            }
-
-			if (connections == null)
-				connections = new List<Connection>();
-
-			if (OS.Type == OS_Type.Windows)
+			try
 			{
-				int si = grid.SelectedRow;
-				grid.DataStore = connections;
-				grid.SelectRow(si);
+				if (info != null)
+				{
+					double nethash = Math.Round(((info.Difficulty / 60.0d) / 1000.0d), 2);
+					//Update the daemon info
+					lblHeight.Text = info.Height.ToString();
+					lblNetHash.Text = nethash.ToString() + " kH/s";
+					lblRunTime.Text = (DateTime.Now - StringHelper.UnixTimeStampToDateTime((ulong)info.StartTime)).ToString(@"hh\:mm");
+
+					if (info.Mainnet)
+						lblNetwork.Text = "MainNet";
+					else if (info.Testnet)
+						lblNetwork.Text = "TestNet";
+					else
+						Log.Instance.Write(Log_Severity.Fatal, "Unknown network connection type");
+				}
+				else
+				{
+					lblHeight.Text = "-";
+					lblNetHash.Text = "-";
+					lblRunTime.Text = "-";
+				}
+
+				if (mStatus != null && mStatus.Active)
+				{
+					lblMinerStatus.Text = "Miner (Active)";
+					lblMiningAddress.Text = Conversions.WalletAddressShortForm(mStatus.Address);
+					lblMiningThreads.Text = mStatus.ThreadCount.ToString();
+
+					string speed;
+					if (mStatus.Speed > 1000)
+						speed = $"{mStatus.Speed / 1000.0d} kH/s";
+					else
+						speed = $"{(double)mStatus.Speed} h/s";
+					
+					lblMiningHashrate.Text = speed;
+				}
+				else
+				{
+					lblMinerStatus.Text = "Miner (Inactive)";
+					lblMiningAddress.Text = "-";
+					lblMiningThreads.Text = "-";
+					lblMiningHashrate.Text = "-";
+				}
+
+				if (connections == null)
+					connections = new List<Connection>();
+
+				if (OS.Type == OS_Type.Windows)
+				{
+					int si = grid.SelectedRow;
+					grid.DataStore = connections;
+					grid.SelectRow(si);
+				}
+				else
+					grid.DataStore = connections;
 			}
-			else
-				grid.DataStore = connections;
+			catch (Exception ex)
+			{
+				Log.Instance.WriteNonFatalException(ex);
+				Debugger.Break();
+			}
         }
     }
 }
