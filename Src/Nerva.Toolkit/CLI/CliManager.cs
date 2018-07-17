@@ -143,7 +143,16 @@ namespace Nerva.Toolkit.CLI
 
         private static Cli instance;
 
-        public static Cli Instance => instance;
+        public static Cli Instance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = new Cli();
+
+                return instance;
+            }
+        }
 
         private DaemonCliTool daemon;
         private WalletCliTool wallet;
@@ -151,15 +160,6 @@ namespace Nerva.Toolkit.CLI
         public DaemonCliTool Daemon => daemon;
 
         public WalletCliTool Wallet => wallet;
-
-        public static Cli CreateInstance()
-        {
-            if (instance != null)
-                return instance;
-
-            instance = new Cli();
-            return instance;
-        }
 
         public void StartDaemon()
         {

@@ -12,10 +12,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 {
     public class TransferDialog : DialogBase<DialogResult>
 	{
-        private Send txData = null;
         private SubAddressAccount accData;
-
-        public Send TxData => txData;
 
         TextBox txtAddress = new TextBox();
         TextBox txtPaymentId = new TextBox();
@@ -23,6 +20,14 @@ namespace Nerva.Toolkit.Content.Dialogs
         ComboBox cbxPriority = new ComboBox();
         Label lblAccount = new Label();
         Label lblAmount = new Label();
+
+        private double amt;
+
+        public string Address => txtAddress.Text;
+        public string PaymentId => txtPaymentId.Text;
+        public double Amount => amt;
+
+        public Send_Priority Priority => (Send_Priority)cbxPriority.SelectedIndex;
 
         Button btnGenPayId = new Button { Text = "Generate" };
 
@@ -35,17 +40,21 @@ namespace Nerva.Toolkit.Content.Dialogs
             cbxPriority.SelectedIndex = 0;
 
             btnGenPayId.Click += (s, e) => txtPaymentId.Text = StringHelper.GenerateRandomHexString(64);
-            
         }
 
         protected override void OnOk()
         {
             if (MessageBox.Show(this, "Are you sure?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes) == DialogResult.Yes)
             {
-                double amt = 0;
                 if (!double.TryParse(txtAmount.Text, out amt))
                 {
                     MessageBox.Show(this, "Amount to send is incorrect format", MessageBoxType.Error);
+                    return;
+                }
+
+                if (cbxPriority.SelectedIndex == -1)
+                {
+                    MessageBox.Show(this, "Priority not specified", MessageBoxType.Error);
                     return;
                 }
 
@@ -61,17 +70,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                     MessageBox.Show(this, "Payment ID must be 16 or 64 characters long\r\nCurrent Payment ID length is " + 
                         txtPaymentId.Text.Length + " characters", MessageBoxType.Error);
                     return;
-                }  
-
-                RpcWalletError e = new RpcWalletError();
-
-                txData = Cli.Instance.Wallet.Interface.TransferFunds(accData, txtAddress.Text, txtPaymentId.Text, amt, (Send_Priority)cbxPriority.SelectedIndex, ref e);
-
-                if (e.Code != 0)
-                {
-                    MessageBox.Show(this, $"The transfer request returned RPC error:\r\n{e.Message}", MessageBoxType.Error);
-                    return;
-                }
+                } 
 
                 this.Close(DialogResult.Ok);
             }
@@ -79,7 +78,6 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         protected override void OnCancel()
         {
-            txData = null;
             this.Close(DialogResult.Cancel);
         }
 

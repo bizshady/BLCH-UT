@@ -11,8 +11,8 @@ namespace Nerva.Toolkit
 		#region Status Bar controls
 		
 		AboutDialog ad;
-		Label lblDaemonStatus = new Label { Text = "DAEMON > Height: 0 | Connections: 0/0 | Not Synced" };
-		Label lblWalletStatus = new Label { Text = "WALLET > OFFLINE | CLOSED" };
+		Label lblDaemonStatus = new Label { Text = "Height: 0 | Connections: 0/0 | Not Synced" };
+		Label lblWalletStatus = new Label { Text = "OFFLINE | CLOSED" };
 		Label lblVersion = new Label { Text = "Version: 0.0.0.0" };
 
 		DaemonPage daemonPage = new DaemonPage();

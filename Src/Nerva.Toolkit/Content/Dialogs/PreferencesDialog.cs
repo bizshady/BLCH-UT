@@ -5,6 +5,7 @@ using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
+using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -62,7 +63,13 @@ namespace Nerva.Toolkit.Content.Dialogs
                 //todo: we should check if the selected directory contains the required tools
                 SelectFolderDialog d = new SelectFolderDialog { Directory = txtToolsPath.Text };
                 if (d.ShowDialog(this) == DialogResult.Ok)
-                    txtToolsPath.Text = d.Directory;
+                {
+                    if (FileNames.DirectoryContainsCliTools(d.Directory))
+                        txtToolsPath.Text = d.Directory;
+                    else
+                        MessageBox.Show(this, "Could not find the NERVA CLI tools at the specified path.", "Invalid Config",
+							MessageBoxButtons.OK, MessageBoxType.Warning, MessageBoxDefaultButton.OK);
+                }
             };
 
             btnWalletBrowse.Click += (s, e) =>
@@ -245,45 +252,48 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         protected override void OnOk()
         {
-            var c = Configuration.Instance;
-            var d = c.Daemon;
-            var w = c.Wallet;
+            if (!FileNames.DirectoryContainsCliTools(txtToolsPath.Text))
+            {
+                MessageBox.Show(this, "Could not find the NERVA CLI tools at the specified path.", "Invalid Config",
+							MessageBoxButtons.OK, MessageBoxType.Warning, MessageBoxDefaultButton.OK);
+                return;
+            }
 
             if (chkTestnet.Checked != Configuration.Instance.Testnet || txtToolsPath.Text != Configuration.Instance.ToolsPath)
                 restartDaemonRequired = true;
 
-            if (txtMiningAddress.Text != d.MiningAddress || nsMiningThreads.Value != d.MiningThreads)
+            if (txtMiningAddress.Text != Configuration.Instance.Daemon.MiningAddress || nsMiningThreads.Value != Configuration.Instance.Daemon.MiningThreads)
                 restartMinerRequired = true;
 
-            if (nsDaemonPort.Value != d.Rpc.Port)
+            if (nsDaemonPort.Value != Configuration.Instance.Daemon.Rpc.Port)
                 restartDaemonRequired = true;
 
             //if restartDaemonRequired == true, we will restart the wallet anyway
-            if (nsWalletPort.Value != w.Rpc.Port && !restartDaemonRequired)
+            if (nsWalletPort.Value != Configuration.Instance.Wallet.Rpc.Port && !restartDaemonRequired)
                 restartWalletRequired = true;
                 
             if (chkTestnet.Checked != Configuration.Instance.Testnet)
             {
                 //switched to/from testnet. wipe the saved wallet information
                 //to force the user to reopen (hopefully) the right wallet
-                w.LastOpenedWallet = null;
-                w.LastWalletPassword = null;
+                Configuration.Instance.Wallet.LastOpenedWallet = null;
+                Configuration.Instance.Wallet.LastWalletPassword = null;
             }
                 
-            c.ToolsPath = txtToolsPath.Text;
-            c.CheckForUpdateOnStartup = chkCheckForCliUpdate.Checked.Value;
-            c.Testnet = chkTestnet.Checked.Value;
-            c.ReconnectToDaemonProcess = chkReconnectToDaemon.Checked.Value;
+            Configuration.Instance.ToolsPath = txtToolsPath.Text;
+            Configuration.Instance.CheckForUpdateOnStartup = chkCheckForCliUpdate.Checked.Value;
+            Configuration.Instance.Testnet = chkTestnet.Checked.Value;
+            Configuration.Instance.ReconnectToDaemonProcess = chkReconnectToDaemon.Checked.Value;
 
-            d.StopOnExit = chkStopOnExit.Checked.Value;
-            d.AutoStartMining = chkAutoStartMining.Checked.Value;
-            d.MiningAddress = txtMiningAddress.Text;
-            d.MiningThreads = (int)nsMiningThreads.Value;
-            d.Rpc.Port = (int)nsDaemonPort.Value;
+            Configuration.Instance.Daemon.StopOnExit = chkStopOnExit.Checked.Value;
+            Configuration.Instance.Daemon.AutoStartMining = chkAutoStartMining.Checked.Value;
+            Configuration.Instance.Daemon.MiningAddress = txtMiningAddress.Text;
+            Configuration.Instance.Daemon.MiningThreads = (int)nsMiningThreads.Value;
+            Configuration.Instance.Daemon.Rpc.Port = (int)nsDaemonPort.Value;
 
-            w.WalletDir = txtWalletPath.Text;
-            w.SaveWalletPassword = chkSaveWalletPassword.Checked.Value;
-            w.Rpc.Port = (int)nsWalletPort.Value;
+            Configuration.Instance.Wallet.WalletDir = txtWalletPath.Text;
+            Configuration.Instance.Wallet.SaveWalletPassword = chkSaveWalletPassword.Checked.Value;
+            Configuration.Instance.Wallet.Rpc.Port = (int)nsWalletPort.Value;
 
             this.Close(DialogResult.Ok);
         }

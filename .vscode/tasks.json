@@ -11,7 +11,8 @@
                 // Ask msbuild to generate full paths for file names.
                 "/property:GenerateFullPaths=true",
                 "/t:build",
-                "/property:Configuration=Debug"
+                "/property:Configuration=Debug",
+                "/property:TrimUnusedDependencies=true"
             ],
             "group": {
                 "kind": "build",
@@ -32,7 +33,8 @@
                 // Ask msbuild to generate full paths for file names.
                 "/property:GenerateFullPaths=true",
                 "/t:build",
-                "/property:Configuration=PortableDebug"
+                "/property:Configuration=PortableDebug",
+                "/property:TrimUnusedDependencies=true"
             ],
             "group": {
                 "kind": "build",
@@ -53,7 +55,8 @@
                 // Ask msbuild to generate full paths for file names.
                 "/property:GenerateFullPaths=true",
                 "/t:build",
-                "/property:Configuration=Release"
+                "/property:Configuration=Release",
+                "/property:TrimUnusedDependencies=true"
             ],
             "group": "build",
             "presentation": {

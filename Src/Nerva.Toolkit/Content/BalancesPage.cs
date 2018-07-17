@@ -9,6 +9,9 @@ using Nerva.Toolkit.Config;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Content.Dialogs;
 using System.Diagnostics;
+using System.ComponentModel;
+using static Nerva.Toolkit.CLI.WalletInterface;
+using Nerva.Toolkit.CLI.Structures.Request;
 
 namespace Nerva.Toolkit.Content
 {	
@@ -74,20 +77,27 @@ namespace Nerva.Toolkit.Content
 				TransferDialog d = new TransferDialog(a);
 				if (d.ShowModal() == DialogResult.Ok)
 				{
-					if (d.TxData != null)
+					BackgroundWorker bgw = new BackgroundWorker();
+					bgw.DoWork += (s2, e2) =>
 					{
-						var x = d.TxData;
-						string amt = Conversions.FromAtomicUnits(x.Amount).ToString();
-						string fee = Conversions.FromAtomicUnits(x.Fee).ToString();
-						string txh = x.TxHash;
-						string txk = x.TxKey;
+						RpcWalletError err = new RpcWalletError();
 
-						string fmt = $"Sent: {amt}\r\nFees: {fee}\r\nHash: {txh}";
+						Send txData = Cli.Instance.Wallet.Interface.TransferFunds(a, d.Address, d.PaymentId, d.Amount, d.Priority, ref err);
 
-						MessageBox.Show(Application.Instance.MainForm, fmt, "TX Results", MessageBoxType.Information);
-					}
-					else
-						Log.Instance.Write(Log_Severity.Fatal, "Failed to create transaction");
+						if (err.Code == 0)
+						{
+							MessageBox.Show(Application.Instance.MainForm, 
+								$"Sent: {Conversions.FromAtomicUnits(txData.Amount)}\r\nFees: {Conversions.FromAtomicUnits(txData.Fee)}\r\nHash: {txData.TxHash}", 
+								"TX Results", MessageBoxType.Information);
+						}
+						else
+						{
+							MessageBox.Show(Application.Instance.MainForm, $"The transfer request returned RPC error:\r\n{err.Message}", MessageBoxType.Error);
+							return;
+						}
+					};
+
+					bgw.RunWorkerAsync();
 				}
 			};
 
@@ -186,8 +196,8 @@ namespace Nerva.Toolkit.Content
 				}
 				else
 				{
-					lblTotalXnv.Text = "-";
-					lblUnlockedXnv.Text = "-";
+					lblTotalXnv.Text = string.Empty;
+					lblUnlockedXnv.Text = string.Empty;
 					accounts.Clear();
 				}
 

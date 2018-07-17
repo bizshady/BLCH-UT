@@ -20,13 +20,34 @@ namespace Nerva.Toolkit
 		Thread updateWalletThread;
 		bool shouldUpdateWallet = true;
 
-		Thread pingThread;
+		//Thread pingThread;
 
 		bool pingSuccess = true;
 		uint lastTxHeight = 0;
 
-		public MainForm()
+		public MainForm(bool newConfig)
 		{
+			bool needSetup = newConfig || !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
+			do
+			{
+				if (needSetup)
+				{
+					DialogResult dr = new PreferencesDialog().ShowModal();
+					needSetup = !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
+
+					if (needSetup)
+						MessageBox.Show(this, "Could not find the NERVA CLI tools at the specified path.", "Invalid Config",
+							MessageBoxButtons.OK, MessageBoxType.Warning, MessageBoxDefaultButton.OK);
+
+					//if cancelled. close the program. otherwise loop back and try again		
+					if (dr == DialogResult.Cancel)
+						Environment.Exit(0);
+				}
+			}
+			while (needSetup);
+
+			Configuration.Save();
+
 			SuspendLayout();
 			ConstructLayout();
 			ResumeLayout();
@@ -82,7 +103,6 @@ namespace Nerva.Toolkit
 				while(shouldUpdateDaemon && Cli.Instance.Daemon.Pid == -1)
 					Thread.Sleep(Constants.ONE_SECOND);
 
-				//Condition may have changed. 5 seconds is a long time
 				if (!shouldUpdateDaemon)
 					break;
 
@@ -142,34 +162,34 @@ namespace Nerva.Toolkit
 				while(shouldUpdateWallet && Cli.Instance.Wallet.Pid == -1)
 					Thread.Sleep(Constants.ONE_SECOND);
 
+				if (!shouldUpdateDaemon)
+					break;
+
 				Account account = null;
 				TransferList transfers = null;
 
-				if (shouldUpdateWallet)
+				try
 				{
-					try
-					{
-						account = Cli.Instance.Wallet.Interface.GetAccounts();
-						transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
-					}
-					catch (Exception ex)
-					{
-						Log.Instance.WriteNonFatalException(ex);
-					}
+					account = Cli.Instance.Wallet.Interface.GetAccounts();
+					transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
 				}
-
-				string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
-
-				Application.Instance.AsyncInvoke ( () =>
-				{
-					lblWalletStatus.Text = walletStatus;
-
-					balancesPage.Update(account);
-					transfersPage.Update(transfers);
-				});
+				catch (Exception) { }
 
 				if (!shouldUpdateWallet)
-					break;
+					return;
+
+				if (account != null)
+				{
+					string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
+
+					Application.Instance.AsyncInvoke ( () =>
+					{
+						lblWalletStatus.Text = walletStatus;
+
+						balancesPage.Update(account);
+						transfersPage.Update(transfers);
+					});
+				}
 			}
 		}
 
@@ -267,6 +287,9 @@ namespace Nerva.Toolkit
 		{
 			Log.Instance.Write("Closing wallet");
 			Cli.Instance.Wallet.StopCrashCheck();
+			balancesPage.Update(null);
+			transfersPage.Update(null);
+			lblWalletStatus.Text = "OFFLINE | CLOSED";
 			shouldUpdateWallet = false;
 			Cli.Instance.Wallet.ForceClose();
 
