@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using AngryWasp.Serializer;
@@ -24,13 +25,17 @@ namespace Nerva.Toolkit.Frontend
 
 			CommandLineParser cmd = CommandLineParser.Parse(args);
 
-			InitializeLog(cmd["log-file"] != null ? cmd["log-file"].Value : Constants.DEFAULT_LOG_FILENAME);
+			string logFile, configFile;
+
+			ParseFileArguments(cmd, out logFile, out configFile);
+
+			InitializeLog(logFile);
 
 			Serializer.Initialize();
 
 			bool newFile;
 
-			Configuration.Load(cmd["config-file"] != null ? cmd["config-file"].Value : Constants.DEFAULT_CONFIG_FILENAME, out newFile);
+			Configuration.Load(configFile, out newFile);
 			Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
@@ -78,6 +83,29 @@ namespace Nerva.Toolkit.Frontend
 
 			Environment.Exit(0);
 		}
+
+		private static void ParseFileArguments(CommandLineParser cmd, out string logFile, out string configFile)
+		{
+			logFile = Path.Combine(Environment.CurrentDirectory, Constants.DEFAULT_LOG_FILENAME);
+			configFile = Path.Combine(Environment.CurrentDirectory, Constants.DEFAULT_CONFIG_FILENAME);
+
+			var lf = cmd["log-file"];
+			var cf = cmd["config-file"];
+
+			if (lf != null && !string.IsNullOrEmpty(lf.Value))
+			{
+				string newLf = Path.GetFullPath(lf.Value);
+				if (Directory.Exists(Path.GetDirectoryName(newLf)))
+					logFile = newLf;
+			}
+
+			if (cf != null && !string.IsNullOrEmpty(cf.Value))
+			{
+				string newCf = Path.GetFullPath(cf.Value);
+				if (Directory.Exists(Path.GetDirectoryName(newCf)))
+					configFile = newCf;
+			}
+		}	
 
 		private static void InitializeLog(string logPath)
 		{
