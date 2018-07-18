@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using static Nerva.Toolkit.CLI.WalletInterface;
 using Nerva.Toolkit.CLI.Structures.Request;
+using System.Threading.Tasks;
 
 namespace Nerva.Toolkit.Content
 {	

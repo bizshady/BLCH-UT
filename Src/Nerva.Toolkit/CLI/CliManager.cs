@@ -11,6 +11,7 @@ using Timer = System.Timers.Timer;
 using AngryWasp.Helpers;
 using Nerva.Toolkit.Content.Dialogs;
 using Eto.Forms;
+using System.Threading.Tasks;
 
 namespace Nerva.Toolkit.CLI
 {
@@ -92,28 +93,48 @@ namespace Nerva.Toolkit.CLI
             worker.RunWorkerCompleted += (sender, e) =>
             {
                 if (e.Cancelled)
-                { //Been cancelled. Return so the worker is not run again
-                    Log.Instance.Write(Log_Severity.Warning, "Daemon crash check has been cancelled");
-                    return;
+                {
+                    if (!scheduleRestart)
+                    {
+                        Log.Instance.Write(Log_Severity.Warning, "Daemon crash check has been cancelled");
+                        return;
+                    }
                 }
 
-                if (doCrashCheck)
+                if (doCrashCheck || scheduleRestart)
+                {
+                    scheduleRestart = false;
                     worker.RunWorkerAsync();
+                }
             };
 
             //Start crash checking
             worker.RunWorkerAsync();
         }
 
+        bool scheduleRestart = false;
+
         public virtual void ResumeCrashCheck()
         {
             pid = -1;
             doCrashCheck = true;
 
-            if (worker != null)
-                worker.RunWorkerAsync();
-            else
+            if (worker == null)
+            {
                 StartCrashCheck();
+                return;
+            }
+
+            bool cancellationPending = worker.CancellationPending;
+            bool busy = worker.IsBusy;
+
+            if (busy && cancellationPending)
+            {
+                scheduleRestart = true;
+                return;
+            }
+
+            Debugger.Break();
         }
 
         public virtual void StopCrashCheck()
@@ -138,8 +159,8 @@ namespace Nerva.Toolkit.CLI
 
     public class Cli
     {
-        public delegate void ProcessStartedEventHandler(string fileName, Process process);
-        public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
+        //public delegate void ProcessStartedEventHandler(string fileName, Process process);
+        //public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
 
         private static Cli instance;
 
@@ -251,7 +272,7 @@ namespace Nerva.Toolkit.CLI
                 {
                     Process p = processes[0];
                     pid = p.Id;
-                    ProcessConnected?.Invoke(exe, p);
+                    //ProcessConnected?.Invoke(exe, p);
                 }
                 else
                 {
@@ -294,7 +315,7 @@ namespace Nerva.Toolkit.CLI
         public void DoProcessStarted(string exe, Process proc)
         {
             DoCliStartup(exe);
-            ProcessStarted?.Invoke(exe, proc);
+            //ProcessStarted?.Invoke(exe, proc);
         }
 
         #region Startup events
@@ -315,9 +336,35 @@ namespace Nerva.Toolkit.CLI
             }
         }
 
-        private void UpdateCheck()
+        private async Task UpdateCheck()
         {
-            BackgroundWorker w = new BackgroundWorker();
+            if (!Configuration.Instance.CheckForUpdateOnStartup)
+                return;
+
+            await Task.Run(() =>
+            {
+                while (!IsReady(daemon.Pid))
+                    Thread.Sleep(Constants.FIVE_SECONDS);
+
+                UpdateManager.CheckForCliUpdates();
+
+                switch (UpdateManager.UpdateStatus)
+                {
+                    case Update_Status_Code.UpToDate:
+                            Log.Instance.Write("NERVA CLI tools are up to date");
+                        break;
+                    case Update_Status_Code.NewVersionAvailable:
+                            Log.Instance.Write("A new version of the NERVA CLI tools are available");
+                        break;
+                    default:
+                            Log.Instance.Write(Log_Severity.Error, "An error occurred checking for updates.");
+                        break;
+                }
+
+                Log.Instance.Write("Update check complete");
+            });
+
+            /*BackgroundWorker w = new BackgroundWorker();
 
             w.DoWork += delegate (object sender, DoWorkEventArgs e)
             {
@@ -343,26 +390,22 @@ namespace Nerva.Toolkit.CLI
             };
 
             if (Configuration.Instance.CheckForUpdateOnStartup)
-                w.RunWorkerAsync();
+                w.RunWorkerAsync();*/
         }
 
-        private void LoadWallet()
+        public async Task LoadWallet()
         {
-            BackgroundWorker w = new BackgroundWorker();
-
-            w.DoWork += (s, e) =>
+            await Task.Run( () =>
             {
                 while (!IsReady(wallet.Pid))
                     Thread.Sleep(Constants.FIVE_SECONDS);
 
-                Application.Instance.AsyncInvoke ( () =>
+                Application.Instance.Invoke ( () =>
 				{
 					if (!WalletHelper.OpenSavedWallet())
                         WalletHelper.ShowWalletWizard();
 				});
-            };
-
-            w.RunWorkerAsync();
+            });
         }
 
         #endregion

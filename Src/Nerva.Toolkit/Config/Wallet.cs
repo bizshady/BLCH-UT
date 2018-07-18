@@ -31,6 +31,8 @@ namespace Nerva.Toolkit.Config
 
         public string LastWalletPassword { get; set; }
 
+        public int NumTransfersToDisplay { get; set; } = 25;
+
 		public static Wallet New()
         {
             return new Wallet

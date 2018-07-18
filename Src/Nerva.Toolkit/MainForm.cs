@@ -14,13 +14,13 @@ namespace Nerva.Toolkit
 {
     public partial class MainForm : Form
 	{	
+		public delegate void UpdateThreadStoppedEventHandler();
+		public event UpdateThreadStoppedEventHandler UpdateWalletThreadStopped;
 		Thread updateDaemonThread;
 		bool shouldUpdateDaemon = true;
 
 		Thread updateWalletThread;
 		bool shouldUpdateWallet = true;
-
-		//Thread pingThread;
 
 		bool pingSuccess = true;
 		uint lastTxHeight = 0;
@@ -68,13 +68,6 @@ namespace Nerva.Toolkit
 				Cli.Instance.Wallet.ForceClose();
 			};
 		}
-
-		//private void StartUpdateThread()
-		//{
-			//pingThread = new Thread(new ThreadStart(CheckConnection));
-			//pingSuccess = true;
-			//pingThread.Start();
-		//}
 
 		public void StartUpdateDaemonThread()
 		{
@@ -126,7 +119,7 @@ namespace Nerva.Toolkit
 
 				if (info != null)
 				{
-					Application.Instance.AsyncInvoke ( () =>
+					Application.Instance.Invoke ( () =>
 					{
 						lblDaemonStatus.Text = $"Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
 
@@ -143,7 +136,7 @@ namespace Nerva.Toolkit
 				}
 				else
 				{
-					Application.Instance.AsyncInvoke ( () =>
+					Application.Instance.Invoke ( () =>
 					{
 						lblDaemonStatus.Text = "OFFLINE";
 						daemonPage.Update(null, null, null);
@@ -182,7 +175,7 @@ namespace Nerva.Toolkit
 				{
 					string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
 
-					Application.Instance.AsyncInvoke ( () =>
+					Application.Instance.Invoke ( () =>
 					{
 						lblWalletStatus.Text = walletStatus;
 
@@ -191,6 +184,8 @@ namespace Nerva.Toolkit
 					});
 				}
 			}
+
+			UpdateWalletThreadStopped?.Invoke();
 		}
 
 		private void CheckConnection()
@@ -216,7 +211,7 @@ namespace Nerva.Toolkit
 					shouldUpdateDaemon = false;
 					shouldUpdateWallet = false;
 
-					Application.Instance.AsyncInvoke(() =>
+					Application.Instance.Invoke(() =>
 					{
 						lblDaemonStatus.Text = "NOT CONNECTED TO INTERNET";
 						daemonPage.Update(null, null, null);
@@ -229,6 +224,27 @@ namespace Nerva.Toolkit
 					shouldUpdateDaemon = true;
 					shouldUpdateWallet = true;
 				}	
+			}
+		}
+
+		private void CloseWallet(bool clearSavedWallet)
+		{
+			Log.Instance.Write("Closing wallet");
+			Cli.Instance.Wallet.StopCrashCheck();
+			lastTxHeight = 0;
+
+			balancesPage.Update(null);
+			transfersPage.Update(null);
+			lblWalletStatus.Text = "OFFLINE | CLOSED";
+
+			shouldUpdateWallet = false;
+			Cli.Instance.Wallet.ForceClose();
+
+			if (clearSavedWallet)
+			{
+				Configuration.Instance.Wallet.LastOpenedWallet = null;
+				Configuration.Instance.Wallet.LastWalletPassword = null;
+				Configuration.Save();
 			}
 		}
 
@@ -260,16 +276,8 @@ namespace Nerva.Toolkit
 		{
 			if (WalletHelper.ShowWalletWizard())
 			{
-				//HACK: RPC wallet sometimes hangs after opening a new wallet. So the wizard will 
-				//save the wallet info and we Kill the process and let it relaunch
-				//We have to physically kill the process as calling stop will not work if it is unresponsive
-				lastTxHeight = 0;
-				Cli.Instance.Wallet.ForceClose();
-
-				lblWalletStatus.Text = "WALLET CLOSED";
-				balancesPage.Update(null);
-				transfersPage.Update(null);
-
+				CloseWallet(false);
+				string ww = Configuration.Instance.Wallet.LastOpenedWallet;
 				StartUpdateWalletThread();
 				Cli.Instance.Wallet.ResumeCrashCheck();
 			}
@@ -285,17 +293,7 @@ namespace Nerva.Toolkit
 
 		protected void wallet_Stop_Clicked(object sender, EventArgs e)
 		{
-			Log.Instance.Write("Closing wallet");
-			Cli.Instance.Wallet.StopCrashCheck();
-			balancesPage.Update(null);
-			transfersPage.Update(null);
-			lblWalletStatus.Text = "OFFLINE | CLOSED";
-			shouldUpdateWallet = false;
-			Cli.Instance.Wallet.ForceClose();
-
-			Configuration.Instance.Wallet.LastOpenedWallet = null;
-			Configuration.Instance.Wallet.LastWalletPassword = null;
-			Configuration.Save();
+			CloseWallet(true);
 		}
 
 		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)

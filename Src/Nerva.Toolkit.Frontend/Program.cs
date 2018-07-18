@@ -45,7 +45,7 @@ namespace Nerva.Toolkit.Frontend
 				GLib.ExceptionManager.UnhandledException += (x) =>
 				{
 					var ex = x.ExceptionObject as Exception;
-					Log.Instance.WriteFatalException(ex);
+					Log.Instance.WriteFatalException(ex, ex.Message);
 				};
 			}
 
