@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Eto.Forms;
-using Eto.Drawing;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
 using Nerva.Toolkit.CLI.Structures.Response;
@@ -11,12 +10,10 @@ using Nerva.Toolkit.Content.Dialogs;
 using System.Diagnostics;
 using System.ComponentModel;
 using static Nerva.Toolkit.CLI.WalletInterface;
-using Nerva.Toolkit.CLI.Structures.Request;
-using System.Threading.Tasks;
 
 namespace Nerva.Toolkit.Content
-{	
-	public class BalancesPage
+{
+    public class BalancesPage
 	{
 		private StackLayout mainControl;
         public StackLayout MainControl => mainControl;
@@ -214,7 +211,6 @@ namespace Nerva.Toolkit.Content
 			catch (Exception ex)
 			{
 				Log.Instance.WriteNonFatalException(ex);
-				Debugger.Break();
 			}
 		}
     }

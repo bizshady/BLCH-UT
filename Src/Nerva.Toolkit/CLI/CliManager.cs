@@ -6,8 +6,6 @@ using System.Threading;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
-using System.Timers;
-using Timer = System.Timers.Timer;
 using AngryWasp.Helpers;
 using Nerva.Toolkit.Content.Dialogs;
 using Eto.Forms;
@@ -133,8 +131,6 @@ namespace Nerva.Toolkit.CLI
                 scheduleRestart = true;
                 return;
             }
-
-            Debugger.Break();
         }
 
         public virtual void StopCrashCheck()
@@ -351,60 +347,32 @@ namespace Nerva.Toolkit.CLI
                 switch (UpdateManager.UpdateStatus)
                 {
                     case Update_Status_Code.UpToDate:
-                            Log.Instance.Write("NERVA CLI tools are up to date");
+                        Log.Instance.Write("NERVA CLI tools are up to date");
                         break;
                     case Update_Status_Code.NewVersionAvailable:
-                            Log.Instance.Write("A new version of the NERVA CLI tools are available");
+                        Log.Instance.Write("A new version of the NERVA CLI tools are available");
                         break;
                     default:
-                            Log.Instance.Write(Log_Severity.Error, "An error occurred checking for updates.");
+                        Log.Instance.Write(Log_Severity.Error, "An error occurred checking for updates.");
                         break;
                 }
 
                 Log.Instance.Write("Update check complete");
             });
-
-            /*BackgroundWorker w = new BackgroundWorker();
-
-            w.DoWork += delegate (object sender, DoWorkEventArgs e)
-            {
-                while (!IsReady(daemon.Pid))
-                    Thread.Sleep(Constants.FIVE_SECONDS);
-
-                UpdateManager.CheckForCliUpdates();
-
-                switch (UpdateManager.UpdateStatus)
-                {
-                    case Update_Status_Code.UpToDate:
-                            Log.Instance.Write("NERVA CLI tools are up to date");
-                        break;
-                    case Update_Status_Code.NewVersionAvailable:
-                            Log.Instance.Write("A new version of the NERVA CLI tools are available");
-                        break;
-                    default:
-                            Log.Instance.Write(Log_Severity.Error, "An error occurred checking for updates.");
-                        break;
-                }
-
-                Log.Instance.Write("Update check complete");
-            };
-
-            if (Configuration.Instance.CheckForUpdateOnStartup)
-                w.RunWorkerAsync();*/
         }
 
         public async Task LoadWallet()
         {
-            await Task.Run( () =>
+            await Task.Run(() =>
             {
                 while (!IsReady(wallet.Pid))
                     Thread.Sleep(Constants.FIVE_SECONDS);
 
-                Application.Instance.Invoke ( () =>
-				{
-					if (!WalletHelper.OpenSavedWallet())
+                Application.Instance.Invoke(() =>
+                {
+                    if (!WalletHelper.OpenSavedWallet())
                         WalletHelper.ShowWalletWizard();
-				});
+                });
             });
         }
 

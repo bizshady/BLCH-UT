@@ -3,11 +3,10 @@ using System.IO;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using AngryWasp.Serializer;
-using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Config
-{	
-	public class Configuration
+{
+    public class Configuration
 	{
         #region Configuration properties
 

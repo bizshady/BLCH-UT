@@ -1,10 +1,8 @@
-using AngryWasp.Helpers;
-using AngryWasp.Serializer;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Config
-{	
-	public class Daemon
+{
+    public class Daemon
     {
         public RpcDetails Rpc { get; set; }
 

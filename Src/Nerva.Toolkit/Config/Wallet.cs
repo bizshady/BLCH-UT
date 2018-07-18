@@ -1,12 +1,10 @@
 using System;
 using System.IO;
 using AngryWasp.Helpers;
-using AngryWasp.Logger;
-using AngryWasp.Serializer;
 
 namespace Nerva.Toolkit.Config
 {
-	public class Wallet
+    public class Wallet
 	{
         private string walletDir;
 

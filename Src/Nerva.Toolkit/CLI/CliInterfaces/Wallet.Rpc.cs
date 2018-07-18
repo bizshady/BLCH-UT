@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI.Structures.Request;
 using Nerva.Toolkit.CLI.Structures.Response;

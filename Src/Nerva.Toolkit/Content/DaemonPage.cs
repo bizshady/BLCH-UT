@@ -181,7 +181,6 @@ namespace Nerva.Toolkit.Content
 			catch (Exception ex)
 			{
 				Log.Instance.WriteNonFatalException(ex);
-				Debugger.Break();
 			}
         }
     }
