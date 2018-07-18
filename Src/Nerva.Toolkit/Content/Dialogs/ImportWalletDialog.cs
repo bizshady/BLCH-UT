@@ -40,7 +40,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             string spendKey = txtSpendKey.Text;
             string seed = txtSeed.Text;
 
-            w.DoWork += (ws, we) =>
+            w.DoWork += (s, e) =>
             {
                 importStarted = true;
                 switch (index)
@@ -54,7 +54,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                 } 
             };
 
-            w.RunWorkerCompleted += (ws, we) =>
+            w.RunWorkerCompleted += (s, e) =>
             {
                 MessageBox.Show(this, "Wallet import complete", "Wallet Import",
                     MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);

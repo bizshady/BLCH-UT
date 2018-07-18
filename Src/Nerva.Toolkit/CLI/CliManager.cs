@@ -59,7 +59,7 @@ namespace Nerva.Toolkit.CLI
         public virtual void StartCrashCheck()
         {
             worker = new BackgroundWorker();
-            worker.DoWork += (sender, e) =>
+            worker.DoWork += (s, e) =>
             {
                 while (doCrashCheck)
                 {
@@ -86,13 +86,12 @@ namespace Nerva.Toolkit.CLI
                 }
             };
 
-            worker.RunWorkerCompleted += (sender, e) =>
+            worker.RunWorkerCompleted += (s, e) =>
             {
                 if (doCrashCheck)
                     worker.RunWorkerAsync();
             };
 
-            //Start crash checking
             worker.RunWorkerAsync();
         }
 

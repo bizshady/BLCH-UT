@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
@@ -294,46 +295,38 @@ namespace Nerva.Toolkit
 
 		protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
 		{
-			BackgroundWorker w = new BackgroundWorker();
-
-			w.DoWork += (ws, we) =>
+			Task.Run( () =>
 			{
 				Log.Instance.Write("Rescanning spent outputs");
 				if (!Cli.Instance.Wallet.Interface.RescanSpent())
 					Log.Instance.Write("Rescanning spent outputs failed");
 				else
 					Log.Instance.Write("Rescanning spent outputs success");
-			};
 
-			w.RunWorkerCompleted += (ws, we) =>
-			{
-				MessageBox.Show(this, "Rescanning spent outputs complete", "Rescan Spent", 
-					MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
-			};
-
-			w.RunWorkerAsync();
+				Application.Instance.AsyncInvoke( () =>
+				{
+					MessageBox.Show(this, "Rescanning spent outputs complete", "Rescan Spent", 
+						MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+				});
+			});
 		}
 
 		protected void wallet_RescanBlockchain_Clicked(object sender, EventArgs e)
 		{
-			BackgroundWorker w = new BackgroundWorker();
-
-			w.DoWork += (ws, we) =>
+			Task.Run( () =>
 			{
 				Log.Instance.Write("Rescanning blockchain");
 				if (!Cli.Instance.Wallet.Interface.RescanBlockchain())
 					Log.Instance.Write("Rescanning blockchain failed");
 				else
 					Log.Instance.Write("Rescanning blockchain success");
-			};
 
-			w.RunWorkerCompleted += (ws, we) =>
-			{
-				MessageBox.Show(this, "Rescanning blockchain complete", "Rescan Blockchain", 
-					MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
-			};
-
-			w.RunWorkerAsync();
+				Application.Instance.AsyncInvoke( () =>
+				{
+					MessageBox.Show(this, "Rescanning blockchain complete", "Rescan Blockchain", 
+						MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+				});
+			});
 		}
 
 		protected void wallet_Keys_View_Clicked(object sender, EventArgs e)
@@ -345,8 +338,19 @@ namespace Nerva.Toolkit
 		{
 			TextDialog d = new TextDialog("Enter Account Name", false);
 			if (d.ShowModal() == DialogResult.Ok)
-				if (Cli.Instance.Wallet.Interface.CreateAccount(d.Text) == null)
-					MessageBox.Show(this, "Failed to create new account", "Create Account", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
+			{
+				Task.Run( () =>
+				{
+					if (Cli.Instance.Wallet.Interface.CreateAccount(d.Text) == null)
+					{
+						Application.Instance.AsyncInvoke( () =>
+						{
+							MessageBox.Show(this, "Failed to create new account", "Create Account",
+							MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
+						});
+					}
+				});
+			}
 		}
 
 		protected void about_Clicked(object sender, EventArgs e)
