@@ -14,8 +14,6 @@ namespace Nerva.Toolkit
 {
     public partial class MainForm : Form
 	{	
-		public delegate void UpdateThreadStoppedEventHandler();
-		public event UpdateThreadStoppedEventHandler UpdateWalletThreadStopped;
 		Thread updateDaemonThread;
 		bool shouldUpdateDaemon = true;
 
@@ -184,8 +182,6 @@ namespace Nerva.Toolkit
 					});
 				}
 			}
-
-			UpdateWalletThreadStopped?.Invoke();
 		}
 
 		private void CheckConnection()
@@ -277,7 +273,7 @@ namespace Nerva.Toolkit
 			if (WalletHelper.ShowWalletWizard())
 			{
 				CloseWallet(false);
-				string ww = Configuration.Instance.Wallet.LastOpenedWallet;
+				shouldUpdateWallet = true;
 				StartUpdateWalletThread();
 				Cli.Instance.Wallet.ResumeCrashCheck();
 			}

@@ -59,8 +59,6 @@ namespace Nerva.Toolkit.CLI
         public virtual void StartCrashCheck()
         {
             worker = new BackgroundWorker();
-            worker.WorkerSupportsCancellation = true;
-
             worker.DoWork += (sender, e) =>
             {
                 while (doCrashCheck)
@@ -90,27 +88,13 @@ namespace Nerva.Toolkit.CLI
 
             worker.RunWorkerCompleted += (sender, e) =>
             {
-                if (e.Cancelled)
-                {
-                    if (!scheduleRestart)
-                    {
-                        Log.Instance.Write(Log_Severity.Warning, "Daemon crash check has been cancelled");
-                        return;
-                    }
-                }
-
-                if (doCrashCheck || scheduleRestart)
-                {
-                    scheduleRestart = false;
+                if (doCrashCheck)
                     worker.RunWorkerAsync();
-                }
             };
 
             //Start crash checking
             worker.RunWorkerAsync();
         }
-
-        bool scheduleRestart = false;
 
         public virtual void ResumeCrashCheck()
         {
@@ -123,12 +107,9 @@ namespace Nerva.Toolkit.CLI
                 return;
             }
 
-            bool cancellationPending = worker.CancellationPending;
-            bool busy = worker.IsBusy;
-
-            if (busy && cancellationPending)
+            if (!worker.IsBusy)
             {
-                scheduleRestart = true;
+                worker.RunWorkerAsync();
                 return;
             }
         }
@@ -137,9 +118,6 @@ namespace Nerva.Toolkit.CLI
         {
             pid = -1;
             doCrashCheck = false;
-
-            if (worker != null)
-                worker.CancelAsync();
         }
 
         public virtual void ForceClose()

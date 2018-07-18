@@ -62,7 +62,7 @@ namespace Nerva.Toolkit.Content
                 }
             };
 
-            mainControl.Content = grid;
+            Update(null);
         }
 
         public void Update(TransferList t)
