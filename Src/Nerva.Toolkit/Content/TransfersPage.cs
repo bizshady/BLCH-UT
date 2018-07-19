@@ -108,12 +108,14 @@ namespace Nerva.Toolkit.Content
                 }
 
                 if (txList.Count == 0)
+                {
                     mainControl.Content = new TableLayout(new TableRow(
                         new TableCell(new Label { Text = "NO TRANSFERS" })))
                     {
                         Padding = 10,
                         Spacing = new Eto.Drawing.Size(10, 10),
                     };
+                }
                 else
 				{
 					if (mainControl.Content != grid)
@@ -177,6 +179,9 @@ namespace Nerva.Toolkit.Content
 
             if (txList.Count > maxRows)
                 txList = txList.Take(maxRows).ToList();
+
+            if (i > 0)
+                Cli.Instance.Wallet.Interface.Store();
 
 			return i;
         }
