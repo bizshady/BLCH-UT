@@ -11,6 +11,7 @@ using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.CLI;
 using System.Diagnostics;
 using Nerva.Toolkit.Config;
+using System.Threading.Tasks;
 
 namespace Nerva.Toolkit.Content
 {
@@ -36,8 +37,27 @@ namespace Nerva.Toolkit.Content
                     return;
 
                 Transfer t = txList[grid.SelectedRow];
-                ShowTxDialog d = new ShowTxDialog(Cli.Instance.Wallet.Interface.GetTransferByTxID(t.TxId));
-                d.ShowModal();
+
+                Task.Run( () =>
+                {
+                    var txid = Cli.Instance.Wallet.Interface.GetTransferByTxID(t.TxId);
+                    if (txid != null)
+                    {
+                        Application.Instance.AsyncInvoke( () =>
+                        {
+                            ShowTxDialog d = new ShowTxDialog(txid);
+                            d.ShowModal();
+                        });
+                    }
+                    else
+                    {
+                        Application.Instance.AsyncInvoke( () =>
+                        {
+                            MessageBox.Show(Application.Instance.MainForm, "Transfer information could not be retrieved at this time", "Transaction Details", 
+                                MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                        });
+                    }
+                });
             };
 
             mainControl = new Scrollable();
