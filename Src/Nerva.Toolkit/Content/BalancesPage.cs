@@ -75,6 +75,8 @@ namespace Nerva.Toolkit.Content
 				TransferDialog d = new TransferDialog(a);
 				if (d.ShowModal() == DialogResult.Ok)
 				{
+					//todo: we need some message in the status bar to tell the user
+					//the payment is being processed
 					BackgroundWorker bgw = new BackgroundWorker();
 					bgw.DoWork += (s2, e2) =>
 					{

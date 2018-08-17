@@ -139,6 +139,7 @@ namespace Nerva.Toolkit.Content
 				}
 				else
 				{
+					lblNetwork.Text = "-";
 					lblHeight.Text = "-";
 					lblNetHash.Text = "-";
 					lblRunTime.Text = "-";

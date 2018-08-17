@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text;
 using Eto.Drawing;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
@@ -40,26 +41,71 @@ namespace Nerva.Toolkit.Content.Dialogs
             string spendKey = txtSpendKey.Text;
             string seed = txtSeed.Text;
 
+            StringBuilder errors = new StringBuilder();
+
+            if (string.IsNullOrEmpty(name))
+                errors.AppendLine("Wallet name not provided");
+
+            switch (index)
+            {
+                case 0:
+                {
+                    if (string.IsNullOrEmpty(viewKey))
+                        errors.AppendLine("View key not provided");
+
+                    if (string.IsNullOrEmpty(spendKey))
+                        errors.AppendLine("Spend key not provided");
+                }
+                break;
+                case 1:
+                {
+                    if (string.IsNullOrEmpty(seed))
+                        errors.AppendLine("Seed not provided");
+                }
+                break;
+            }
+            
+            string errorString = errors.ToString();
+            if (!string.IsNullOrEmpty(errorString))
+            {
+                MessageBox.Show(this, $"Please remedy the following errors:\r\n{errorString}", MessageBoxType.Error);
+                return;
+            }
+
             w.DoWork += (s, e) =>
             {
                 importStarted = true;
+                int result = -1;
                 switch (index)
                 {
                     case 0:
-                        Cli.Instance.Wallet.Interface.RestoreWalletFromKeys(name, viewKey, spendKey, password, lang);
+                        result = Cli.Instance.Wallet.Interface.RestoreWalletFromKeys(name, viewKey, spendKey, password, lang);
                     break;
                     case 1:
-                        Cli.Instance.Wallet.Interface.RestoreWalletFromSeed(name, seed, password, lang);
+                        result = Cli.Instance.Wallet.Interface.RestoreWalletFromSeed(name, seed, password, lang);
                     break;
                 } 
+
+                e.Result = result;
             };
 
             w.RunWorkerCompleted += (s, e) =>
             {
-                MessageBox.Show(this, "Wallet import complete", "Wallet Import",
-                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
-                name = txtName.Text;
-                this.Close(DialogResult.Ok);
+                int result = (int)e.Result;
+                if (result == 0)
+                {
+                    MessageBox.Show(this, "Wallet import complete", "Wallet Import",
+                        MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+
+                    this.Close(DialogResult.Ok);
+                }
+                else
+                {
+                    MessageBox.Show(this, "Wallet import failed.\r\nCheck the log file for errors", "Wallet Import",
+                        MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+
+                    this.Close(DialogResult.Abort);
+                }
             };
 
             w.RunWorkerAsync();

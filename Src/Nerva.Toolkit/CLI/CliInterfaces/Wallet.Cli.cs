@@ -54,7 +54,7 @@ namespace Nerva.Toolkit.CLI
 
         public WalletInterface() : base(Configuration.Instance.Wallet.Rpc) { }
 
-        public void RestoreWalletFromKeys(string walletName, string viewKey, string spendKey, string pass, string language)
+        public int RestoreWalletFromKeys(string walletName, string viewKey, string spendKey, string pass, string language)
         {
             string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
 
@@ -67,10 +67,10 @@ namespace Nerva.Toolkit.CLI
                 SeedLanguage = language
             });
 
-            RestoreWalletFromJson(walletPath);
+            return RestoreWalletFromJson(walletPath);
         }
 
-        public void RestoreWalletFromSeed(string walletName, string seed, string pass, string language)
+        public int RestoreWalletFromSeed(string walletName, string seed, string pass, string language)
         {
             string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletName);
 
@@ -82,7 +82,7 @@ namespace Nerva.Toolkit.CLI
                 SeedLanguage = language
             });
 
-            RestoreWalletFromJson(walletPath);
+            return RestoreWalletFromJson(walletPath);
         }
         
         private void CreateJson(string walletPath, object data)
@@ -96,7 +96,7 @@ namespace Nerva.Toolkit.CLI
                     serializer.Serialize(jsonTextWriter, data);
         }
 
-        private void RestoreWalletFromJson(string walletPath)
+        private int RestoreWalletFromJson(string walletPath)
         {
             string daemon = $"127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
             string exe = FileNames.GetCliExePath(FileNames.CLI_WALLET);
@@ -134,6 +134,8 @@ namespace Nerva.Toolkit.CLI
             int exitCode = proc.ExitCode;
 
             Log.Instance.Write("Import wallet exited with code: {0}", exitCode);
+
+            return exitCode;
         }
     }
 }

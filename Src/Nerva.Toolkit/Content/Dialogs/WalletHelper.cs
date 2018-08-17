@@ -310,12 +310,19 @@ namespace Nerva.Toolkit.Content.Dialogs
                         break;
                     case Open_Wallet_Dialog_Result.Import:
                         { //Import a wallet from seed
-                            ImportWalletDialog d2 = new ImportWalletDialog();
-                            if (d2.ShowModal() == DialogResult.Ok)
+                            while (true)
                             {
-                                SaveWalletLogin(d2.Name, d2.Password);
-                                wizardRunning = false;
-                                return true;
+                                ImportWalletDialog d2 = new ImportWalletDialog();
+                                DialogResult dr = d2.ShowModal();
+                                if (dr == DialogResult.Ok)
+                                {
+                                    SaveWalletLogin(d2.Name, d2.Password);
+                                    wizardRunning = false;
+                                    return true;
+                                }
+                                //Abort is used in case of a wallet error, so we check specifically for cancelled
+                                else if (dr == DialogResult.Cancel) //break the loop if cancelled
+                                    break;
                             }
                         }
                         break;
