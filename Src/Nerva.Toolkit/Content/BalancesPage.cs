@@ -10,6 +10,7 @@ using Nerva.Toolkit.Content.Dialogs;
 using System.Diagnostics;
 using System.ComponentModel;
 using static Nerva.Toolkit.CLI.WalletInterface;
+using System.Threading.Tasks;
 
 namespace Nerva.Toolkit.Content
 {
@@ -77,27 +78,28 @@ namespace Nerva.Toolkit.Content
 				{
 					//todo: we need some message in the status bar to tell the user
 					//the payment is being processed
-					BackgroundWorker bgw = new BackgroundWorker();
-					bgw.DoWork += (s2, e2) =>
+					Task.Run(() =>
 					{
 						RpcWalletError err = new RpcWalletError();
-
 						Send txData = Cli.Instance.Wallet.Interface.TransferFunds(a, d.Address, d.PaymentId, d.Amount, d.Priority, ref err);
 
 						if (err.Code == 0)
 						{
-							MessageBox.Show(Application.Instance.MainForm, 
-								$"Sent: {Conversions.FromAtomicUnits(txData.Amount)}\r\nFees: {Conversions.FromAtomicUnits(txData.Fee)}\r\nHash: {txData.TxHash}", 
-								"TX Results", MessageBoxType.Information);
+							Application.Instance.AsyncInvoke(() =>
+							{
+								MessageBox.Show(Application.Instance.MainForm, 
+									$"Sent: {Conversions.FromAtomicUnits(txData.Amount)}\r\nFees: {Conversions.FromAtomicUnits(txData.Fee)}\r\nHash: {txData.TxHash}", 
+									"TX Results", MessageBoxType.Information);
+							});
 						}
 						else
 						{
-							MessageBox.Show(Application.Instance.MainForm, $"The transfer request returned RPC error:\r\n{err.Message}", MessageBoxType.Error);
-							return;
+							Application.Instance.AsyncInvoke(() =>
+							{
+								MessageBox.Show(Application.Instance.MainForm, $"The transfer request returned RPC error:\r\n{err.Message}", MessageBoxType.Error);
+							});
 						}
-					};
-
-					bgw.RunWorkerAsync();
+					});
 				}
 			};
 

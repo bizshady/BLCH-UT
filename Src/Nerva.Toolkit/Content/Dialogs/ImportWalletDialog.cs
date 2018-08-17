@@ -68,7 +68,8 @@ namespace Nerva.Toolkit.Content.Dialogs
             string errorString = errors.ToString();
             if (!string.IsNullOrEmpty(errorString))
             {
-                MessageBox.Show(this, $"Please remedy the following errors:\r\n{errorString}", MessageBoxType.Error);
+                MessageBox.Show(this, $"Wallet import failed:\r\n{errorString}", "Wallet Import",
+                    MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
                 return;
             }
 

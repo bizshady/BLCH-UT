@@ -95,7 +95,10 @@ namespace Nerva.Toolkit.Content
                 {
                     int newSelectedRow = CalculateNewHighlightedRow(rowsAdded);
 
-                    grid.DataStore = txList;
+                    if (txList.Count == 0)
+                        grid.DataStore = null;
+                    else
+                        grid.DataStore = txList;
 
                     if (newSelectedRow != -1)
                     {

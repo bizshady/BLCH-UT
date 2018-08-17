@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using AngryWasp.Helpers;
 using Eto.Drawing;
 using Eto.Forms;
@@ -46,37 +47,34 @@ namespace Nerva.Toolkit.Content.Dialogs
         {
             if (MessageBox.Show(this, "Are you sure?", MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.Yes) == DialogResult.Yes)
             {
+                StringBuilder errors = new StringBuilder();
+
                 if (!double.TryParse(txtAmount.Text, out amt))
-                {
-                    MessageBox.Show(this, "Amount to send is incorrect format", MessageBoxType.Error);
-                    return;
-                }
+                    errors.AppendLine("Amount to send is incorrect format");
 
                 if (cbxPriority.SelectedIndex == -1)
-                {
-                    MessageBox.Show(this, "Priority not specified", MessageBoxType.Error);
-                    return;
-                }
+                    errors.AppendLine("Priority not specified");
 
                 //todo: need to validate address that it is correct format
                 if (string.IsNullOrEmpty(txtAddress.Text))
-                {
-                    MessageBox.Show(this, "Address not provided", MessageBoxType.Error);
-                    return;
-                }
+                    errors.AppendLine("Address not provided");
 
                 if (txtPaymentId.Text.Length != 0 && (txtPaymentId.Text.Length != 16 && txtPaymentId.Text.Length != 64))
+                    errors.AppendLine($"Payment ID must be 16 or 64 characters long\r\nCurrent Payment ID length is {txtPaymentId.Text.Length} characters");
+
+                string errorString = errors.ToString();
+                if (!string.IsNullOrEmpty(errorString))
                 {
-                    MessageBox.Show(this, "Payment ID must be 16 or 64 characters long\r\nCurrent Payment ID length is " + 
-                        txtPaymentId.Text.Length + " characters", MessageBoxType.Error);
+                    MessageBox.Show(this, $"Transfer failed:\r\n{errorString}", "Transfer Nerva",
+                        MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
                     return;
-                } 
+                }
 
                 this.Close(DialogResult.Ok);
             }
         }
 
-        protected override void OnCancel()
+        protected override void OnCancel() 
         {
             this.Close(DialogResult.Cancel);
         }
