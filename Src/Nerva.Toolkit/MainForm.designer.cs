@@ -14,6 +14,7 @@ namespace Nerva.Toolkit
 		Label lblDaemonStatus = new Label { Text = "Height: 0 | Connections: 0/0 | Not Synced" };
 		Label lblWalletStatus = new Label { Text = "OFFLINE | CLOSED" };
 		Label lblVersion = new Label { Text = "Version: 0.0.0.0" };
+		Label lblTaskList = new Label { Text = "Running Tasks: 0" };
 
 		DaemonPage daemonPage = new DaemonPage();
 		BalancesPage balancesPage = new BalancesPage();
@@ -54,7 +55,7 @@ namespace Nerva.Toolkit
 				Rows = {
 					new TableRow (
 						new TableCell(lblDaemonStatus, true),
-						new TableCell(null)),
+						new TableCell(lblTaskList)),
 					new TableRow (
 						new TableCell(lblWalletStatus, true),
 						new TableCell(lblVersion))

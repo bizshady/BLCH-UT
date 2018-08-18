@@ -7,15 +7,32 @@ using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
+    public enum Import_Type
+    {
+        Key,
+        Seed
+    }
+
     public class ImportWalletDialog : PasswordDialog
     {
-        private string name;
+        protected string name;
+        protected string viewKey;
+        protected string spendKey;
+        protected string seed;
+        protected Import_Type importType;
+        protected string lang;
+
         public string Name => name;
+        public string ViewKey => viewKey;
+        public string SpendKey => spendKey;
+        public string Seed => seed;
+        public Import_Type ImportType => importType;
+
+        public string Language => lang;
 
         TextBox txtName = new TextBox();
         TextBox txtViewKey = new TextBox();
         TextBox txtSpendKey = new TextBox();
-
         TextArea txtSeed = new TextArea();
 
         TabControl tc = new TabControl();
@@ -31,24 +48,22 @@ namespace Nerva.Toolkit.Content.Dialogs
 
             base.OnOk();
 
-            BackgroundWorker w = new BackgroundWorker();
+            importType = (Import_Type)tc.SelectedIndex;
+            lang = cbxLang.SelectedValue.ToString();
 
-            int index = tc.SelectedIndex;
-            string lang = cbxLang.SelectedValue.ToString();
-
-            string name = txtName.Text;
-            string viewKey = txtViewKey.Text;
-            string spendKey = txtSpendKey.Text;
-            string seed = txtSeed.Text;
+            name = txtName.Text;
+            viewKey = txtViewKey.Text;
+            spendKey = txtSpendKey.Text;
+            seed = txtSeed.Text;
 
             StringBuilder errors = new StringBuilder();
 
             if (string.IsNullOrEmpty(name))
                 errors.AppendLine("Wallet name not provided");
 
-            switch (index)
+            switch (importType)
             {
-                case 0:
+                case Import_Type.Key:
                 {
                     if (string.IsNullOrEmpty(viewKey))
                         errors.AppendLine("View key not provided");
@@ -57,7 +72,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                         errors.AppendLine("Spend key not provided");
                 }
                 break;
-                case 1:
+                case Import_Type.Seed:
                 {
                     if (string.IsNullOrEmpty(seed))
                         errors.AppendLine("Seed not provided");
@@ -73,43 +88,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                 return;
             }
 
-            w.DoWork += (s, e) =>
-            {
-                importStarted = true;
-                int result = -1;
-                switch (index)
-                {
-                    case 0:
-                        result = Cli.Instance.Wallet.Interface.RestoreWalletFromKeys(name, viewKey, spendKey, password, lang);
-                    break;
-                    case 1:
-                        result = Cli.Instance.Wallet.Interface.RestoreWalletFromSeed(name, seed, password, lang);
-                    break;
-                } 
-
-                e.Result = result;
-            };
-
-            w.RunWorkerCompleted += (s, e) =>
-            {
-                int result = (int)e.Result;
-                if (result == 0)
-                {
-                    MessageBox.Show(this, "Wallet import complete", "Wallet Import",
-                        MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
-
-                    this.Close(DialogResult.Ok);
-                }
-                else
-                {
-                    MessageBox.Show(this, "Wallet import failed.\r\nCheck the log file for errors", "Wallet Import",
-                        MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
-
-                    this.Close(DialogResult.Abort);
-                }
-            };
-
-            w.RunWorkerAsync();
+            this.Close(DialogResult.Ok);
         }
 
         protected override void OnCancel()

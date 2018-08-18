@@ -18,11 +18,13 @@ namespace Nerva.Toolkit
     {
         bool updateDaemon = true;
         bool updateWallet = true;
+        bool updateTaskList = true;
 
         System.Timers.Timer updateWalletTimer = new System.Timers.Timer(Constants.ONE_SECOND);
         System.Timers.Timer updateDaemonTimer = new System.Timers.Timer(Constants.ONE_SECOND);
 
-        bool pingSuccess = true;
+        System.Timers.Timer updateTaskListTimer = new System.Timers.Timer(Constants.ONE_SECOND / 2);
+
         uint lastTxHeight = 0;
 
         public MainForm(bool newConfig)
@@ -59,9 +61,11 @@ namespace Nerva.Toolkit
             {
                 CreateUpdateDaemonTimer();
                 CreateUpdateWalletTimer();
+                CreateUpdateTaskListTimer();
 
                 StartUpdateDaemonTimer();
                 StartUpdateWalletTimer();
+                StartUpdateTaskListTimer();
             };
 
             this.Closing += (s, e) =>
@@ -69,6 +73,26 @@ namespace Nerva.Toolkit
                 StopUpdateDaemonTimer();
                 StopUpdateWalletTimer();
                 Cli.Instance.Wallet.ForceClose();
+            };
+        }
+
+        public void CreateUpdateTaskListTimer()
+        {
+            updateTaskListTimer.Elapsed += (s, e) =>
+            {
+                updateTaskListTimer.Stop();
+
+                Task.Run(() =>
+            	{
+                    Helpers.TaskFactory.Instance.Prune();
+
+                    Application.Instance.Invoke(() =>
+                    {
+                        lblTaskList.Text = $"Running Tasks: {Helpers.TaskFactory.Instance.Count}";
+                        lblTaskList.ToolTip = Helpers.TaskFactory.Instance.ToString().TrimEnd();
+                    });
+            		updateTaskListTimer.Start();
+            	});
             };
         }
 
@@ -89,7 +113,7 @@ namespace Nerva.Toolkit
 
                 Task.Run(() =>
             	{
-                	UpdateDaemonUI();
+                    UpdateDaemonUI();
             		updateDaemonTimer.Start();
             	});
             };
@@ -120,12 +144,6 @@ namespace Nerva.Toolkit
 
         public void StartUpdateDaemonTimer()
         {
-            if (updateDaemonTimer.Enabled)
-            {
-                if (Debugger.IsAttached)
-                    Debugger.Break();
-            }
-
             updateDaemon = true;
             updateDaemonTimer.Start();
         }
@@ -138,14 +156,14 @@ namespace Nerva.Toolkit
 
         public void StartUpdateWalletTimer()
         {
-            if (updateWalletTimer.Enabled)
-            {
-                if (Debugger.IsAttached)
-                    Debugger.Break();
-            }
-
             updateWallet = true;
             updateWalletTimer.Start();
+        }
+
+        public void StartUpdateTaskListTimer()
+        {
+            updateTaskList = true;
+            updateTaskListTimer.Start();
         }
 
         public void StopUpdateWalletTimer()
@@ -222,45 +240,6 @@ namespace Nerva.Toolkit
             }
         }
 
-        private void CheckConnection()
-        {
-            /*while (true)
-			{
-				//If last ping failed. speed up this wait time. Do the online check as quick as reasonably possible
-				Thread.Sleep(pingSuccess ? Constants.FIVE_SECONDS : Constants.ONE_SECOND);
-
-				//Try pinging all 3 seed nodes before calling it disconnected
-				bool pingOk = NetHelper.PingServer(SeedNodes.XNV1);
-
-				if (!pingOk)
-					pingOk = NetHelper.PingServer(SeedNodes.XNV2);
-
-				if (!pingOk)
-					pingOk = NetHelper.PingServer(SeedNodes.XNV3);
-
-				pingSuccess = pingOk;
-
-				if (!pingOk)
-				{
-					shouldUpdateDaemon = false;
-					shouldUpdateWallet = false;
-
-					Application.Instance.Invoke(() =>
-					{
-						lblDaemonStatus.Text = "NOT CONNECTED TO INTERNET";
-						daemonPage.Update(null, null, null);
-					});
-
-					continue;
-				}
-				else
-				{
-					shouldUpdateDaemon = true;
-					shouldUpdateWallet = true;
-				}	
-			}*/
-        }
-
         private void CloseWallet(bool clearSavedWallet)
         {
             Log.Instance.Write("Closing wallet");
@@ -308,17 +287,19 @@ namespace Nerva.Toolkit
 
         protected void wallet_Select_Clicked(object sender, EventArgs e)
         {
-            if (WalletHelper.ShowWalletWizard())
+            WalletHelper.Instance.WalletWizardEvent += (Open_Wallet_Dialog_Result result, object additionalData) =>
             {
                 CloseWallet(false);
                 Cli.Instance.Wallet.ResumeCrashCheck();
                 StartUpdateWalletTimer();
-            }
+            };
+
+            WalletHelper.Instance.ShowWalletWizard();
         }
 
         protected void wallet_Store_Clicked(object sender, EventArgs e)
         {
-			Task.Run(() =>
+			Helpers.TaskFactory.Instance.RunTask("store", $"Saving wallet information", () =>
            	{
                	Log.Instance.Write("Saving wallet");
             	Cli.Instance.Wallet.Interface.Store();
@@ -338,7 +319,7 @@ namespace Nerva.Toolkit
 
         protected void wallet_RescanSpent_Clicked(object sender, EventArgs e)
         {
-            Task.Run(() =>
+            Helpers.TaskFactory.Instance.RunTask("rescanspent", $"Rescanning spent outputs", () =>
            	{
                	Log.Instance.Write("Rescanning spent outputs");
                	if (!Cli.Instance.Wallet.Interface.RescanSpent())
@@ -356,7 +337,7 @@ namespace Nerva.Toolkit
 
         protected void wallet_RescanBlockchain_Clicked(object sender, EventArgs e)
         {
-            Task.Run(() =>
+            Helpers.TaskFactory.Instance.RunTask("rescanchain", $"Rescanning the blockchain", () =>
         	{
                	Log.Instance.Write("Rescanning blockchain");
                	if (!Cli.Instance.Wallet.Interface.RescanBlockchain())
@@ -382,7 +363,7 @@ namespace Nerva.Toolkit
             TextDialog d = new TextDialog("Enter Account Name", false);
             if (d.ShowModal() == DialogResult.Ok)
             {
-                Task.Run(() =>
+                Helpers.TaskFactory.Instance.RunTask("createwallet", "Creating new wallet", () =>
             	{
                 	if (Cli.Instance.Wallet.Interface.CreateAccount(d.Text) == null)
                 	{

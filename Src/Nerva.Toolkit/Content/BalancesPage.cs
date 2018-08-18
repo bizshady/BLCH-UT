@@ -76,9 +76,9 @@ namespace Nerva.Toolkit.Content
 				TransferDialog d = new TransferDialog(a);
 				if (d.ShowModal() == DialogResult.Ok)
 				{
-					//todo: we need some message in the status bar to tell the user
-					//the payment is being processed
-					Task.Run(() =>
+                    //todo: we need some message in the status bar to tell the user
+                    //the payment is being processed
+                    Helpers.TaskFactory.Instance.RunTask("transfer", $"Transferring {d.Amount} XNV to {d.Address}", () =>
 					{
 						RpcWalletError err = new RpcWalletError();
 						Send txData = Cli.Instance.Wallet.Interface.TransferFunds(a, d.Address, d.PaymentId, d.Amount, d.Priority, ref err);
@@ -206,11 +206,11 @@ namespace Nerva.Toolkit.Content
 				if (OS.Type == OS_Type.Windows)
 				{
 					int si = grid.SelectedRow;
-					grid.DataStore = accounts;
+					grid.DataStore = accounts.Count == 0 ? null : accounts;
 					grid.SelectRow(si);
 				}
 				else
-					grid.DataStore = accounts;
+					grid.DataStore = accounts.Count == 0 ? null : accounts;
 			}
 			catch (Exception ex)
 			{

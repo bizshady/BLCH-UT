@@ -146,6 +146,12 @@ namespace Nerva.Toolkit.Content.Dialogs
 
     public class WalletHelper
     {
+        public delegate void WalletWizardEventHandler(Open_Wallet_Dialog_Result result, object additionalData);
+        public event WalletWizardEventHandler WalletWizardEvent;
+        private static WalletHelper instance = new WalletHelper();
+
+        public static WalletHelper Instance => instance;
+
         public static void SaveWalletLogin(string walletFile, string password)
         {
             Configuration.Instance.Wallet.LastOpenedWallet = walletFile;
@@ -204,6 +210,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                 }
             }
         }
+
         public static bool WalletFileExists(string file)
         {
             if (!WalletDirExists())
@@ -251,12 +258,11 @@ namespace Nerva.Toolkit.Content.Dialogs
         /// <summary>
         /// Shows the open wallet wizard
         /// </summary>
-        /// <returns>Returns true if there is a new wallet to open, else false</returns>
-        public static bool ShowWalletWizard()
+        public void ShowWalletWizard()
         {
             //prevent other threads starting the wizard if it is already running
             if (wizardRunning)
-                return false;
+                return;
 
             wizardRunning = true;
 
@@ -273,14 +279,13 @@ namespace Nerva.Toolkit.Content.Dialogs
                                 OpenWalletDialog d2 = new OpenWalletDialog();
                                 if (d2.ShowModal() == DialogResult.Ok)
                                 {
-                                    bool newWallet = true;
                                     if (d2.Name == Configuration.Instance.Wallet.LastOpenedWallet)
-                                        newWallet = false;
+                                        return; //Don't try to open already opened wallet
 
                                     SaveWalletLogin(d2.Name, d2.Password);
                                     wizardRunning = false;
-                                    Cli.Instance.Wallet.ForceClose();
-                                    return newWallet;
+                                    WalletWizardEvent?.Invoke(Open_Wallet_Dialog_Result.Open, null);
+                                    return;
                                 }
                                 else //break the loop if cancelled
                                     break;
@@ -300,7 +305,8 @@ namespace Nerva.Toolkit.Content.Dialogs
                                     {
                                         SaveWalletLogin(d2.Name, d2.Password);
                                         wizardRunning = false;
-                                        return true;
+                                        WalletWizardEvent?.Invoke(Open_Wallet_Dialog_Result.New, null);
+                                        return;
                                     }
                                 }
                                 else //break the loop if cancelled
@@ -316,12 +322,44 @@ namespace Nerva.Toolkit.Content.Dialogs
                                 DialogResult dr = d2.ShowModal();
                                 if (dr == DialogResult.Ok)
                                 {
-                                    SaveWalletLogin(d2.Name, d2.Password);
+                                    Helpers.TaskFactory.Instance.RunTask("importwallet", $"Importing wallet", () =>
+                                    {
+                                        int result = -1;
+                                        switch (d2.ImportType)
+                                        {
+                                            case Import_Type.Key:
+                                                result = Cli.Instance.Wallet.Interface.RestoreWalletFromKeys(d2.Name, d2.ViewKey, d2.SpendKey, d2.Password, d2.Language);
+                                            break;
+                                            case Import_Type.Seed:
+                                                result = Cli.Instance.Wallet.Interface.RestoreWalletFromSeed(d2.Name, d2.Seed, d2.Password, d2.Language);
+                                            break;
+                                        } 
+
+                                        SaveWalletLogin(d2.Name, d2.Password);
+                                        WalletWizardEvent?.Invoke(Open_Wallet_Dialog_Result.Import, result);
+
+                                        if (result == 0)
+                                        {
+                                            Application.Instance.AsyncInvoke( () =>
+                                            {
+                                                MessageBox.Show(Application.Instance.MainForm, "Wallet import complete", "Wallet Import",
+                                                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                                            });
+                                        }
+                                        else
+                                        {
+                                            Application.Instance.AsyncInvoke( () =>
+                                            {
+                                                MessageBox.Show(Application.Instance.MainForm, "Wallet import failed.\r\nCheck the log file for errors", "Wallet Import",
+                                                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                                            });
+                                        }
+                                    });
+                                    
                                     wizardRunning = false;
-                                    return true;
+                                    return;
                                 }
-                                //Abort is used in case of a wallet error, so we check specifically for cancelled
-                                else if (dr == DialogResult.Cancel) //break the loop if cancelled
+                                else
                                     break;
                             }
                         }
@@ -329,7 +367,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                     default:
                         {
                             wizardRunning = false;
-                            return false;
+                            return;
                         }
                 }
             }

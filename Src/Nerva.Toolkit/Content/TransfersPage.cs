@@ -38,7 +38,7 @@ namespace Nerva.Toolkit.Content
 
                 Transfer t = txList[grid.SelectedRow];
 
-                Task.Run( () =>
+                Helpers.TaskFactory.Instance.RunTask("gettx", $"Fetching transaction information", () =>
                 {
                     var txid = Cli.Instance.Wallet.Interface.GetTransferByTxID(t.TxId);
                     if (txid != null)

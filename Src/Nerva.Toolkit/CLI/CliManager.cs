@@ -309,12 +309,12 @@ namespace Nerva.Toolkit.CLI
             }
         }
 
-        private async Task UpdateCheck()
+        private void UpdateCheck()
         {
             if (!Configuration.Instance.CheckForUpdateOnStartup)
                 return;
 
-            await Task.Run(() =>
+            Helpers.TaskFactory.Instance.RunTask("updatecheck", "Checking for updates", () =>
             {
                 while (!IsReady(daemon.Pid))
                     Thread.Sleep(Constants.FIVE_SECONDS);
@@ -338,9 +338,9 @@ namespace Nerva.Toolkit.CLI
             });
         }
 
-        public async Task LoadWallet()
+        public void LoadWallet()
         {
-            await Task.Run(() =>
+            Helpers.TaskFactory.Instance.RunTask("loadwallet", "Loading the saved wallet", () =>
             {
                 while (!IsReady(wallet.Pid))
                     Thread.Sleep(Constants.FIVE_SECONDS);
@@ -348,7 +348,14 @@ namespace Nerva.Toolkit.CLI
                 Application.Instance.Invoke(() =>
                 {
                     if (!WalletHelper.OpenSavedWallet())
-                        WalletHelper.ShowWalletWizard();
+                    {
+                        WalletHelper.Instance.WalletWizardEvent += (Open_Wallet_Dialog_Result result, object additionalData) =>
+                        {
+                            
+                        };
+
+                        WalletHelper.Instance.ShowWalletWizard();
+                    }
                 });
             });
         }
