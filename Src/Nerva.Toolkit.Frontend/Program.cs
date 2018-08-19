@@ -34,6 +34,8 @@ namespace Nerva.Toolkit.Frontend
 
 			Serializer.Initialize();
 
+			AddressBook.Load();
+
 			bool newFile;
 
 			Configuration.Load(configFile, out newFile);

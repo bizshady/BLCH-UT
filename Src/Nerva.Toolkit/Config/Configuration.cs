@@ -25,6 +25,8 @@ namespace Nerva.Toolkit.Config
 
         public bool ReconnectToDaemonProcess { get; set; }
 
+        public string AddressBookPath { get; set; } = Path.Combine(Environment.CurrentDirectory, "AddressBook.xml");
+
         #endregion
 
         #region Not serialized
@@ -66,9 +68,7 @@ namespace Nerva.Toolkit.Config
             if (!File.Exists(loadedConfigFile))
             {
                 instance = Configuration.New();
-            
-                //TODO: Set default values for a new config file
-                
+        
                 Log.Instance.Write("Configuration created at '{0}'", loadedConfigFile);
                 new ObjectSerializer().Serialize(instance, loadedConfigFile);
                 newFile = true;

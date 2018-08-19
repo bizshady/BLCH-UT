@@ -80,6 +80,11 @@ namespace Nerva.Toolkit.Helpers
             }
         }
 
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode() ^ Count;
+        }
+
         public override string ToString()
         {
             StringBuilder sb =new StringBuilder();
