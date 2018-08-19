@@ -21,6 +21,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         ComboBox cbxPriority = new ComboBox();
         Label lblAccount = new Label();
         Label lblAmount = new Label();
+        Button btnAddressBook = new Button{ Text = "Address Book"};
 
         private double amt;
 
@@ -41,6 +42,16 @@ namespace Nerva.Toolkit.Content.Dialogs
             cbxPriority.SelectedIndex = 0;
 
             btnGenPayId.Click += (s, e) => txtPaymentId.Text = StringHelper.GenerateRandomHexString(64);
+            btnAddressBook.Click += (s, e) =>
+            {
+                AddressBookDialog dlg = new AddressBookDialog();
+                if (dlg.ShowModal() == DialogResult.Ok)
+                {
+                    var se = dlg.SelectedEntry;
+                    txtAddress.Text = se.Address;
+                    txtPaymentId.Text = se.PaymentId;
+                }
+            };
         }
 
         protected override void OnOk()
@@ -105,7 +116,18 @@ namespace Nerva.Toolkit.Content.Dialogs
                             new TableRow(new Label { Text = "Amount" }, new Label { Text = "Priority"} ),
                             new TableRow(txtAmount, cbxPriority)
                         }
-                    }
+                    },
+                    new StackLayoutItem(new StackLayout
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalContentAlignment = HorizontalAlignment.Right,
+                        VerticalContentAlignment = VerticalAlignment.Center,
+                        Items =
+                        {
+                            new StackLayoutItem(null, true),
+                            btnAddressBook
+                        }
+                    })
                 }
             };
         }
