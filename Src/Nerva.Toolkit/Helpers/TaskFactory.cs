@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AngryWasp.Logger;
 
@@ -14,6 +16,42 @@ namespace Nerva.Toolkit.Helpers
         public string Description { get; set; }
 
         public Task Task { get; set; }
+    }
+
+    public delegate void CancellableTask(CancellationToken token);
+
+    public class AsyncTaskContainer
+    {
+
+        private Task t;
+
+        private CancellationTokenSource ct;
+
+        private bool isRunning = false;
+
+        public bool IsRunning => isRunning;
+
+        public void Start(Func<CancellationToken, Task> function)
+        {
+            ct = new CancellationTokenSource();
+            ct.Token.Register(OnStopped);
+            t = function(ct.Token);
+            isRunning = true;
+        }
+
+        public void Stop()
+        {
+            if (!isRunning)
+                return;
+                
+            isRunning = false;
+            ct.Cancel();
+        }
+
+        private void OnStopped()
+        {
+            isRunning = false;
+        }
     }
 
     public class TaskFactory
@@ -38,7 +76,7 @@ namespace Nerva.Toolkit.Helpers
 
         public int Count => containers.Count;
 
-        public bool RunTask(string name, string description, Action action)
+        public Task RunTask(string name, string description, Action action)
         {
             //Basically, we try to add the task to the list, if that works, we start the task,
             //otherwise we write a message in the log and return
@@ -47,10 +85,10 @@ namespace Nerva.Toolkit.Helpers
                 Description = description}))
             {
                 containers[name].Task = Task.Run(action);
-                return true;
+                return containers[name].Task;
             }
             else
-                return false;
+                return null;
         }
 
         public void Prune()
@@ -59,17 +97,8 @@ namespace Nerva.Toolkit.Helpers
             {
                 string toRemove = null;
                 
-                if (c.Value.Task.IsCanceled || c.Value.Task.IsFaulted)
-                {
-                    //Tasks are never cancelled, so if this flag is raised, we assume an error has occured
-                    Log.Instance.Write("Task {0} encountered an error", c.Key);
+                if (c.Value.Task.IsCanceled || c.Value.Task.IsFaulted || c.Value.Task.IsCompleted)
                     toRemove = c.Key;
-                }
-                else if (c.Value.Task.IsCompleted)
-                {
-                    //No message if task completed. Handle elsewhere with specific message
-                    toRemove = c.Key;
-                }
 
                 if (toRemove != null)
                 {

@@ -37,15 +37,12 @@ namespace Nerva.Toolkit.Content.Dialogs
         private NumericStepper nsWalletPort = new NumericStepper { MinValue = 1000, MaxValue = 50000, DecimalPlaces = 0, MaximumDecimalPlaces = 0, ToolTip = "Wallet port" };
         private Button btnGenRandWalletPort = new Button { Text = "Random", ToolTip = "Generate a random port number" };
 
-        private bool restartDaemonRequired = false;
+        private bool restartCliRequired = false;
         private bool restartMinerRequired = false;
-        private bool restartWalletRequired = false;
-
-        public bool RestartDaemonRequired => restartDaemonRequired;
 
         public bool RestartMinerRequired => restartMinerRequired;
 
-        public bool RestartWalletRequired => restartWalletRequired;
+        public bool RestartCliRequired => restartCliRequired;
 
         public PreferencesDialog() : base("Preferences")
         {
@@ -259,26 +256,15 @@ namespace Nerva.Toolkit.Content.Dialogs
                 return;
             }
 
-            if (chkTestnet.Checked != Configuration.Instance.Testnet || txtToolsPath.Text != Configuration.Instance.ToolsPath)
-                restartDaemonRequired = true;
+            if (chkTestnet.Checked != Configuration.Instance.Testnet || // network type changed
+                txtToolsPath.Text != Configuration.Instance.ToolsPath || // tool path changed
+                nsDaemonPort.Value != Configuration.Instance.Daemon.Rpc.Port || // daemon port changed
+                nsWalletPort.Value != Configuration.Instance.Wallet.Rpc.Port ) // wallet port changed
+                restartCliRequired = true;
 
+            //Miner details have changed. Only restart miner
             if (txtMiningAddress.Text != Configuration.Instance.Daemon.MiningAddress || nsMiningThreads.Value != Configuration.Instance.Daemon.MiningThreads)
                 restartMinerRequired = true;
-
-            if (nsDaemonPort.Value != Configuration.Instance.Daemon.Rpc.Port)
-                restartDaemonRequired = true;
-
-            //if restartDaemonRequired == true, we will restart the wallet anyway
-            if (nsWalletPort.Value != Configuration.Instance.Wallet.Rpc.Port && !restartDaemonRequired)
-                restartWalletRequired = true;
-                
-            if (chkTestnet.Checked != Configuration.Instance.Testnet)
-            {
-                //switched to/from testnet. wipe the saved wallet information
-                //to force the user to reopen (hopefully) the right wallet
-                Configuration.Instance.Wallet.LastOpenedWallet = null;
-                Configuration.Instance.Wallet.LastWalletPassword = null;
-            }
                 
             Configuration.Instance.ToolsPath = txtToolsPath.Text;
             Configuration.Instance.CheckForUpdateOnStartup = chkCheckForCliUpdate.Checked.Value;

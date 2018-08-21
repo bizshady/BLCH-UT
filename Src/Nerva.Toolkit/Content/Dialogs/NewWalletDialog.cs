@@ -10,7 +10,11 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         protected TextBox txtName = new TextBox();
 
-        public NewWalletDialog(string title = "Create New Wallet") : base(title) { }
+        public NewWalletDialog(string title = "Create New Wallet") : base(title)
+        {
+            //the RPC wallet needs to be open to create a new wallet
+            CLI.Cli.Instance.Wallet.ResumeCrashCheck();
+        }
 
         protected override void OnOk()
         {

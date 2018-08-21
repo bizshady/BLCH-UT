@@ -343,19 +343,12 @@ namespace Nerva.Toolkit.CLI
             Helpers.TaskFactory.Instance.RunTask("loadwallet", "Loading the saved wallet", () =>
             {
                 while (!IsReady(wallet.Pid))
-                    Thread.Sleep(Constants.FIVE_SECONDS);
+                    Thread.Sleep(Constants.ONE_SECOND);
 
-                Application.Instance.Invoke(() =>
+                Application.Instance.AsyncInvoke(() =>
                 {
                     if (!WalletHelper.OpenSavedWallet())
-                    {
-                        WalletHelper.Instance.WalletWizardEvent += (Open_Wallet_Dialog_Result result, object additionalData) =>
-                        {
-                            
-                        };
-
                         WalletHelper.Instance.ShowWalletWizard();
-                    }
                 });
             });
         }

@@ -186,7 +186,6 @@ namespace Nerva.Toolkit.Content.Dialogs
                 else
                 {
                     Log.Instance.Write(Log_Severity.Warning, "Wallet cannot be opened from saved information");
-                    MessageBox.Show(Application.Instance.MainForm, "Wallet cannot be opened from saved information");
                     return false;
                 }
             }
@@ -273,14 +272,18 @@ namespace Nerva.Toolkit.Content.Dialogs
                 switch (d.ShowModal())
                 {
                     case Open_Wallet_Dialog_Result.Open:
-                        { //Open an existing wallet
+                        {
                             while (true)
                             {
                                 OpenWalletDialog d2 = new OpenWalletDialog();
                                 if (d2.ShowModal() == DialogResult.Ok)
                                 {
                                     if (d2.Name == Configuration.Instance.Wallet.LastOpenedWallet)
-                                        return; //Don't try to open already opened wallet
+                                    {
+                                        wizardRunning = false;
+                                        WalletWizardEvent?.Invoke(Open_Wallet_Dialog_Result.Open, null);
+                                        return;
+                                    }
 
                                     SaveWalletLogin(d2.Name, d2.Password);
                                     wizardRunning = false;
@@ -293,7 +296,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                         }
                         break;
                     case Open_Wallet_Dialog_Result.New:
-                        { //Create a new wallet
+                        {
                             while (true)
                             {
                                 NewWalletDialog d2 = new NewWalletDialog();
@@ -315,7 +318,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                         }
                         break;
                     case Open_Wallet_Dialog_Result.Import:
-                        { //Import a wallet from seed
+                        {
                             while (true)
                             {
                                 ImportWalletDialog d2 = new ImportWalletDialog();

@@ -12,7 +12,7 @@ namespace Nerva.Toolkit
 		
 		AboutDialog ad;
 		Label lblDaemonStatus = new Label { Text = "Height: 0 | Connections: 0/0 | Not Synced" };
-		Label lblWalletStatus = new Label { Text = "OFFLINE | CLOSED" };
+		Label lblWalletStatus = new Label { Text = "OFFLINE" };
 		Label lblVersion = new Label { Text = "Version: 0.0.0.0" };
 		Label lblTaskList = new Label { Text = "Running Tasks: 0", Tag = -1 };
 
@@ -33,7 +33,7 @@ namespace Nerva.Toolkit
 			ad.ProgramDescription = "Unified frontend for the NERVA CLI tools";
 			string[] names = Assembly.GetExecutingAssembly().GetManifestResourceNames();
 			ad.Title = "About NERVA Toolkit";
-			ad.License = "Copyright © 2018 Angry Wasp";
+			ad.License = "Code: Copyright © 2018 Angry Wasp\r\nLogo design:  Copyright © 2018 ukminer";
 			ad.Logo = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nerva.Toolkit.NERVA-Logo.png"));
 
 			daemonPage.ConstructLayout();

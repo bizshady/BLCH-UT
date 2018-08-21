@@ -15,15 +15,9 @@ using Nerva.Toolkit.Helpers;
 namespace Nerva.Toolkit
 {
     public partial class MainForm : Form
-    {
-        bool updateDaemon = true;
-        bool updateWallet = true;
-        bool updateTaskList = true;
-
-        System.Timers.Timer updateWalletTimer = new System.Timers.Timer(Constants.ONE_SECOND);
-        System.Timers.Timer updateDaemonTimer = new System.Timers.Timer(Constants.ONE_SECOND);
-
-        System.Timers.Timer updateTaskListTimer = new System.Timers.Timer(Constants.ONE_SECOND / 2);
+    {    
+        AsyncTaskContainer updateWalletTask;
+        AsyncTaskContainer updateDaemonTask;
 
         uint lastTxHeight = 0;
 
@@ -54,217 +48,228 @@ namespace Nerva.Toolkit
             ConstructLayout();
             ResumeLayout();
 
+            WalletHelper.Instance.WalletWizardEvent += (Open_Wallet_Dialog_Result result, object additionalData) =>
+            {
+                CloseWallet(false);
+            };
+
             Cli.Instance.StartDaemon();
             Cli.Instance.StartWallet();
 
             Application.Instance.Initialized += (s, e) =>
             {
-                CreateUpdateDaemonTimer();
-                CreateUpdateWalletTimer();
-                CreateUpdateTaskListTimer();
-
-                StartUpdateDaemonTimer();
-                StartUpdateWalletTimer();
-                StartUpdateTaskListTimer();
+                UpdateTaskListTask();
+                StartUpdateDaemonUiTask();
+                if (!string.IsNullOrEmpty(Configuration.Instance.Wallet.LastOpenedWallet))
+                    StartUpdateWalletUiTask();
             };
 
             this.Closing += (s, e) =>
             {
-                StopUpdateDaemonTimer();
-                StopUpdateWalletTimer();
                 Cli.Instance.Wallet.ForceClose();
             };
         }
 
-        public void CreateUpdateTaskListTimer()
+        public void StartUpdateWalletUiTask()
         {
-            updateTaskListTimer.Elapsed += (s, e) =>
+            if (Debugger.IsAttached && updateWalletTask != null && updateWalletTask.IsRunning)
+                Debugger.Break();
+
+            updateWalletTask = new AsyncTaskContainer();
+            updateWalletTask.Start(async (CancellationToken token) =>
             {
-                updateTaskListTimer.Stop();
+                while (true)
+                {
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
 
-                Task.Run(() =>
-            	{
-                    Helpers.TaskFactory.Instance.Prune();
-
-                    Application.Instance.Invoke(() =>
+                    if (Cli.Instance.Wallet.Pid == -1)
                     {
-                        int i = (int)lblTaskList.Tag;
-                        if (i != Helpers.TaskFactory.Instance.GetHashCode())
+                        await Task.Delay(Constants.ONE_SECOND);
+                        continue;
+                    }
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+
+                    Account account = null;
+                    TransferList transfers = null;
+                    await Task.Run( () =>
+                    {
+                        try
                         {
-                            lblTaskList.Text = $"Running Tasks: {Helpers.TaskFactory.Instance.Count}";
-                            lblTaskList.ToolTip = Helpers.TaskFactory.Instance.ToString().TrimEnd();
-                            lblTaskList.Tag = Helpers.TaskFactory.Instance.GetHashCode();
+                            account = Cli.Instance.Wallet.Interface.GetAccounts();
+                            transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
                         }
+                        catch (Exception) { }
+                    });
+                    
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+
+                    if (account != null)
+                    {
+                        string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
+
+                        Application.Instance.AsyncInvoke(() =>
+                        {
+                            lblWalletStatus.Text = walletStatus;
+                            balancesPage.Update(account);
+                            transfersPage.Update(transfers);
+                        });
+                    }
+                    else
+                    {
+                        Application.Instance.AsyncInvoke(() =>
+                        {
+                            lblWalletStatus.Text = "OFFLINE";
+                            lastTxHeight = 0;
+                            balancesPage.Update(null);
+                            transfersPage.Update(null);
+                        });
+                    }
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+
+                    await Task.Delay(Constants.ONE_SECOND);
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+                }
+            });
+        }
+
+        public void StartUpdateDaemonUiTask()
+        {
+            if (updateDaemonTask != null && updateDaemonTask.IsRunning)
+                Debugger.Break();
+
+            updateDaemonTask = new AsyncTaskContainer();
+            updateDaemonTask.Start(async (CancellationToken token) =>
+            {
+                while (true)
+                {
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+
+                    if (Cli.Instance.Daemon.Pid == -1)
+                    {
+                        await Task.Delay(Constants.ONE_SECOND);
+                        continue;
+                    }
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+
+                    Info info = null;
+                    List<Connection> connections = null;
+                    int height = -1;
+                    MiningStatus mStatus = null;
+
+                    await Task.Run( () =>
+                    {
+                        try
+                        {
+                            height = Cli.Instance.Daemon.Interface.GetBlockCount();
+                            info = Cli.Instance.Daemon.Interface.GetInfo();
+                            connections = Cli.Instance.Daemon.Interface.GetConnections();
+                            mStatus = Cli.Instance.Daemon.Interface.GetMiningStatus();
+                        }
+                        catch (Exception) { }
                     });
 
-            		updateTaskListTimer.Start();
-            	});
-            };
-        }
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
 
-        public void CreateUpdateDaemonTimer()
-        {
-            updateDaemonTimer.Elapsed += (s, e) =>
-            {
-                if (!updateDaemon)
-                {
-                    updateDaemonTimer.Stop();
-                    return;
+                    if (info != null)
+                    {
+                        Application.Instance.Invoke(() =>
+                        {
+                            lblDaemonStatus.Text = $"Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
+
+                            if (info.TargetHeight != 0 && info.Height < info.TargetHeight)
+                                lblDaemonStatus.Text += " | Syncing";
+                            else
+                                lblDaemonStatus.Text += " | Sync OK";
+
+                            lblVersion.Text = $"Version: {info.Version}";
+                            ad.Version = $"GUI: {Constants.VERSION}\r\nCLI: {info.Version}";
+
+                            daemonPage.Update(info, connections, mStatus);
+                        });
+                    }
+                    else
+                    {
+                        Application.Instance.Invoke(() =>
+                        {
+                            lblDaemonStatus.Text = "OFFLINE";
+                            daemonPage.Update(null, null, null);
+                        });
+                    }
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+
+                    await Task.Delay(Constants.ONE_SECOND);
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
                 }
-
-                if (Cli.Instance.Daemon.Pid == -1)
-                    return;
-
-                updateDaemonTimer.Stop();
-
-                Task.Run(() =>
-            	{
-                    UpdateDaemonUI();
-            		updateDaemonTimer.Start();
-            	});
-            };
+            });
         }
 
-        public void CreateUpdateWalletTimer()
+        public async Task UpdateTaskListTask()
         {
-            updateWalletTimer.Elapsed += (s, e) =>
+            while (true)
             {
-                if (!updateWallet)
-                {
-                    updateWalletTimer.Stop();
-                    return;
-                }
-
-                if (Cli.Instance.Wallet.Pid == -1)
-                    return;
-
-                updateWalletTimer.Stop();
-
-                Task.Run(() =>
-            	{
-                	UpdateWalletUI();
-                	updateWalletTimer.Start();
-            	});
-            };
-        }
-
-        public void StartUpdateDaemonTimer()
-        {
-            updateDaemon = true;
-            updateDaemonTimer.Start();
-        }
-
-        public void StopUpdateDaemonTimer()
-        {
-            updateDaemon = false;
-            updateDaemonTimer.Stop();
-        }
-
-        public void StartUpdateWalletTimer()
-        {
-            updateWallet = true;
-            updateWalletTimer.Start();
-        }
-
-        public void StartUpdateTaskListTimer()
-        {
-            updateTaskList = true;
-            updateTaskListTimer.Start();
-        }
-
-        public void StopUpdateWalletTimer()
-        {
-            updateWallet = false;
-            updateWalletTimer.Stop();
-        }
-
-        private void UpdateDaemonUI()
-        {
-            Info info = null;
-            List<Connection> connections = null;
-            int height = -1;
-            MiningStatus mStatus = null;
-
-            try
-            {
-                height = Cli.Instance.Daemon.Interface.GetBlockCount();
-                info = Cli.Instance.Daemon.Interface.GetInfo();
-                connections = Cli.Instance.Daemon.Interface.GetConnections();
-                mStatus = Cli.Instance.Daemon.Interface.GetMiningStatus();
-            }
-            catch (Exception) { }
-
-            if (info != null)
-            {
-                Application.Instance.Invoke(() =>
-            	{
-                	lblDaemonStatus.Text = $"Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
-
-                	if (info.TargetHeight != 0 && info.Height < info.TargetHeight)
-                		lblDaemonStatus.Text += " | Syncing";
-                	else
-                    	lblDaemonStatus.Text += " | Sync OK";
-
-                	lblVersion.Text = $"Version: {info.Version}";
-                	ad.Version = $"GUI: {Constants.VERSION}\r\nCLI: {info.Version}";
-
-                	daemonPage.Update(info, connections, mStatus);
-              });
-            }
-            else
-            {
-            	Application.Instance.Invoke(() =>
-            	{
-                	lblDaemonStatus.Text = "OFFLINE";
-                	daemonPage.Update(null, null, null);
-            	});
-            }
-        }
-
-        private void UpdateWalletUI()
-        {
-            Account account = null;
-            TransferList transfers = null;
-
-            try
-            {
-                account = Cli.Instance.Wallet.Interface.GetAccounts();
-                transfers = Cli.Instance.Wallet.Interface.GetTransfers(lastTxHeight, out lastTxHeight);
-            }
-            catch (Exception) { }
-
-            if (account != null)
-            {
-                string walletStatus = (account != null) ? $"Account(s): {account.Accounts.Count}  | Balance: {Conversions.FromAtomicUnits(account.TotalBalance)} XNV" : "WALLET CLOSED";
+                Helpers.TaskFactory.Instance.Prune();
 
                 Application.Instance.Invoke(() =>
-              	{
-                	lblWalletStatus.Text = walletStatus;
-                	balancesPage.Update(account);
-                	transfersPage.Update(transfers);
-              	});
+                {
+                    int i = (int)lblTaskList.Tag;
+                    if (i != Helpers.TaskFactory.Instance.GetHashCode())
+                    {
+                        lblTaskList.Text = $"Running Tasks: {Helpers.TaskFactory.Instance.Count}";
+                        lblTaskList.ToolTip = Helpers.TaskFactory.Instance.ToString().TrimEnd();
+                        lblTaskList.Tag = Helpers.TaskFactory.Instance.GetHashCode();
+                    }
+                });
+
+                await Task.Delay(Constants.ONE_SECOND / 2);
             }
         }
 
         private void CloseWallet(bool clearSavedWallet)
         {
-            Log.Instance.Write("Closing wallet");
-            Cli.Instance.Wallet.StopCrashCheck();
-            StopUpdateWalletTimer();
-            lastTxHeight = 0;
-
-            balancesPage.Update(null);
-            transfersPage.Update(null);
-            lblWalletStatus.Text = "OFFLINE | CLOSED";
-
-            Cli.Instance.Wallet.ForceClose();
-
-            if (clearSavedWallet)
+            Helpers.TaskFactory.Instance.RunTask("closewallet", "Closing the wallet", () => 
             {
-                Configuration.Instance.Wallet.LastOpenedWallet = null;
-                Configuration.Instance.Wallet.LastWalletPassword = null;
-                Configuration.Save();
-            }
+                Log.Instance.Write("Closing wallet");
+                Cli.Instance.Wallet.StopCrashCheck();
+                updateWalletTask.Stop();
+                Cli.Instance.Wallet.ForceClose();
+                lastTxHeight = 0;
+
+                Application.Instance.Invoke( () =>
+                {
+                    balancesPage.Update(null);
+                    transfersPage.Update(null);
+                    lblWalletStatus.Text = "OFFLINE";
+                });
+
+                if (clearSavedWallet)
+                {
+                    Configuration.Instance.Wallet.LastOpenedWallet = null;
+                    Configuration.Instance.Wallet.LastWalletPassword = null;
+                    Configuration.Save();
+                }
+                else
+                {
+                    Cli.Instance.Wallet.ResumeCrashCheck();
+                    StartUpdateWalletUiTask();
+                }
+            });
         }
 
         protected void daemon_ToggleMining_Clicked(object sender, EventArgs e)
@@ -293,13 +298,6 @@ namespace Nerva.Toolkit
 
         protected void wallet_Select_Clicked(object sender, EventArgs e)
         {
-            WalletHelper.Instance.WalletWizardEvent += (Open_Wallet_Dialog_Result result, object additionalData) =>
-            {
-                CloseWallet(false);
-                Cli.Instance.Wallet.ResumeCrashCheck();
-                StartUpdateWalletTimer();
-            };
-
             WalletHelper.Instance.ShowWalletWizard();
         }
 
@@ -395,15 +393,31 @@ namespace Nerva.Toolkit
             {
                 Configuration.Save();
 
-                if (d.RestartDaemonRequired)
+                if (d.RestartCliRequired)
                 {
                     //if thge daemon has to be restarted, there is a good chance the wallet has to be restarted, so just do it
-                    MessageBox.Show(this, "The NERVA daemon will now restart to apply your changes", "NERVA Preferences",
+                    MessageBox.Show(this, "The NERVA CLI backend will now restart to apply your changes", "NERVA Preferences",
                         MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
 
-                    Log.Instance.Write("Restarting daemon");
-                    Cli.Instance.Daemon.ForceClose();
-                    Cli.Instance.Wallet.ForceClose();
+                    Log.Instance.Write("Restarting CLI");
+
+                    Helpers.TaskFactory.Instance.RunTask("restartcli", "Restarting the CLI", () =>
+                    {
+                        updateWalletTask.Stop();
+                        updateDaemonTask.Stop();
+
+                        Task.Delay(Constants.ONE_SECOND).Wait();
+
+                        Cli.Instance.Daemon.ForceClose();
+                        Cli.Instance.Wallet.ForceClose();
+
+                        daemonPage.Update(null, null, null);
+                        balancesPage.Update(null);
+                        transfersPage.Update(null);
+                        
+                        StartUpdateWalletUiTask();
+                        StartUpdateDaemonUiTask();
+                    });
                 }
                 else
                 {
@@ -412,14 +426,6 @@ namespace Nerva.Toolkit
                         Cli.Instance.Daemon.Interface.StopMining();
                         Cli.Instance.Daemon.Interface.StartMining();
                     }
-                }
-
-                if (d.RestartWalletRequired)
-                {
-                    MessageBox.Show(this, "The NERVA RPC wallet will now restart to apply your changes", "NERVA Preferences",
-                        MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
-
-                    Cli.Instance.Wallet.ForceClose();
                 }
             }
         }
