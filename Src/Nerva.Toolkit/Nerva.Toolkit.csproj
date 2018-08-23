@@ -10,5 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="../../Content/NERVA-Logo.png" />
+    <EmbeddedResource Include="../../Content/CheckLinuxDistro.sh" />
 </ItemGroup>
 </Project>

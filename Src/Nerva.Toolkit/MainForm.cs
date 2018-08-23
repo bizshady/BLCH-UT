@@ -10,6 +10,7 @@ using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Content.Dialogs;
+using Nerva.Toolkit.Content.Wizard;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit
@@ -28,6 +29,10 @@ namespace Nerva.Toolkit
             {
                 if (needSetup)
                 {
+                    //Show the setup wizard
+                    //SetupWizard wizard = new SetupWizard();
+                    //wizard.Run();
+                    
                     DialogResult dr = new PreferencesDialog().ShowModal();
                     needSetup = !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
 
@@ -60,8 +65,7 @@ namespace Nerva.Toolkit
             {
                 UpdateTaskListTask();
                 StartUpdateDaemonUiTask();
-                if (!string.IsNullOrEmpty(Configuration.Instance.Wallet.LastOpenedWallet))
-                    StartUpdateWalletUiTask();
+                StartUpdateWalletUiTask();
             };
 
             this.Closing += (s, e) =>
@@ -251,7 +255,7 @@ namespace Nerva.Toolkit
                 Cli.Instance.Wallet.ForceClose();
                 lastTxHeight = 0;
 
-                Application.Instance.Invoke( () =>
+                Application.Instance.AsyncInvoke( () =>
                 {
                     balancesPage.Update(null);
                     transfersPage.Update(null);
