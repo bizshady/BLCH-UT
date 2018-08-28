@@ -43,7 +43,7 @@ namespace Nerva.Toolkit.Config
                 ToolsPath = Path.Combine(Environment.CurrentDirectory, "CLI"),
                 CheckForUpdateOnStartup = false,
                 LogRpcTraffic = false,
-                Testnet = true,
+                Testnet = false,
 
                 Daemon = Daemon.New(true),
                 Wallet = Wallet.New(),
