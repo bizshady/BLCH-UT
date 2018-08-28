@@ -5,13 +5,8 @@ using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Wizard
 {
-    public class MainWizardDialog : WizardDialogBase<DialogResult>
+    public class MainWizardDialog : WizardDialogBase
     {
-        public MainWizardDialog(string title) : base (title)
-        {
-           
-        }
-
         protected override Control ConstructChildContent()
         {
             return new StackLayout
@@ -45,16 +40,6 @@ namespace Nerva.Toolkit.Content.Wizard
                     }, true),
                 }
             };
-        }
-
-        protected override void OnBack()
-        {
-            
-        }
-
-        protected override void OnNext()
-        {
-            
         }
     }
 }

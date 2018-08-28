@@ -13,6 +13,7 @@ namespace Nerva.Toolkit.Helpers
 
 	public static class UpdateManager
 	{
+        //Deprecated. Move all code to VersionManager
         private static Update_Status_Code updateStatus = Update_Status_Code.Undefined;
 
         public static Update_Status_Code UpdateStatus
