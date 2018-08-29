@@ -1,3 +1,4 @@
+using System;
 using AngryWasp.Logger;
 using Newtonsoft.Json;
 
@@ -5,7 +6,6 @@ namespace Nerva.Toolkit.Helpers
 {
     public enum Supported_Systems
     {
-        Windows,
         Ubuntu,
         Fedora,
         Debian
@@ -17,7 +17,7 @@ namespace Nerva.Toolkit.Helpers
 
         public static VersionInfo VersionInfo => versionInfo;
 
-        public static void GetVersionInfo()
+        public static void GetVersionInfo(Action completeAction)
         {
             TaskFactory.Instance.RunTask("checkversions", "Checking for available versions", () =>
             {
@@ -28,10 +28,13 @@ namespace Nerva.Toolkit.Helpers
                 {
                     //todo: Show a message box
                     Log.Instance.Write(Log_Severity.Error, "Could not retrieve update information");
+                    completeAction();
                     return;
                 }
 
                 versionInfo = JsonConvert.DeserializeObject<VersionInfo>(versionString);
+
+                completeAction();
             });
         }
     }
