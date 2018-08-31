@@ -25,27 +25,8 @@ namespace Nerva.Toolkit
         public MainForm(bool newConfig)
         {
             bool needSetup = newConfig || !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
-            do
-            {
-                if (needSetup)
-                {
-                    //Show the setup wizard
-                    SetupWizard wizard = new SetupWizard();
-                    wizard.Run();
-                    
-                    //DialogResult dr = new PreferencesDialog().ShowModal();
-                    //needSetup = !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
-
-                    //if (needSetup)
-                    //    MessageBox.Show(this, "Could not find the NERVA CLI tools at the specified path.", "Invalid Config",
-                    //        MessageBoxButtons.OK, MessageBoxType.Warning, MessageBoxDefaultButton.OK);
-
-                    //if cancelled. close the program. otherwise loop back and try again		
-                    //if (dr == DialogResult.Cancel)
-                    //    Environment.Exit(0);
-                }
-            }
-            while (needSetup);
+            if (needSetup)
+                new SetupWizard().Run();
 
             Configuration.Save();
 

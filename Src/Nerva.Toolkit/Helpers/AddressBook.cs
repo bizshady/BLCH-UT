@@ -22,12 +22,10 @@ namespace Nerva.Toolkit.Helpers
     {
         [SerializerInclude]
         private List<AddressBookEntry> entries;
+        private static AddressBook instance;
+        private static readonly string file = Path.Combine(Environment.CurrentDirectory, "AddressBook.xml");
 
         public List<AddressBookEntry> Entries => entries;
-
-        private static AddressBook instance;
-        //TODO: Add this to the settings so the path can be changed
-        private static readonly string file = Path.Combine(Environment.CurrentDirectory, "AddressBook.xml");
         public static AddressBook Instance => instance;
 
         public static AddressBook New()

@@ -5,11 +5,13 @@
     <RootNamespace>Nerva.Toolkit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Eto.Forms" Version="2.4.1"/>
+    <PackageReference Include="Eto.Forms" Version="*"/>
     <PackageReference Include="Newtonsoft.Json" Version="*"/>
+    <PackageReference Include="System.IO.Compression" Version="*"/>
+    <PackageReference Include="Mono.Posix.NETStandard" Version="*"/>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="../../Content/NERVA-Logo.png" />
-    <EmbeddedResource Include="../../Content/CheckLinuxDistro.sh" />
-</ItemGroup>
+    <EmbeddedResource Include="../../Content/NERVA-Logo.png"/>
+    <EmbeddedResource Include="../../Content/CheckLinuxDistro.sh"/>
+  </ItemGroup>
 </Project>

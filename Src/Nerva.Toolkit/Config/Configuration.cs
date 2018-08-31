@@ -68,9 +68,6 @@ namespace Nerva.Toolkit.Config
             if (!File.Exists(loadedConfigFile))
             {
                 instance = Configuration.New();
-        
-                Log.Instance.Write("Configuration created at '{0}'", loadedConfigFile);
-                new ObjectSerializer().Serialize(instance, loadedConfigFile);
                 newFile = true;
             }
             else

@@ -17,7 +17,7 @@ namespace Nerva.Toolkit.Content.Wizard
 
         private int currentPage = 0;
 
-        private List<WizardContent> pages = new List<WizardContent>();
+        private WizardContent[] pages;
 
         public WizardDialog(WizardContent[] pages)
         {
@@ -32,9 +32,22 @@ namespace Nerva.Toolkit.Content.Wizard
             btnNext.Click += (s, e) => OnNext();
             btnCancel.Click += (s, e) => OnCancel();
 
-            this.pages = pages.ToList();
+            this.pages = pages;
+
+            foreach (var p in pages)
+                p.Parent = this;
+            
+            //for (int i = pages.Length - 1; i > 0; i--)
+            //{
+            //    currentPage = i;
+            //    ConstructContent();
+            //}
+
+            //--currentPage;
+
             SetButtonsEnabled();
             ConstructContent();
+            this.Invalidate(true);
         }
 
         public void ConstructContent()
@@ -81,6 +94,13 @@ namespace Nerva.Toolkit.Content.Wizard
                     })
                 }
             };
+
+            OnAssignContent();
+        }
+
+        protected virtual void OnAssignContent()
+        {
+            pages[currentPage].OnAssignContent();
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -98,29 +118,43 @@ namespace Nerva.Toolkit.Content.Wizard
 
         protected virtual void OnBack()
         {
+            pages[currentPage].OnBack();
+
             --currentPage;
             if (currentPage < 0)
                 currentPage = 0;
 
-            ConstructContent();
             SetButtonsEnabled();
+            ConstructContent();
         }
 
         protected virtual void OnNext()
         {
-            ++currentPage;
-            if (currentPage >= pages.Count - 1)
-                currentPage = pages.Count - 1;
+            pages[currentPage].OnNext();
 
-            ConstructContent();
+            ++currentPage;
+            if (currentPage >= pages.Length - 1)
+                currentPage = pages.Length - 1;
+
             SetButtonsEnabled();
+            ConstructContent();
         }
 
         private void SetButtonsEnabled()
         {
             btnBack.Enabled = (currentPage > 0);
-            btnNext.Enabled = (currentPage < pages.Count - 1);
+            btnNext.Enabled = (currentPage < pages.Length - 1);
         }
+
+        public void EnableNextButton(bool enable)
+        {
+            btnNext.Enabled = enable;
+        }
+
+        public void EnableBackButton(bool enable)
+        {
+            btnBack.Enabled = enable;
+        }   
 
         public void AllowNavigation(bool allow)
         {

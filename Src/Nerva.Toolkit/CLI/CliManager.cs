@@ -132,9 +132,6 @@ namespace Nerva.Toolkit.CLI
 
     public class Cli
     {
-        //public delegate void ProcessStartedEventHandler(string fileName, Process process);
-        //public event ProcessStartedEventHandler ProcessStarted, ProcessConnected;
-
         private static Cli instance;
 
         public static Cli Instance
@@ -288,7 +285,6 @@ namespace Nerva.Toolkit.CLI
         public void DoProcessStarted(string exe, Process proc)
         {
             DoCliStartup(exe);
-            //ProcessStarted?.Invoke(exe, proc);
         }
 
         #region Startup events
