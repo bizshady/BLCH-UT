@@ -138,7 +138,6 @@ namespace Nerva.Toolkit.Content.Wizard
                         btnDownload.Enabled = false;
                         pbDownload.MaxValue = (int)ea.TotalBytesToReceive;
                         pbDownload.Value = (int)ea.BytesReceived;
-                        Parent.EnableNextButton(true);
                     });
                     
                 }, (bool success, string destDir) =>

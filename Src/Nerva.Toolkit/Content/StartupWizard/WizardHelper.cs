@@ -24,10 +24,15 @@ namespace Nerva.Toolkit.Content.Wizard
 
     public class SetupWizard
     {
+        private static bool isRunning = false;
+        public static bool IsRunning => isRunning;
+
         WizardDialog dlg;
 
         public SetupWizard()
         {
+            isRunning = true;
+
             WizardContent[] pages = new WizardContent[]
             {
                 new IntroContent(),
@@ -62,6 +67,7 @@ namespace Nerva.Toolkit.Content.Wizard
         public void Run()
         {
             dlg.ShowModal();
+            isRunning = false;
         }
     }
 }

@@ -88,7 +88,10 @@ namespace Nerva.Toolkit.Helpers
                 return containers[name].Task;
             }
             else
+            {
+                Log.Instance.Write(Log_Severity.Error, "Task with name {0} already running");
                 return null;
+            }
         }
 
         public void Prune()

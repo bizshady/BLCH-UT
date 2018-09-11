@@ -10,6 +10,7 @@ using AngryWasp.Helpers;
 using Nerva.Toolkit.Content.Dialogs;
 using Eto.Forms;
 using System.Threading.Tasks;
+using Nerva.Toolkit.Content.Wizard;
 
 namespace Nerva.Toolkit.CLI
 {
@@ -284,7 +285,9 @@ namespace Nerva.Toolkit.CLI
 
         public void DoProcessStarted(string exe, Process proc)
         {
-            DoCliStartup(exe);
+            //Don't worry about it if running the startup wizard
+            if (!SetupWizard.IsRunning)
+                DoCliStartup(exe);
         }
 
         #region Startup events

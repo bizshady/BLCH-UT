@@ -10,6 +10,7 @@
     <Optimize>false</Optimize>
     <OutputPath>../../Bin/$(Configuration)</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'PortableDebug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -17,10 +18,12 @@
     <Optimize>false</Optimize>
     <OutputPath>../../Bin/$(Configuration)</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <OutputPath>../../Bin/$(Configuration)</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer/AngryWasp.Serializer.csproj" />

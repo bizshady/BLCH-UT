@@ -6,6 +6,7 @@ using System.Net;
 using System.Security.AccessControl;
 using AngryWasp.Logger;
 using Mono.Unix.Native;
+using Nerva.Toolkit.CLI;
 using Newtonsoft.Json;
 
 namespace Nerva.Toolkit.Helpers
@@ -45,7 +46,30 @@ namespace Nerva.Toolkit.Helpers
                 ulong newGuiVersion = Conversions.OctetSetToInt(versionInfo.GuiVersionNumber.TrimStart('v'));
 
                 if (newCliVersion > currentVersion)
+                {
                     Log.Instance.Write("New CLI version available: '{0}'", versionInfo.CliVersion);
+
+                    TaskFactory.Instance.RunTask("killcli", "Killing old CLI processes", () =>
+                    {
+                        //new CLI version is available. kill old version
+                        Log.Instance.Write("Killing outdated CLI processes");
+                        if (Cli.Instance.Daemon != null)
+                        {
+                            Cli.Instance.Daemon.StopCrashCheck();
+                            Cli.Instance.Wallet.ForceClose();
+                        }
+                        else
+                            Cli.Instance.KillCliProcesses(FileNames.NERVAD);
+
+                        if (Cli.Instance.Wallet != null)
+                        {
+                            Cli.Instance.Wallet.StopCrashCheck();
+                            Cli.Instance.Daemon.ForceClose();
+                        }
+                        else
+                            Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);                     
+                    });
+                }
                 else
                     Log.Instance.Write("CLI tools up to date");
 
@@ -131,8 +155,7 @@ namespace Nerva.Toolkit.Helpers
                 onComplete(false, null);
                 return;
             }
-            
-                            
+                         
             onComplete(true, destDir);
         }
     }
