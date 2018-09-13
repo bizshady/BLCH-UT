@@ -85,12 +85,17 @@ namespace Nerva.Toolkit.Content
 
 						if (err.Code == 0)
 						{
-							Application.Instance.AsyncInvoke(() =>
+							if (txData != null)
 							{
-								MessageBox.Show(Application.Instance.MainForm, 
-									$"Sent: {Conversions.FromAtomicUnits(txData.Amount)}\r\nFees: {Conversions.FromAtomicUnits(txData.Fee)}\r\nHash: {txData.TxHash}", 
-									"TX Results", MessageBoxType.Information);
-							});
+								Application.Instance.AsyncInvoke(() =>
+								{
+									MessageBox.Show(Application.Instance.MainForm, 
+										$"Sent: {Conversions.FromAtomicUnits(txData.Amount)}\r\nFees: {Conversions.FromAtomicUnits(txData.Fee)}\r\nHash: {txData.TxHash}", 
+										"TX Results", MessageBoxType.Information);
+								});
+							}
+							else
+								Debugger.Break();
 						}
 						else
 						{

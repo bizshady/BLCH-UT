@@ -142,24 +142,36 @@ namespace Nerva.Toolkit.Content.Wizard
 
         private void SetButtonsEnabled()
         {
-            btnBack.Enabled = (currentPage > 0);
-            btnNext.Enabled = (currentPage < pages.Length - 1);
+            Application.Instance.AsyncInvoke(() =>
+            {
+                btnBack.Enabled = (currentPage > 0);
+                btnNext.Enabled = (currentPage < pages.Length - 1);
+			});
         }
 
         public void EnableNextButton(bool enable)
         {
-            btnNext.Enabled = enable;
+            Application.Instance.AsyncInvoke(() =>
+            {
+                btnNext.Enabled = enable;
+			}); 
         }
 
         public void EnableBackButton(bool enable)
         {
-            btnBack.Enabled = enable;
+            Application.Instance.AsyncInvoke(() =>
+            {
+                btnBack.Enabled = enable;
+			}); 
         }   
 
         public void AllowNavigation(bool allow)
         {
-            btnBack.Enabled = allow;
-            btnNext.Enabled = allow;
+            Application.Instance.AsyncInvoke(() =>
+            {
+                btnBack.Enabled = allow;
+                btnNext.Enabled = allow;
+			});
         }
     }
 }

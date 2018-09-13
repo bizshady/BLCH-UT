@@ -19,6 +19,9 @@ namespace Nerva.Toolkit.Helpers
 
         public static string WalletAddressShortForm(string a)
         {
+            if (string.IsNullOrEmpty(a))
+                return null;
+
             return $"{a.Substring(0, 6)}...{a.Substring(a.Length - 6, 6)}";
         }
 

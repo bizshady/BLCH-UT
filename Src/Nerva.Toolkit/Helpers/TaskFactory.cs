@@ -89,9 +89,22 @@ namespace Nerva.Toolkit.Helpers
             }
             else
             {
-                Log.Instance.Write(Log_Severity.Error, "Task with name {0} already running");
+                Log.Instance.Write(Log_Severity.Error, "Task with name {0} already running", name);
                 return null;
             }
+        }
+
+        public void KillTask(string name)
+        {
+            TaskContainer t = this[name];
+
+            if (t == null)
+            {
+                Log.Instance.Write(Log_Severity.Error, "Task with name {0} doesn't exist to be killed", name);
+                return;
+            }
+
+            Debugger.Break();
         }
 
         public void Prune()

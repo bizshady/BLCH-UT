@@ -117,7 +117,7 @@ namespace Nerva.Toolkit.Helpers
                             else
                             {
                                 Log.Instance.WriteNonFatalException(e.Error);
-                                onComplete(false, null);
+                                onComplete(false, destFile);
                             }
                         };
 
@@ -142,11 +142,12 @@ namespace Nerva.Toolkit.Helpers
                     string extFile = Path.Combine(destDir, a.FullName);
                     Log.Instance.Write("Extracting {0}", extFile);
                     a.ExtractToFile(extFile, true);
-
+#if LINUX
                     // Hack: ZipFile does not maintain permissions on linux. Set the following                      
                     // S_IFREG | S_IRGRP | S_IROTH | S_IRUSR | S_IWUSR | S_IXGRP | S_IXOTH | S_IXUSR
                     if (OS.Type == OS_Type.Linux)
                         Syscall.chmod(extFile, (FilePermissions)33261);
+#endif
                 }
             }
             catch (Exception ex)

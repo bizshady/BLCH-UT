@@ -50,6 +50,46 @@ namespace Nerva.Toolkit.Content.Wizard
 
         private Control CreateWindowsChildContent()
         {
+            btnDownload.Click += (s, e) =>
+            {
+                btnDownload.Enabled = false;
+                
+                string file = VersionManager.VersionInfo.WindowsLink;
+                VersionManager.DownloadFile(file, (DownloadProgressChangedEventArgs ea) =>
+                {
+                    Application.Instance.AsyncInvoke(() =>
+                    {
+                        pbDownload.Visible = true;
+                        btnDownload.Enabled = false;
+                        pbDownload.MaxValue = (int)ea.TotalBytesToReceive;
+                        pbDownload.Value = (int)ea.BytesReceived;
+                    });
+                    
+                }, (bool success, string dest) =>
+                {
+                    Application.Instance.AsyncInvoke(() =>
+                    {
+                        btnDownload.Enabled = true;
+
+                        if (success)
+                        {
+                            Parent.EnableNextButton(true);
+                            pbDownload.Visible = false;
+                            Configuration.Instance.ToolsPath = dest;
+                            Log.Instance.Write("Setting Config.ToolsPath: {0}", dest);
+                        }
+                        else
+                        {
+                            TaskFactory.Instance.KillTask("downloadcli");
+                            if (File.Exists(dest))
+                                File.Delete(dest);
+                            MessageBox.Show(Application.Instance.MainForm, "An error occured while downloading/extracting the NERVA CLI tools.\r\n" + 
+                            "Please refer to the log file and try again later", "Request Failed", MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
+                        }
+                    });
+                });
+            };
+            
             return new StackLayout
             {
                 Orientation = Orientation.Vertical,
@@ -208,8 +248,8 @@ namespace Nerva.Toolkit.Content.Wizard
         public override void OnAssignContent()
         {
             pbDownload.Visible = false;
-            btnDownload.Enabled = cbxDistro.SelectedIndex != -1 && cbxDistroVersion.SelectedIndex != -1;
-            
+            btnDownload.Enabled = OS.Type == OS_Type.Windows || (cbxDistro.SelectedIndex != -1 && cbxDistroVersion.SelectedIndex != -1);
+                
             if (File.Exists(FileNames.GetCliExePath(FileNames.NERVAD)))
             {
                 Parent.EnableNextButton(true);

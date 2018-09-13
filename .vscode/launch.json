@@ -8,7 +8,7 @@
             "name": "Debug-Windows",
             "type": "clr",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Debug/Nerva.Toolkit.Frontend.exe",
+            "program": "${workspaceRoot}/Bin/PortableDebug/Nerva.Toolkit.Frontend.exe",
             "cwd": "${workspaceRoot}/Bin",
             "preLaunchTask": "build-debug-windows",
             "args":[

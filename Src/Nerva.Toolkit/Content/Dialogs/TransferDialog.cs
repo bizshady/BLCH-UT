@@ -24,12 +24,15 @@ namespace Nerva.Toolkit.Content.Dialogs
         Button btnAddressBook = new Button{ Text = "Address Book"};
 
         private double amt;
+        private string address;
+        private string payid;
+        private Send_Priority priority;
 
-        public string Address => txtAddress.Text;
-        public string PaymentId => txtPaymentId.Text;
+        public string Address => address;
+        public string PaymentId => payid;
         public double Amount => amt;
 
-        public Send_Priority Priority => (Send_Priority)cbxPriority.SelectedIndex;
+        public Send_Priority Priority => priority;
 
         Button btnGenPayId = new Button { Text = "Generate" };
 
@@ -80,6 +83,10 @@ namespace Nerva.Toolkit.Content.Dialogs
                         MessageBoxButtons.OK, MessageBoxType.Error, MessageBoxDefaultButton.OK);
                     return;
                 }
+
+                address = txtAddress.Text;
+                payid = txtPaymentId.Text;
+                priority = (Send_Priority)cbxPriority.SelectedIndex;
 
                 this.Close(DialogResult.Ok);
             }
