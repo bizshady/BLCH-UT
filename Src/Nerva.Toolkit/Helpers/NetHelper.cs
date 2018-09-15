@@ -57,8 +57,11 @@ namespace Nerva.Toolkit.Helpers
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.WriteNonFatalException(ex);
+
                 jsonString = null;
                 return false;
             }
@@ -107,7 +110,9 @@ namespace Nerva.Toolkit.Helpers
             }
             catch (Exception ex)
             {
-                Log.Instance.Write(Log_Severity.Error, ex.Message);
+                if (Configuration.Instance.LogRpcErrors)
+                    Log.Instance.WriteNonFatalException(ex);
+                    
                 jsonString = null;
                 return false;
             }
