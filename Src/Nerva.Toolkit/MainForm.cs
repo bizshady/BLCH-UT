@@ -396,9 +396,12 @@ namespace Nerva.Toolkit
                         Cli.Instance.Daemon.ForceClose();
                         Cli.Instance.Wallet.ForceClose();
 
-                        daemonPage.Update(null, null, null);
-                        balancesPage.Update(null);
-                        transfersPage.Update(null);
+                        Application.Instance.AsyncInvoke( () =>
+                        {
+                            daemonPage.Update(null, null, null);
+                            balancesPage.Update(null);
+                            transfersPage.Update(null);
+                        });
                         
                         StartUpdateWalletUiTask();
                         StartUpdateDaemonUiTask();

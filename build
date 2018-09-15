@@ -6,8 +6,7 @@ mkdir -p ${dir}/BuildOutput/Bin
 
 dotnet restore
 
-msbuild /property:GenerateFullPaths=true /property:Configuration=Release \
-/property:TrimUnusedDependencies=true /t:build /p:OutputPath=${dir}/BuildOutput/Bin
+msbuild /property:GenerateFullPaths=true /property:Configuration=Release /property:TrimUnusedDependencies=true /t:build /p:OutputPath=./BuildOutput/Bin
 
 # write windows run script
 echo '@echo off' > ${dir}/BuildOutput/run.bat
@@ -20,4 +19,4 @@ echo 'mono "${dir}/Bin/Nerva.Toolkit.Frontend.exe" --config-file "${dir}/app.con
 chmod +x ${dir}/BuildOutput/run.sh
 
 cd ${dir}/BuildOutput
-zip -r "./nerva-gui-v0.0.1.3.zip" *
+zip -r "./nerva-gui-v0.0.2.0.zip" *

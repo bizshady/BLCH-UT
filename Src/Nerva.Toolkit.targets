@@ -9,7 +9,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>../../Bin/$(Configuration)</OutputPath>
-    <DefineConstants>DEBUG;LINUX</DefineConstants>
+    <DefineConstants>DEBUG;</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'PortableDebug' ">
@@ -23,7 +23,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <OutputPath>../../Bin/$(Configuration)</OutputPath>
-    <DefineConstants>LINUX</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>

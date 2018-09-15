@@ -1,12 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
-using System.Security.AccessControl;
 using AngryWasp.Logger;
-using Mono.Unix.Native;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.Helpers.Native;
 using Newtonsoft.Json;
 
 namespace Nerva.Toolkit.Helpers
@@ -142,12 +140,10 @@ namespace Nerva.Toolkit.Helpers
                     string extFile = Path.Combine(destDir, a.FullName);
                     Log.Instance.Write("Extracting {0}", extFile);
                     a.ExtractToFile(extFile, true);
-#if LINUX
-                    // Hack: ZipFile does not maintain permissions on linux. Set the following                      
-                    // S_IFREG | S_IRGRP | S_IROTH | S_IRUSR | S_IWUSR | S_IXGRP | S_IXOTH | S_IXUSR
+
+                    // ZipFile does not maintain linux permissions, so we have to set them
                     if (OS.Type == OS_Type.Linux)
-                        Syscall.chmod(extFile, (FilePermissions)33261);
-#endif
+                        LinuxNative.sys_chmod(extFile, 33261);
                 }
             }
             catch (Exception ex)

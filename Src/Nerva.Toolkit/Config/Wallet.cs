@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using AngryWasp.Helpers;
+using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Config
 {
@@ -10,12 +11,25 @@ namespace Nerva.Toolkit.Config
 
 		public RpcDetails Rpc { get; set; }
 
+        //Windows seems to not like it wehen the RPC wallet directory is missing the trailing slash
+        //So we make sure it is there when getting and setting
         public string WalletDir
         {
-            get => walletDir;
+            get
+            {
+                if (OS.Type == OS_Type.Windows)
+                    if (!walletDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                        walletDir = walletDir + Path.DirectorySeparatorChar;
+
+                return walletDir;
+            }
 
             set
             {
+                if (OS.Type == OS_Type.Windows)
+                    if (!value.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                        value = value + Path.DirectorySeparatorChar;
+                
                 if (!Directory.Exists(value))
                     Directory.CreateDirectory(value);
 
