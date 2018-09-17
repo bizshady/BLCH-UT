@@ -18,7 +18,7 @@ namespace Nerva.Toolkit.Content.Wizard
         Button btnCreateAccount = new Button { Text = "Create" };
         Button btnImportAccount = new Button { Text = "Import" };
         Label lblImport = new Label { TextAlignment = TextAlignment.Right };
-        ProgressBar pbImport = new ProgressBar { Visible = false };
+        ProgressBar pbImport = new ProgressBar();
 
         public override Control Content
         {
@@ -62,11 +62,6 @@ namespace Nerva.Toolkit.Content.Wizard
                     {
                         Log.Instance.AddWriter("wizard", new LabelWriter(lblImport, pbImport), false);
 
-                        Application.Instance.AsyncInvoke( () =>
-                        {
-                            pbImport.Visible = true;
-                        });
-
                         int result = -1;
                         switch (d2.ImportType)
                         {
@@ -87,8 +82,7 @@ namespace Nerva.Toolkit.Content.Wizard
                             Application.Instance.Invoke( () =>
                             {
                                 lblImport.Text = "Wallet import complete";
-                                Parent.EnableNextButton(true);
-                                pbImport.Visible = false;                                                
+                                Parent.EnableNextButton(true);                                              
                             });
                         }
                         else
@@ -96,8 +90,7 @@ namespace Nerva.Toolkit.Content.Wizard
                             Application.Instance.Invoke( () =>
                             {
                                 lblImport.Text = "Wallet import failed";
-                                Parent.EnableNextButton(false);
-                                pbImport.Visible = false;       
+                                Parent.EnableNextButton(false);     
                             });
                         }
                     });
@@ -109,8 +102,6 @@ namespace Nerva.Toolkit.Content.Wizard
                 Orientation = Orientation.Vertical,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalContentAlignment = VerticalAlignment.Stretch,
-                Padding = new Padding(0, 0, 0, 10),
-                Spacing = 0,
                 Items = 
                 {
                     new Label { Text = "Create your account" },
@@ -119,6 +110,7 @@ namespace Nerva.Toolkit.Content.Wizard
                     new Label { Text = "to mine, send or receive NERVA" },
                     new Label { Text = "You can create a new account, or" },
                     new Label { Text = "import an existing one" },
+                    new Label { Text = "   " },
                     new StackLayoutItem(null, true),
                     new StackLayoutItem(new StackLayout
                     {
@@ -145,6 +137,11 @@ namespace Nerva.Toolkit.Content.Wizard
             string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : StringHelper.EncodeBase64(password);
             Configuration.Instance.Wallet.LastOpenedWallet = walletFile;
             Configuration.Instance.Wallet.LastWalletPassword = formattedPassword;
+        }
+
+        public override void OnAssignContent()
+        {
+            Parent.EnableNextButton(true);
         }
     }
 

@@ -43,15 +43,9 @@ namespace Nerva.Toolkit.CLI
                     var p = Process.GetProcessesByName(n);
         
                     if (p.Length == 1)
-                    { 
-                        pid = p[0].Id;
                         controller.DoProcessStarted(exe, p[0]);
-                    }
                     else
-                    {
-                        pid = -1;
                         Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);
-                    }
                 }
                 break;
                 case OS_Type.Windows:
@@ -65,7 +59,6 @@ namespace Nerva.Toolkit.CLI
                         CreateNoWindow = true
                     });
                     
-                    pid = proc.Id;
                     controller.DoProcessStarted(exe, proc);
                 }
                 break;
@@ -95,7 +88,7 @@ namespace Nerva.Toolkit.CLI
             bool reconnect = Configuration.Instance.ReconnectToDaemonProcess;
             bool createNew = Configuration.Instance.NewDaemonOnStartup;
 
-            controller.ManageCliProcesses(cliExe, reconnect, ref createNew, ref pid);
+            controller.ManageCliProcesses(cliExe, reconnect, ref createNew);
 
             Configuration.Instance.NewDaemonOnStartup = createNew;
         }

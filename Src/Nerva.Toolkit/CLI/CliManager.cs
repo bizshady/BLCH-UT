@@ -16,13 +16,10 @@ namespace Nerva.Toolkit.CLI
 {
     public abstract class CliTool<T> where T : CliInterface, new()
     {
-        protected int pid = -1;
         protected bool doCrashCheck = true;
         protected BackgroundWorker worker = null;
         protected T cliInterface;
         protected Cli controller = null;
-
-        public int Pid => pid;
 
         public T Interface => cliInterface;
 
@@ -66,16 +63,12 @@ namespace Nerva.Toolkit.CLI
                 {
                     try
                     {
-                        string ex = FileNames.GetCliExePath(Exe);
-
-                        if (!controller.IsAlreadyRunning(ex, ref pid))
+                        Process p = null;
+                        if (!controller.IsAlreadyRunning(Exe, out p))
                         {
                             ManageCliProcess();
-
-                            if (pid == -1)
-                                Create(ex, GenerateCommandLine());
-                            else
-                                Log.Instance.Write("Connecting to process {0} with id {1}", ex, pid);
+                            Create(FileNames.GetCliExePath(Exe), GenerateCommandLine());
+                            Log.Instance.Write("Connecting to process {0}", Exe);
                         }
                     }
                     catch (Exception ex)
@@ -98,7 +91,6 @@ namespace Nerva.Toolkit.CLI
 
         public virtual void ResumeCrashCheck()
         {
-            pid = -1;
             doCrashCheck = true;
 
             if (worker == null)
@@ -116,14 +108,12 @@ namespace Nerva.Toolkit.CLI
 
         public virtual void StopCrashCheck()
         {
-            pid = -1;
             doCrashCheck = false;
         }
 
         public virtual void ForceClose()
         {
             controller.KillCliProcesses(BaseExeName);
-            pid = -1;
         }
 
         public abstract void Create(string exe, string args);
@@ -188,12 +178,13 @@ namespace Nerva.Toolkit.CLI
             return logFile;
         }
 
-        public bool IsReady(int pid)
+        public bool IsReady(string exe)
         {
-            if (pid == -1)
+            var pl = Process.GetProcessesByName(exe);
+            if (pl.Length == 0)
                 return false;
 
-            Process dp = Process.GetProcessById(pid);
+            Process dp = pl[0];
             if (dp == null || dp.HasExited)
                 return false;
 
@@ -204,34 +195,35 @@ namespace Nerva.Toolkit.CLI
             return true;
         }
 
-        public bool IsAlreadyRunning(string exe, ref int pid)
+        public bool IsAlreadyRunning(string exe, out Process p)
         {
-            if (pid != -1)
+            p = null;
+
+            try
             {
-                try
+                var pl = Process.GetProcessesByName(exe);
+                if (pl.Length == 0)
+                    return false;
+
+                p = pl[0];
+
+                if (p == null || p.HasExited)
                 {
-                    Process dp = Process.GetProcessById(pid);
-                    if (dp == null || dp.HasExited)
-                    {
-                        Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", exe);
-                        pid = -1;
-                        return false;
-                    }
-                    else
-                        return true;
-                }
-                catch (Exception ex)
-                {
-                    Log.Instance.Write(Log_Severity.Warning, ex.Message);
-                    pid = -1;
+                    Log.Instance.Write(Log_Severity.Warning, "CLI tool {0} exited unexpectedly. Restarting", exe);
+                    p = null;
                     return false;
                 }
+                else
+                    return true;
             }
-
-            return false;
+            catch (Exception ex)
+            {
+                Log.Instance.Write(Log_Severity.Warning, ex.Message);
+                return false;
+            }
         }
 
-        public void ManageCliProcesses(string exe, bool reconnect, ref bool createNew, ref int pid)
+        public void ManageCliProcesses(string exe, bool reconnect, ref bool createNew)
         {
             Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
 
@@ -242,20 +234,16 @@ namespace Nerva.Toolkit.CLI
                 if (processes.Length == 1 && reconnect && !createNew)
                 {
                     Process p = processes[0];
-                    pid = p.Id;
                     //ProcessConnected?.Invoke(exe, p);
                 }
                 else
-                {
-                    KillCliProcesses(exe, pid);
-                    pid = -1;
-                }
+                    KillCliProcesses(exe);
 
                 createNew = false;
             }
         }
 
-        public void KillCliProcesses(string exe, int exceptPid = -1)
+        public void KillCliProcesses(string exe)
         {
             Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
 
@@ -263,12 +251,9 @@ namespace Nerva.Toolkit.CLI
             {
                 foreach (Process p in processes)
                 {
-                    if (p.Id != exceptPid)
-                    {
-                        Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
-                        p.Kill();
-                        p.WaitForExit();
-                    }
+                    Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
+                    p.Kill();
+                    p.WaitForExit();
                 }
 
                 processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
@@ -315,7 +300,7 @@ namespace Nerva.Toolkit.CLI
 
             Helpers.TaskFactory.Instance.RunTask("updatecheck", "Checking for updates", () =>
             {
-                while (!IsReady(daemon.Pid))
+                while (!IsReady(daemon.Exe))
                     Thread.Sleep(Constants.FIVE_SECONDS);
 
                 UpdateManager.CheckForCliUpdates();
@@ -341,7 +326,7 @@ namespace Nerva.Toolkit.CLI
         {
             Helpers.TaskFactory.Instance.RunTask("loadwallet", "Loading the saved wallet", () =>
             {
-                while (!IsReady(wallet.Pid))
+                while (!IsReady(wallet.Exe))
                     Thread.Sleep(Constants.ONE_SECOND);
 
                 Application.Instance.AsyncInvoke(() =>

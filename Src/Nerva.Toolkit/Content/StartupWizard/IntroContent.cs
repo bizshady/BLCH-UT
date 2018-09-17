@@ -27,8 +27,6 @@ namespace Nerva.Toolkit.Content.Wizard
                 Orientation = Orientation.Vertical,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalContentAlignment = VerticalAlignment.Stretch,
-                Padding = new Padding(0, 0, 0, 10),
-                Spacing = 0,
                 Items = 
                 {
                     new Label { Text = "Welcome to NERVA" },

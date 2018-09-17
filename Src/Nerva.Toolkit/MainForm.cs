@@ -24,12 +24,6 @@ namespace Nerva.Toolkit
 
         public MainForm(bool newConfig)
         {
-            bool needSetup = newConfig || !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
-            if (needSetup)
-                new SetupWizard().Run();
-
-            Configuration.Save();
-
             SuspendLayout();
             ConstructLayout();
             ResumeLayout();
@@ -39,12 +33,19 @@ namespace Nerva.Toolkit
                 CloseWallet(false);
             };
 
-            Cli.Instance.StartDaemon();
-            Cli.Instance.StartWallet();
-
             Application.Instance.Initialized += (s, e) =>
-            {
-                UpdateTaskListTask();
+            {       
+                StartUpdateTaskList();
+
+                bool needSetup = newConfig || !FileNames.DirectoryContainsCliTools(Configuration.Instance.ToolsPath);
+                if (needSetup)
+                    new SetupWizard().Run();
+
+                Configuration.Save();
+
+                Cli.Instance.StartDaemon();
+                Cli.Instance.StartWallet();
+
                 StartUpdateDaemonUiTask();
                 StartUpdateWalletUiTask();
             };
@@ -53,6 +54,35 @@ namespace Nerva.Toolkit
             {
                 Cli.Instance.Wallet.ForceClose();
             };
+        }
+
+        public void StartUpdateTaskList()
+        {
+            AsyncTaskContainer updateTaskListTask = new AsyncTaskContainer();
+
+            updateTaskListTask.Start(async (CancellationToken token) =>
+            {
+                while (true)
+                {
+                    Helpers.TaskFactory.Instance.Prune();
+
+                    Application.Instance.AsyncInvoke(() =>
+                    {
+                        int i = (int)lblTaskList.Tag;
+                        if (i != Helpers.TaskFactory.Instance.GetHashCode())
+                        {
+                            lblTaskList.Text = $"Running Tasks: {Helpers.TaskFactory.Instance.Count}";
+                            lblTaskList.ToolTip = Helpers.TaskFactory.Instance.ToString().TrimEnd();
+                            lblTaskList.Tag = Helpers.TaskFactory.Instance.GetHashCode();
+                        }
+                    });
+
+                    await Task.Delay(Constants.ONE_SECOND / 2);
+
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
+                }
+            });
         }
 
         public void StartUpdateWalletUiTask()
@@ -68,7 +98,7 @@ namespace Nerva.Toolkit
                     if (token.IsCancellationRequested)
                         token.ThrowIfCancellationRequested();
 
-                    if (Cli.Instance.Wallet.Pid == -1)
+                    if (Process.GetProcessesByName(Cli.Instance.Wallet.Exe).Length == 0)
                     {
                         await Task.Delay(Constants.ONE_SECOND);
                         continue;
@@ -139,7 +169,7 @@ namespace Nerva.Toolkit
                     if (token.IsCancellationRequested)
                         token.ThrowIfCancellationRequested();
 
-                    if (Cli.Instance.Daemon.Pid == -1)
+                    if (Process.GetProcessesByName(Cli.Instance.Daemon.Exe).Length == 0)
                     {
                         await Task.Delay(Constants.ONE_SECOND);
                         continue;
@@ -203,27 +233,6 @@ namespace Nerva.Toolkit
                         token.ThrowIfCancellationRequested();
                 }
             });
-        }
-
-        public async Task UpdateTaskListTask()
-        {
-            while (true)
-            {
-                Helpers.TaskFactory.Instance.Prune();
-
-                Application.Instance.Invoke(() =>
-                {
-                    int i = (int)lblTaskList.Tag;
-                    if (i != Helpers.TaskFactory.Instance.GetHashCode())
-                    {
-                        lblTaskList.Text = $"Running Tasks: {Helpers.TaskFactory.Instance.Count}";
-                        lblTaskList.ToolTip = Helpers.TaskFactory.Instance.ToString().TrimEnd();
-                        lblTaskList.Tag = Helpers.TaskFactory.Instance.GetHashCode();
-                    }
-                });
-
-                await Task.Delay(Constants.ONE_SECOND / 2);
-            }
         }
 
         private void CloseWallet(bool clearSavedWallet)

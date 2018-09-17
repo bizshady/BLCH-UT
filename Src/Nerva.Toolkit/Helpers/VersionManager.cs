@@ -129,16 +129,22 @@ namespace Nerva.Toolkit.Helpers
         {
             try
             {
-                CLI.Cli.Instance.KillCliProcesses("nervad");
-                CLI.Cli.Instance.KillCliProcesses("nerva-wallet-cli");
-                CLI.Cli.Instance.KillCliProcesses("nerva-wallet-rpc");
+                Cli.Instance.KillCliProcesses(FileNames.NERVAD);
+                Cli.Instance.KillCliProcesses(FileNames.CLI_WALLET);
+                Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);
 
                 Log.Instance.Write("Extracting CLI tools");
                 ZipArchive archive = ZipFile.Open(destFile, ZipArchiveMode.Read);
                 foreach (var a in archive.Entries)
                 {
-                    string extFile = Path.Combine(destDir, a.FullName);
-                    Log.Instance.Write("Extracting {0}", extFile);
+                    Log.Instance.Write("Extracting {0}", a.FullName);
+                    string newName = Path.GetFileNameWithoutExtension(a.FullName) + "-gui";
+
+                    if (OS.Type == OS_Type.Windows)
+                        newName += ".exe";
+
+                    string extFile = Path.Combine(destDir, newName);
+
                     a.ExtractToFile(extFile, true);
 
                     // ZipFile does not maintain linux permissions, so we have to set them

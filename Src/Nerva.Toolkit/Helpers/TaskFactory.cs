@@ -94,19 +94,6 @@ namespace Nerva.Toolkit.Helpers
             }
         }
 
-        public void KillTask(string name)
-        {
-            TaskContainer t = this[name];
-
-            if (t == null)
-            {
-                Log.Instance.Write(Log_Severity.Error, "Task with name {0} doesn't exist to be killed", name);
-                return;
-            }
-
-            Debugger.Break();
-        }
-
         public void Prune()
         {
             foreach(var c in containers)

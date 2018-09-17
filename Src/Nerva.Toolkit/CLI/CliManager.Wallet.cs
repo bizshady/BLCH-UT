@@ -26,7 +26,6 @@ namespace Nerva.Toolkit.CLI
                 CreateNoWindow = true
             });
 
-            pid = proc.Id;
             controller.DoProcessStarted(exe,  proc);
             proc.WaitForExit();
         }
@@ -42,7 +41,7 @@ namespace Nerva.Toolkit.CLI
         public override void ManageCliProcess()
         {
             bool createNew = true;
-            controller.ManageCliProcesses(cliExe, false, ref createNew, ref pid);
+            controller.ManageCliProcesses(cliExe, false, ref createNew);
         }
     }
 }
