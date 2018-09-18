@@ -6,7 +6,7 @@ mkdir -p ${dir}/BuildOutput/Bin
 
 dotnet restore
 
-msbuild /property:GenerateFullPaths=true /property:Configuration=Release /property:TrimUnusedDependencies=true /t:build /p:OutputPath=./BuildOutput/Bin
+msbuild /property:GenerateFullPaths=true /property:Configuration=Release /property:TrimUnusedDependencies=true /t:build /p:OutputPath=${dir}/BuildOutput/Bin
 
 # write windows run script
 echo '@echo off' > ${dir}/BuildOutput/run.bat
