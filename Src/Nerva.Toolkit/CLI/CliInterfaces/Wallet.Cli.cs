@@ -135,6 +135,8 @@ namespace Nerva.Toolkit.CLI
 
             Log.Instance.Write("Import wallet exited with code: {0}", exitCode);
 
+            File.Delete($"{walletPath}.json");
+
             return exitCode;
         }
     }
