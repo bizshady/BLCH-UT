@@ -180,8 +180,8 @@ namespace Nerva.Toolkit.CLI
 
         public bool IsReady(string exe)
         {
-            var pl = Process.GetProcessesByName(exe);
-            if (pl.Length == 0)
+            var pl = CliInterface.GetRunningProcesses(exe);
+            if (pl.Count == 0)
                 return false;
 
             Process dp = pl[0];
@@ -201,8 +201,8 @@ namespace Nerva.Toolkit.CLI
 
             try
             {
-                var pl = Process.GetProcessesByName(exe);
-                if (pl.Length == 0)
+                var pl = CliInterface.GetRunningProcesses(exe);
+                if (pl.Count == 0)
                     return false;
 
                 p = pl[0];
@@ -225,40 +225,35 @@ namespace Nerva.Toolkit.CLI
 
         public void ManageCliProcesses(string exe, bool reconnect, ref bool createNew)
         {
-            Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
+            var p = CliInterface.GetRunningProcesses(exe);
 
-            if (processes.Length > 0)
+            if (p.Count > 0)
             {
                 //Reconnect to an existing process if only one is running
                 //If more than 1, we have to start again, because we cannot be sure which one to connec to
-                if (processes.Length == 1 && reconnect && !createNew)
-                {
-                    Process p = processes[0];
-                    //ProcessConnected?.Invoke(exe, p);
-                }
-                else
+                if (p.Count > 1 || !reconnect || createNew)
                     KillCliProcesses(exe);
-
+                    
                 createNew = false;
             }
         }
 
         public void KillCliProcesses(string exe)
         {
-            Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
+            var pl = CliInterface.GetRunningProcesses(exe);
 
-            if (processes.Length > 0)
+            if (pl.Count > 0)
             {
-                foreach (Process p in processes)
+                foreach (Process p in pl)
                 {
                     Log.Instance.Write(Log_Severity.Warning, "Killing running instance of {0} with id {1}", p.ProcessName, p.Id);
                     p.Kill();
                     p.WaitForExit();
                 }
 
-                processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exe));
+                pl = CliInterface.GetRunningProcesses(exe);
 
-                if (processes.Length > 0)
+                if (pl.Count > 0)
                 {
                     Log.Instance.Write(Log_Severity.Fatal, "There are unknown proceses running. Please kill all processes");
                     return;
