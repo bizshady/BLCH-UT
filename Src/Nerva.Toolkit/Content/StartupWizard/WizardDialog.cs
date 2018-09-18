@@ -15,6 +15,8 @@ namespace Nerva.Toolkit.Content.Wizard
         protected Button btnNext = new Button { Text = ">>" };
         protected Button btnBack = new Button { Text = "<<" };
 
+        public bool WizardEnd { get; set; } = false;
+
         private int currentPage = 0;
 
         private WizardContent[] pages;
@@ -37,14 +39,6 @@ namespace Nerva.Toolkit.Content.Wizard
             foreach (var p in pages)
                 p.Parent = this;
             
-            //for (int i = pages.Length - 1; i > 0; i--)
-            //{
-            //    currentPage = i;
-            //    ConstructContent();
-            //}
-
-            //--currentPage;
-
             SetButtonsEnabled();
             ConstructContent();
             this.Invalidate(true);
@@ -105,13 +99,16 @@ namespace Nerva.Toolkit.Content.Wizard
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            e.Cancel = true;
-            OnCancel();
+            if (!WizardEnd)
+            {
+                e.Cancel = true;
+                OnCancel();
+            }
         }
 
         protected virtual void OnCancel()
         {
-            if (MessageBox.Show(Application.Instance.MainForm, "The NERVA Toolkit cannot start until the startup wizard is complete.\r\nAre you sure you wait to quit.", "Wizard Imcomplete",
+            if (MessageBox.Show(Application.Instance.MainForm, "The NERVA Toolkit cannot start until the startup wizard is complete.\r\nAre you sure you wait to quit.", "Wizard Incomplete",
                 MessageBoxButtons.YesNo, MessageBoxType.Warning, MessageBoxDefaultButton.No) == DialogResult.Yes)
                 Environment.Exit(0);
         }
@@ -146,6 +143,11 @@ namespace Nerva.Toolkit.Content.Wizard
             {
                 btnBack.Enabled = (currentPage > 0);
                 btnNext.Enabled = (currentPage < pages.Length - 1);
+
+                if (currentPage >= pages.Length - 1)
+                {
+                    btnNext.Text = "Finish";
+                }
 			});
         }
 

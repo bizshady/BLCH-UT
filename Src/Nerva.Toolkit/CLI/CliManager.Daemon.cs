@@ -8,8 +8,7 @@ namespace Nerva.Toolkit.CLI
 {
     public class DaemonCliTool : CliTool<DaemonInterface>
     {
-        private string cliExe = FileNames.GetCliExeName(FileNames.NERVAD);
-        public override string Exe => cliExe;
+        public override string Exe => FileNames.GetCliExeName(FileNames.NERVAD);
 
         public override string BaseExeName => FileNames.NERVAD;
 
@@ -88,7 +87,7 @@ namespace Nerva.Toolkit.CLI
             bool reconnect = Configuration.Instance.ReconnectToDaemonProcess;
             bool createNew = Configuration.Instance.NewDaemonOnStartup;
 
-            controller.ManageCliProcesses(cliExe, reconnect, ref createNew);
+            controller.ManageCliProcesses(Exe, reconnect, ref createNew);
 
             Configuration.Instance.NewDaemonOnStartup = createNew;
         }

@@ -27,7 +27,7 @@ namespace Nerva.Toolkit.Content.Wizard
         private static bool isRunning = false;
         public static bool IsRunning => isRunning;
 
-        WizardDialog dlg;
+        private WizardDialog dlg;
 
         public SetupWizard()
         {
@@ -37,7 +37,8 @@ namespace Nerva.Toolkit.Content.Wizard
             {
                 new IntroContent(),
                 new GetCliContent(),
-                new WalletSetupContent()
+                new WalletSetupContent(),
+                new FinishedContent()
             };
 
             dlg = new WizardDialog(pages);

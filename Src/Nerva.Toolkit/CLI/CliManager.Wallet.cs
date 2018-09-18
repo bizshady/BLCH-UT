@@ -7,8 +7,7 @@ namespace Nerva.Toolkit.CLI
 {
     public class WalletCliTool : CliTool<WalletInterface>
     {
-        private string cliExe = FileNames.GetCliExeName(FileNames.RPC_WALLET);
-        public override string Exe => cliExe;
+        public override string Exe => FileNames.GetCliExeName(FileNames.RPC_WALLET);
 
         public override string BaseExeName => FileNames.RPC_WALLET;
 
@@ -41,7 +40,7 @@ namespace Nerva.Toolkit.CLI
         public override void ManageCliProcess()
         {
             bool createNew = true;
-            controller.ManageCliProcesses(cliExe, false, ref createNew);
+            controller.ManageCliProcesses(Exe, false, ref createNew);
         }
     }
 }
