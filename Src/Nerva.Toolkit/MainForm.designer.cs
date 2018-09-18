@@ -108,6 +108,15 @@ namespace Nerva.Toolkit
 			var aboutCommand = new Command { MenuText = "About..." };
 			aboutCommand.Executed += about_Clicked;
 
+			var discordCommand = new Command { MenuText = "Discord" };
+			discordCommand.Executed += discord_Clicked;
+
+			var twitterCommand = new Command { MenuText = "Twitter" };
+			twitterCommand.Executed += twitter_Clicked;
+
+			var redditCommand = new Command { MenuText = "Reddit" };
+			redditCommand.Executed += reddit_Clicked;
+
 			// create menu
 			Menu = new MenuBar
 			{
@@ -151,6 +160,16 @@ namespace Nerva.Toolkit
 								}
 							},
 							wallet_Keys_View
+						}
+					},
+					new ButtonMenuItem
+					{
+						Text = "&Help",
+						Items =
+						{
+							discordCommand,
+							redditCommand,
+							twitterCommand
 						}
 					}
 				},

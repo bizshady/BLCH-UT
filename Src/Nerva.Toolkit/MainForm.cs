@@ -380,6 +380,21 @@ namespace Nerva.Toolkit
             ad.ShowDialog(this);
         }
 
+        protected void discord_Clicked(object sender, EventArgs e)
+        {
+            Process.Start("https://discord.gg/jsdbEns");
+        }
+
+        protected void twitter_Clicked(object sender, EventArgs e)
+        {
+            Process.Start("https://twitter.com/nervacurrency");
+        }
+
+        protected void reddit_Clicked(object sender, EventArgs e)
+        {
+            Process.Start("https://www.reddit.com/r/Nerva/");
+        }
+
         protected void file_Preferences_Clicked(object sender, EventArgs e)
         {
             PreferencesDialog d = new PreferencesDialog();
