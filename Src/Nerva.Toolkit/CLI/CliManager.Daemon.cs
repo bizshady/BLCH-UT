@@ -8,9 +8,7 @@ namespace Nerva.Toolkit.CLI
 {
     public class DaemonCliTool : CliTool<DaemonInterface>
     {
-        public override string Exe => FileNames.GetCliExeName(FileNames.NERVAD);
-
-        public override string BaseExeName => FileNames.NERVAD;
+        public override string FullExeName => FileNames.GetFormattedCliExeName(FileNames.NERVAD);
 
         public DaemonCliTool(Cli controller) : base(controller, new DaemonInterface()) { }
 
@@ -66,7 +64,7 @@ namespace Nerva.Toolkit.CLI
 
         public override string GenerateCommandLine()
         {
-            string a = GetBaseCommandLine(Exe, Configuration.Instance.Daemon.Rpc);
+            string a = GetBaseCommandLine(BaseExeName, Configuration.Instance.Daemon.Rpc);
 
             if (Configuration.Instance.Daemon.AutoStartMining)
             {
@@ -87,7 +85,7 @@ namespace Nerva.Toolkit.CLI
             bool reconnect = Configuration.Instance.ReconnectToDaemonProcess;
             bool createNew = Configuration.Instance.NewDaemonOnStartup;
 
-            controller.ManageCliProcesses(Exe, reconnect, ref createNew);
+            controller.ManageCliProcesses(BaseExeName, reconnect, ref createNew);
 
             Configuration.Instance.NewDaemonOnStartup = createNew;
         }

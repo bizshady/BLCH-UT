@@ -19,9 +19,9 @@ namespace Nerva.Toolkit.Config
             return new Daemon
             {
                 StopOnExit = false,
-                AutoStartMining = true,
+                AutoStartMining = false,
                 MiningAddress = Constants.DEV_WALLET_ADDRESS,
-                MiningThreads = 4,
+                MiningThreads = 2,
 
                 Rpc = RpcDetails.New(testnet ? 18566 : 17566)
             };

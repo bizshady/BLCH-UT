@@ -7,9 +7,7 @@ namespace Nerva.Toolkit.CLI
 {
     public class WalletCliTool : CliTool<WalletInterface>
     {
-        public override string Exe => FileNames.GetCliExeName(FileNames.RPC_WALLET);
-
-        public override string BaseExeName => FileNames.RPC_WALLET;
+        public override string FullExeName => FileNames.GetFormattedCliExeName(FileNames.RPC_WALLET);
 
         public WalletCliTool(Cli controller) : base(controller, new WalletInterface()) { }
 
@@ -31,7 +29,7 @@ namespace Nerva.Toolkit.CLI
 
         public override string GenerateCommandLine()
         {
-            string a = GetBaseCommandLine(Exe, Configuration.Instance.Wallet.Rpc);
+            string a = GetBaseCommandLine(BaseExeName, Configuration.Instance.Wallet.Rpc);
             a += $" --disable-rpc-login --wallet-dir {Configuration.Instance.Wallet.WalletDir}";
             a += $" --daemon-address 127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
             return a;
@@ -40,7 +38,7 @@ namespace Nerva.Toolkit.CLI
         public override void ManageCliProcess()
         {
             bool createNew = true;
-            controller.ManageCliProcesses(Exe, false, ref createNew);
+            controller.ManageCliProcesses(BaseExeName, false, ref createNew);
         }
     }
 }

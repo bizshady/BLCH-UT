@@ -84,6 +84,49 @@ namespace Nerva.Toolkit.CLI
 
             return RestoreWalletFromJson(walletPath);
         }
+
+        public int CreateNewWallet(string walletFile, string password, string language = "English")
+        {
+            string walletPath = Path.Combine(Configuration.Instance.Wallet.WalletDir, walletFile);
+
+            string daemon = $"127.0.0.1:{Configuration.Instance.Daemon.Rpc.Port}";
+            string exe = FileNames.GetCliExePath(FileNames.CLI_WALLET);
+            string args = $"--daemon-address {daemon} --generate-new-wallet \"{walletPath}\" --password \"{password}\" --mnemonic-language \"{language}\"";
+            if (Configuration.Instance.Testnet)
+                args += " --testnet";
+
+            Log.Instance.Write("Creating wallet...");
+
+            Process proc = Process.Start(new ProcessStartInfo(exe, args)
+            {
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardInput = true,
+                CreateNoWindow = true
+            });
+
+            proc.OutputDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    //Don't log the output of this process. It will print the wallet seed to the log file
+                    if (e.Data.Contains("Generated new wallet"))
+                    {
+                        Log.Instance.Write("Wallet creation complete");
+                        proc.StandardInput.WriteLine("exit");
+                    }
+                }
+            };
+
+            proc.BeginOutputReadLine();
+            proc.WaitForExit();
+
+            int exitCode = proc.ExitCode;
+
+            Log.Instance.Write("Create wallet exited with code: {0}", exitCode);
+
+            return exitCode;
+        }
         
         private void CreateJson(string walletPath, object data)
         {

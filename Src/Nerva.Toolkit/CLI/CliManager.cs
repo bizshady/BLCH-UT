@@ -23,9 +23,9 @@ namespace Nerva.Toolkit.CLI
 
         public T Interface => cliInterface;
 
-        public abstract string Exe { get; }
+        public abstract string FullExeName { get; }
 
-        public abstract string BaseExeName { get; }
+        public string BaseExeName => Path.GetFileNameWithoutExtension(FullExeName);
 
         public CliTool(Cli controller, T cliInterface)
         {
@@ -64,11 +64,11 @@ namespace Nerva.Toolkit.CLI
                     try
                     {
                         Process p = null;
-                        if (!controller.IsAlreadyRunning(Exe, out p))
+                        if (!controller.IsAlreadyRunning(BaseExeName, out p))
                         {
                             ManageCliProcess();
-                            Create(FileNames.GetCliExePath(Exe), GenerateCommandLine());
-                            Log.Instance.Write("Connecting to process {0}", Exe);
+                            Create(FileNames.GetCliExePath(BaseExeName), GenerateCommandLine());
+                            Log.Instance.Write("Connecting to process {0}", BaseExeName);
                         }
                     }
                     catch (Exception ex)
@@ -300,7 +300,7 @@ namespace Nerva.Toolkit.CLI
 
             Helpers.TaskFactory.Instance.RunTask("updatecheck", "Checking for updates", () =>
             {
-                while (!IsReady(daemon.Exe))
+                while (!IsReady(daemon.BaseExeName))
                     Thread.Sleep(Constants.FIVE_SECONDS);
 
                 UpdateManager.CheckForCliUpdates();
@@ -326,7 +326,7 @@ namespace Nerva.Toolkit.CLI
         {
             Helpers.TaskFactory.Instance.RunTask("loadwallet", "Loading the saved wallet", () =>
             {
-                while (!IsReady(wallet.Exe))
+                while (!IsReady(wallet.BaseExeName))
                     Thread.Sleep(Constants.ONE_SECOND);
 
                 Application.Instance.AsyncInvoke(() =>

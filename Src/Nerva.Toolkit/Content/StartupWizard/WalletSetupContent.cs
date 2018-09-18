@@ -39,15 +39,30 @@ namespace Nerva.Toolkit.Content.Wizard
                 NewWalletDialog d2 = new NewWalletDialog();
                 if (d2.ShowModal() == DialogResult.Ok)
                 {
-                    if (Cli.Instance.Wallet.Interface.CreateWallet(d2.Name, d2.Password))
+                    Helpers.TaskFactory.Instance.RunTask("createwallet", "Creating wallet", () =>
                     {
+                        int result = Cli.Instance.Wallet.Interface.CreateNewWallet(d2.Name, d2.Password);
+
                         SaveWalletLogin(d2.Name, d2.Password);
-                        Parent.EnableNextButton(true);
-                        Cli.Instance.Wallet.Interface.OpenWallet(d2.Name, d2.Password);
-                        Cli.Instance.Wallet.Interface.QueryKey(Key_Type.All_Keys);
-                        
-                        return;
-                    }
+
+                        if (result == 0)
+                        {
+                            Application.Instance.Invoke( () =>
+                            {
+                                lblImport.Text = "Wallet creation complete";
+                                Parent.EnableNextButton(true);                                              
+                            });
+                        }
+                        else
+                        {
+                            Application.Instance.Invoke( () =>
+                            {
+                                lblImport.Text = "Wallet creation failed";
+                                Parent.EnableNextButton(false);     
+                            });
+                        }
+                    });
+                    
                 }
             };
 

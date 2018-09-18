@@ -13,10 +13,10 @@ namespace Nerva.Toolkit.Helpers
         public static string GetCliExePath(string exe)
         {
             exe = GetCliExeBaseName(exe);   
-            return Path.Combine(Configuration.Instance.ToolsPath, GetCliExeName(exe));
+            return Path.Combine(Configuration.Instance.ToolsPath, GetFormattedCliExeName(exe));
         }
 
-        public static string GetCliExeName(string exe)
+        public static string GetFormattedCliExeName(string exe)
         {
             exe = GetCliExeBaseName(exe);
             return (OS.Type == OS_Type.Windows) ? $"{exe}.exe" : exe;

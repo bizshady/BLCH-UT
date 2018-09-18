@@ -302,15 +302,33 @@ namespace Nerva.Toolkit.Content.Dialogs
                                 NewWalletDialog d2 = new NewWalletDialog();
                                 if (d2.ShowModal() == DialogResult.Ok)
                                 {
-                                    bool created = Cli.Instance.Wallet.Interface.CreateWallet(d2.Name, d2.Password);
-
-                                    if (created)
+                                    Helpers.TaskFactory.Instance.RunTask("createwallet", $"Creating wallet", () =>
                                     {
-                                        SaveWalletLogin(d2.Name, d2.Password);
-                                        wizardRunning = false;
-                                        WalletWizardEvent?.Invoke(Open_Wallet_Dialog_Result.New, null);
-                                        return;
-                                    }
+                                        int result = Cli.Instance.Wallet.Interface.CreateNewWallet(d2.Name, d2.Password);
+
+                                        if (result == 0)
+                                        {
+                                            SaveWalletLogin(d2.Name, d2.Password);
+                                            wizardRunning = false;
+                                            WalletWizardEvent?.Invoke(Open_Wallet_Dialog_Result.New, null);
+                                            Application.Instance.AsyncInvoke( () =>
+                                            {
+                                                MessageBox.Show(Application.Instance.MainForm, "Wallet creation complete", "Create Wallet",
+                                                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                                            });
+                                        }
+                                        else
+                                        {
+                                            Application.Instance.AsyncInvoke( () =>
+                                            {
+                                                MessageBox.Show(Application.Instance.MainForm, "Wallet creation failed.\r\nCheck the log file for errors", "Create Wallet",
+                                                    MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
+                                            });
+                                        }
+                                    });
+                                    
+                                    wizardRunning = false;
+                                    return;
                                 }
                                 else //break the loop if cancelled
                                     break;
@@ -345,7 +363,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                                         {
                                             Application.Instance.AsyncInvoke( () =>
                                             {
-                                                MessageBox.Show(Application.Instance.MainForm, "Wallet import complete", "Wallet Import",
+                                                MessageBox.Show(Application.Instance.MainForm, "Wallet import complete", "Import Wallet",
                                                     MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
                                             });
                                         }
@@ -353,7 +371,7 @@ namespace Nerva.Toolkit.Content.Dialogs
                                         {
                                             Application.Instance.AsyncInvoke( () =>
                                             {
-                                                MessageBox.Show(Application.Instance.MainForm, "Wallet import failed.\r\nCheck the log file for errors", "Wallet Import",
+                                                MessageBox.Show(Application.Instance.MainForm, "Wallet import failed.\r\nCheck the log file for errors", "Import Wallet",
                                                     MessageBoxButtons.OK, MessageBoxType.Information, MessageBoxDefaultButton.OK);
                                             });
                                         }

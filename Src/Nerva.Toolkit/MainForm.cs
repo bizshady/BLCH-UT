@@ -98,7 +98,7 @@ namespace Nerva.Toolkit
                     if (token.IsCancellationRequested)
                         token.ThrowIfCancellationRequested();
 
-                    if (Process.GetProcessesByName(Cli.Instance.Wallet.Exe).Length == 0)
+                    if (Process.GetProcessesByName(Cli.Instance.Wallet.BaseExeName).Length == 0)
                     {
                         await Task.Delay(Constants.ONE_SECOND);
                         continue;
@@ -169,7 +169,7 @@ namespace Nerva.Toolkit
                     if (token.IsCancellationRequested)
                         token.ThrowIfCancellationRequested();
 
-                    if (Process.GetProcessesByName(Cli.Instance.Daemon.Exe).Length == 0)
+                    if (Process.GetProcessesByName(Cli.Instance.Daemon.BaseExeName).Length == 0)
                     {
                         await Task.Delay(Constants.ONE_SECOND);
                         continue;
