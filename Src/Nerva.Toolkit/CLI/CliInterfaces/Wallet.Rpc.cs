@@ -1,283 +1,158 @@
 using System;
 using AngryWasp.Logger;
-using Nerva.Toolkit.CLI.Structures.Request;
-using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Nerva.Rpc;
+using Nerva.Rpc.Wallet;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Nerva.Toolkit.CLI
 {
-    public enum Key_Type
-    {
-        Secret_View_Key,
-        Secret_Spend_Key,
-        Public_View_Key,
-        Public_Spend_Key,
-        All_Keys,
-        Mnemonic
-    }
-
     public partial class WalletInterface : CliInterface
     {
-        public class RpcWalletError
+        public GetAccountsResponseData GetAccounts()
         {
-            public bool SupressLogging { get; set; } = true;
+            GetAccountsResponseData data = null;
 
-            public int Code { get; set; }
-            public string Message { get; set; }
-        }
+            new GetAccounts((GetAccountsResponseData result) => {
+                data = result;
+            }, null, r.Port).Run();
 
-        public Account GetAccounts()
-        {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
-
-            if (!BasicRequest("get_accounts", out result, ref e))
-                return null;
-
-            return JsonConvert.DeserializeObject<JsonValue<Account>>(result).Result;
+            return data;
         }
 
         public bool StopWallet()
         {
-            RpcWalletError e = new RpcWalletError();
-            return BasicRequest("stop_wallet", ref e);
+            return new StopWallet(null, null, r.Port).Run();
         }
 
         public bool CreateWallet(string walletName, string password)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
-
-            return BasicRequest<CreateWallet>("create_wallet", new CreateWallet {
+            return new CreateWallet(new CreateWalletRequestData {
                 FileName = walletName,
                 Password = password
-            }, out result, ref e);
-        }
+            }, null, null, r.Port).Run();
+        } 
 
         public bool OpenWallet(string walletName, string password)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
-
-            var request = BasicRequest<OpenWallet>("open_wallet", new OpenWallet {
+            return new OpenWallet(new OpenWalletRequestData {
                 FileName = walletName,
                 Password = password
-            }, out result, ref e);
-
-            return request;
+            }, null, null, r.Port).Run();
         }
 
-        public KeyInfo QueryKey(Key_Type keyType)
+        public QueryKeyResponseData QueryKey(string keyType)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
+            QueryKeyResponseData data = null;
 
-            if (!BasicRequest<QueryKey>("query_key", new QueryKey {
-                KeyType = keyType.ToString().ToLower()
-            }, out result, ref e))
-                return null;
+            new QueryKey(new QueryKeyRequestData {
+                KeyType = keyType
+            }, (QueryKeyResponseData result) => {
+                data = result;
+            }, null, r.Port).Run();
 
-            return JsonConvert.DeserializeObject<JsonValue<KeyInfo>>(result).Result;
+            return data;
         }
 
-        public TransferList GetTransfers(uint scanFromHeight, out uint lastTxHeight)
+        public GetTransfersResponseData GetTransfers(uint scanFromHeight, out uint lastTxHeight)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
+            //todo: this only gets transfers for account index 0
+            // need to get all transfers
+            GetTransfersResponseData data = null;
+            uint i = 0, o = 0, l = 0;
             lastTxHeight = 0;
 
-            if (!BasicRequest<GetTransfers>("get_transfers", new GetTransfers {
+            new GetTransfers(new GetTransfersRequestData {
                 ScanFromHeight = scanFromHeight
-            }, out result, ref e))
-                return null;
+            }, (GetTransfersResponseData result) =>
+            {
+                if (result.Incoming != null && result.Incoming.Count > 0)
+                    i = result.Incoming[result.Incoming.Count - 1].Height;
+                
+                if (result.Outgoing != null && result.Outgoing.Count > 0)
+                    o = result.Outgoing[result.Outgoing.Count - 1].Height;
 
-            var txl = JsonConvert.DeserializeObject<JsonValue<TransferList>>(result).Result;
+                l = Math.Max(i, o);
 
-            uint i = 0, o = 0;
+                data = result;
+            }, null, r.Port).Run();
 
-            if (txl.Incoming != null && txl.Incoming.Count > 0)
-                i = txl.Incoming[txl.Incoming.Count - 1].Height;
-            
-            if (txl.Outgoing != null && txl.Outgoing.Count > 0)
-                o = txl.Outgoing[txl.Outgoing.Count - 1].Height;
-
-            lastTxHeight = Math.Max(i, o);
-
-            return txl;
+            lastTxHeight = l;
+            return data;
         }
 
         public bool RescanSpent()
         {
-            RpcWalletError e = new RpcWalletError();
-            return BasicRequest("rescan_spent", ref e);
+            return new RescanSpent(null, null, r.Port).Run();
         }
 
         public bool RescanBlockchain()
         {
-            RpcWalletError e = new RpcWalletError();
-            return BasicRequest("rescan_blockchain", ref e);
+            return new RescanBlockchain(null, null, r.Port).Run();
         }
 
         public bool Store()
         {
-            RpcWalletError e = new RpcWalletError();
-            return BasicRequest("store", ref e);
+            return new Store(null, null, r.Port).Run();
         }
 
-        public NewAccount CreateAccount(string label)
+        public CreateAccountResponseData CreateAccount(string label)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
+            CreateAccountResponseData data = null;
 
-            if (string.IsNullOrEmpty(label))
-            {
-                if (!BasicRequest("create_account", out result, ref e))
-                    return null;
-            }
-            else
-            {
-                if (!BasicRequest<CreateAccount>("create_account", new CreateAccount {
-                    Label = label
-                }, out result, ref e))
-                    return null;
-            }
+            new CreateAccount(new CreateAccountRequestData {
+                Label = label
+            }, (CreateAccountResponseData result) => {
+                data = result;
+            }, null, r.Port).Run();
 
-            return JsonConvert.DeserializeObject<JsonValue<NewAccount>>(result).Result;
+            return data;
         }
 
         public bool LabelAccount(uint index, string label)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
-
-            return BasicRequest<LabelAccount>("label_account", new LabelAccount {
+            return new LabelAccount(new LabelAccountRequestData {
                 Index = index,
                 Label = label
-            }, out result, ref e);
+            }, null, null, r.Port).Run();
         }
 
-        public TransferTxID GetTransferByTxID(string txid)
+        public GetTransferByTxIDResponseData GetTransferByTxID(string txid)
         {
-            string result = null;
-            RpcWalletError e = new RpcWalletError();
+            GetTransferByTxIDResponseData data = null;
 
-            if (!BasicRequest<GetTransferByTxID>("get_transfer_by_txid", new GetTransferByTxID {
+            new GetTransferByTxID(new GetTransferByTxIDRequestData {
                 TxID = txid
-            }, out result, ref e))
-                return null;
+            }, (GetTransferByTxIDResponseData result) => {
+                data = result;
+            }, null, r.Port).Run();
 
-            return JsonConvert.DeserializeObject<JsonValue<TransferContainer>>(result).Result.Transfer;
+            return data;
         }
 
-        public Send TransferFunds(SubAddressAccount acc, string address, string paymentId, double amount, Send_Priority priority, ref RpcWalletError e)
+        public TransferResponseData TransferFunds(SubAddressAccount acc, string address, string paymentId, double amount, Send_Priority priority)
         {
-            var dest = new Destination
-            {
-                Address = address,
-                Amount = Conversions.ToAtomicUnits(amount)
-            };
+            TransferResponseData data = null;
 
-            Send sendResponse = null;
+            new Transfer(new TransferRequestData {
+                AccountIndex = acc.Index,
+                Priority = (uint)priority,
+                PaymentId = paymentId,
+                Destinations = new List<TransferDestination> {
+                    new TransferDestination {
+                        Address = address,
+                        Amount = Conversions.ToAtomicUnits(amount)
+                    }
+                }
+            }, (TransferResponseData result) => {
+                data = result;
+            }, null, r.Port).Run();
 
-            if (string.IsNullOrEmpty(paymentId))
-            {
-                sendResponse = TransferFunds<SendWithoutPaymentID>(new SendWithoutPaymentID {
-                    AccountIndex = acc.Index,
-                    Priority = (uint)priority
-                }, ref e, dest);
-            }
-            else
-            {
-                sendResponse = TransferFunds<SendWithPaymentID>(new SendWithPaymentID {
-                    AccountIndex = acc.Index,
-                    Priority = (uint)priority,
-                    PaymentId = paymentId
-                }, ref e, dest);
-            }
-
-            return sendResponse;
-        }
-
-        public Send TransferFunds<T>(T sendData, ref RpcWalletError e, params Destination[] destinations) where T : SendWithoutPaymentID, new()
-        {
-            string result = null;
-
-            sendData.Destinations.AddRange(destinations);
-
-            if (!BasicRequest<T>("transfer", sendData, out result, ref e))
-                return null;
-
-            return JsonConvert.DeserializeObject<JsonValue<Send>>(result).Result;
-        }
-
-        private bool BasicRequest(string rpc, ref RpcWalletError e)
-        {
-            string result = null;
-            return BasicRequest(rpc, out result, ref e);
-        }
-
-        private bool BasicRequest(string rpc, out string result, ref RpcWalletError e)
-        {
-            result = null;
-
-            JsonRequest jr = new JsonRequest
-            {
-                MethodName = rpc
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                if (Configuration.Instance.LogRpcErrors)
-                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-
-                return false;
-            }
-
-            return !CheckError(jr.MethodName, result, ref e);
-        }
-
-        private bool BasicRequest<T>(string rpc, T param, out string result, ref RpcWalletError e)
-        {
-            result = null;
-
-            JsonRequest<T> jr = new JsonRequest<T>
-            {
-                MethodName = rpc,
-                Params = param
-            };
-
-            if (!netHelper.MakeJsonRpcRequest(jr, out result))
-            {
-                if (Configuration.Instance.LogRpcErrors)
-                    Log.Instance.Write(Log_Severity.Error, "Could not complete JSON RPC call: {0}", jr.MethodName);
-                    
-                return false;
-            }
-
-            return !CheckError(jr.MethodName, result, ref e);
-        }
-
-        private bool CheckError(string methodName, string result, ref RpcWalletError e)
-        {
-            var error = JObject.Parse(result)["error"];
-
-            if (error != null)
-            {
-                int code = error["code"].Value<int>();
-                string message = error["message"].Value<string>();
-
-                e.Code = code;
-                e.Message = message;
-
-                if (!e.SupressLogging)
-                    Log.Instance.Write(Log_Severity.Error, "Wallet.{0}: Code {1}, Message: '{2}'", methodName, code, message);
-                return true;
-            }
-
-            return false;
+            return data;
         }
     }
 }

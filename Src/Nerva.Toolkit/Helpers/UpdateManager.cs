@@ -1,6 +1,9 @@
+using System;
+using System.IO;
+using System.Net;
 using AngryWasp.Logger;
+using Nerva.Rpc.Daemon;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Response;
 
 namespace Nerva.Toolkit.Helpers
 {
@@ -16,9 +19,31 @@ namespace Nerva.Toolkit.Helpers
         //Deprecated. Move all code to VersionManager
         private static Update_Status_Code updateStatus = Update_Status_Code.Undefined;
 
-        public static Update_Status_Code UpdateStatus
+        public static Update_Status_Code UpdateStatus => updateStatus;
+
+        public static bool MakeHttpRequest(string url, out string returnString)
         {
-            get { return updateStatus; }
+            try
+            {
+                HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+                req.Method = "GET";
+                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+
+                using (Stream stream = resp.GetResponseStream())
+                {
+                    StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8);
+                    returnString = reader.ReadToEnd();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Instance.Write(Log_Severity.Warning, "Error attempting HTTP request {0}", url);
+                Log.Instance.WriteNonFatalException(ex);
+                returnString = null;
+                return false;
+            }
         }
 
         public static void CheckForCliUpdates()
@@ -26,7 +51,7 @@ namespace Nerva.Toolkit.Helpers
             updateStatus = Update_Status_Code.Undefined;
 
             Log.Instance.Write("Checking for updates...");
-            Info daemonInfo = Cli.Instance.Daemon.Interface.GetInfo();
+            GetInfoResponseData daemonInfo = Cli.Instance.Daemon.Interface.GetInfo();
 
             if (daemonInfo == null)
             {
@@ -49,7 +74,7 @@ namespace Nerva.Toolkit.Helpers
         private static ulong CheckAvailableVersion()
         {
             string versionString = null;
-            NetHelper.MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
+            MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
 
             if (versionString == null)
             {

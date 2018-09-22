@@ -7,11 +7,11 @@ namespace Nerva.Toolkit.CLI
 {
     public class CliInterface
     {
-        protected NetHelper netHelper;
+        protected RpcDetails r;
 
         public CliInterface(RpcDetails r)
         {
-            netHelper = new NetHelper(r);
+            this.r = r;
         }
 
         public static List<Process> GetRunningProcesses(string exe)

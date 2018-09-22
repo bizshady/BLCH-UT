@@ -5,9 +5,9 @@ using System.Linq;
 using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Response;
 using AngryWasp.Helpers;
 using System.Diagnostics;
+using Nerva.Rpc.Daemon;
 
 namespace Nerva.Toolkit.Content
 {
@@ -45,10 +45,10 @@ namespace Nerva.Toolkit.Content
 				GridLines = GridLines.Horizontal,
 				Columns = 
 				{
-					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Address)}, HeaderText = "Address" },
-					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.Height.ToString())}, HeaderText = "Height" },
-					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
-					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Connection, string>(r => r.State)}, HeaderText = "State" }
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<GetConnectionsResponseData, string>(r => r.Address)}, HeaderText = "Address" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<GetConnectionsResponseData, string>(r => r.Height.ToString())}, HeaderText = "Height" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<GetConnectionsResponseData, string>(r => TimeSpan.FromSeconds(r.LiveTime).ToString(@"hh\:mm\:ss"))}, HeaderText = "Live Time" },
+					new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<GetConnectionsResponseData, string>(r => r.State)}, HeaderText = "State" }
 				}
 			};
 
@@ -65,7 +65,7 @@ namespace Nerva.Toolkit.Content
 				if (grid.SelectedRow == -1)
 					return;
 
-				Connection c = (Connection)grid.DataStore.ElementAt(grid.SelectedRow);
+				GetConnectionsResponseData c = (GetConnectionsResponseData)grid.DataStore.ElementAt(grid.SelectedRow);
 				Cli.Instance.Daemon.Interface.BanPeer(c.IP);
 			};
 
@@ -118,7 +118,7 @@ namespace Nerva.Toolkit.Content
 			};
         }
 
-        public void Update(Info info, List<Connection> connections, MiningStatus mStatus)
+        public void Update(GetInfoResponseData info, List<GetConnectionsResponseData> connections, MiningStatusResponseData mStatus)
         {
 			try
 			{
@@ -168,7 +168,7 @@ namespace Nerva.Toolkit.Content
 				}
 
 				if (connections == null)
-					connections = new List<Connection>();
+					connections = new List<GetConnectionsResponseData>();
 
 				if (OS.Type == OS_Type.Windows)
 				{

@@ -54,7 +54,7 @@ namespace Nerva.Toolkit.Config
                 LastWalletPassword = null,
                 SaveWalletPassword = false,
 
-                Rpc = RpcDetails.New(MathHelper.Random.NextInt(10000, 50000))
+                Rpc = RpcDetails.New((uint)MathHelper.Random.NextInt(10000, 50000))
             };
         }
     }

@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using AngryWasp.Logger;
 using Eto.Forms;
+using Nerva.Rpc.Daemon;
+using Nerva.Rpc.Wallet;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.Content.Wizard;
@@ -107,8 +107,8 @@ namespace Nerva.Toolkit
                     if (token.IsCancellationRequested)
                         token.ThrowIfCancellationRequested();
 
-                    Account account = null;
-                    TransferList transfers = null;
+                    GetAccountsResponseData account = null;
+                    GetTransfersResponseData transfers = null;
                     await Task.Run( () =>
                     {
                         try
@@ -178,10 +178,10 @@ namespace Nerva.Toolkit
                     if (token.IsCancellationRequested)
                         token.ThrowIfCancellationRequested();
 
-                    Info info = null;
-                    List<Connection> connections = null;
-                    int height = -1;
-                    MiningStatus mStatus = null;
+                    GetInfoResponseData info = null;
+                    List<GetConnectionsResponseData> connections = null;
+                    uint height = 0;
+                    MiningStatusResponseData mStatus = null;
 
                     await Task.Run( () =>
                     {
@@ -190,7 +190,7 @@ namespace Nerva.Toolkit
                             height = Cli.Instance.Daemon.Interface.GetBlockCount();
                             info = Cli.Instance.Daemon.Interface.GetInfo();
                             connections = Cli.Instance.Daemon.Interface.GetConnections();
-                            mStatus = Cli.Instance.Daemon.Interface.GetMiningStatus();
+                            mStatus = Cli.Instance.Daemon.Interface.MiningStatus();
                         }
                         catch (Exception) { }
                     });
@@ -268,7 +268,7 @@ namespace Nerva.Toolkit
 
         protected void daemon_ToggleMining_Clicked(object sender, EventArgs e)
         {
-            MiningStatus ms = Cli.Instance.Daemon.Interface.GetMiningStatus();
+            MiningStatusResponseData ms = Cli.Instance.Daemon.Interface.MiningStatus();
 
             if (ms.Active)
             {

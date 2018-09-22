@@ -3,9 +3,8 @@ using System.Text;
 using AngryWasp.Helpers;
 using Eto.Drawing;
 using Eto.Forms;
+using Nerva.Rpc.Wallet;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Request;
-using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Helpers;
 using static Nerva.Toolkit.CLI.WalletInterface;
 

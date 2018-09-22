@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Eto.Forms;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
-using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Content.Dialogs;
@@ -11,6 +10,8 @@ using System.Diagnostics;
 using System.ComponentModel;
 using static Nerva.Toolkit.CLI.WalletInterface;
 using System.Threading.Tasks;
+using Nerva.Rpc;
+using Nerva.Rpc.Wallet;
 
 namespace Nerva.Toolkit.Content
 {
@@ -80,12 +81,9 @@ namespace Nerva.Toolkit.Content
                     //the payment is being processed
                     Helpers.TaskFactory.Instance.RunTask("transfer", $"Transferring {d.Amount} XNV to {d.Address}", () =>
 					{
-						RpcWalletError err = new RpcWalletError();
-						Send txData = Cli.Instance.Wallet.Interface.TransferFunds(a, d.Address, d.PaymentId, d.Amount, d.Priority, ref err);
+						TransferResponseData txData = Cli.Instance.Wallet.Interface.TransferFunds(a, d.Address, d.PaymentId, d.Amount, d.Priority);
 
-						if (err.Code == 0)
-						{
-							if (txData != null)
+						if (txData != null)
 							{
 								Application.Instance.AsyncInvoke(() =>
 								{
@@ -94,14 +92,11 @@ namespace Nerva.Toolkit.Content
 										"TX Results", MessageBoxType.Information);
 								});
 							}
-							else
-								Debugger.Break();
-						}
 						else
 						{
 							Application.Instance.AsyncInvoke(() =>
 							{
-								MessageBox.Show(Application.Instance.MainForm, $"The transfer request returned RPC error:\r\n{err.Message}", MessageBoxType.Error);
+								MessageBox.Show(Application.Instance.MainForm, "The transfer request failed", MessageBoxType.Error);
 							});
 						}
 					});
@@ -191,7 +186,7 @@ namespace Nerva.Toolkit.Content
 			};
 		}
 
-		public void Update(Account a)
+		public void Update(GetAccountsResponseData a)
 		{
 			try
 			{

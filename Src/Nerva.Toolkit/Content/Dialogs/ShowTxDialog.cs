@@ -1,10 +1,6 @@
-using System.Collections.Generic;
-using System.IO;
 using AngryWasp.Helpers;
-using Eto.Drawing;
 using Eto.Forms;
-using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Response;
+using Nerva.Rpc.Wallet;
 using Nerva.Toolkit.Helpers;
 
 namespace Nerva.Toolkit.Content.Dialogs
@@ -27,7 +23,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 		private Label lblIndex = new Label();
 		private Label lblDoubleSpend = new Label();
 
-        public ShowTxDialog(TransferTxID tx, string title = "Transaction Details") : base(title)
+        public ShowTxDialog(GetTransferByTxIDResponseData tx, string title = "Transaction Details") : base(title)
         {
 			lblAddress.Text = tx.Address;
 			lblTxId.Text = tx.TxId;

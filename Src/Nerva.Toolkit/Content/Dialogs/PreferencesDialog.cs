@@ -3,7 +3,6 @@ using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Response;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
 
@@ -275,11 +274,11 @@ namespace Nerva.Toolkit.Content.Dialogs
             Configuration.Instance.Daemon.AutoStartMining = chkAutoStartMining.Checked.Value;
             Configuration.Instance.Daemon.MiningAddress = txtMiningAddress.Text;
             Configuration.Instance.Daemon.MiningThreads = (int)nsMiningThreads.Value;
-            Configuration.Instance.Daemon.Rpc.Port = (int)nsDaemonPort.Value;
+            Configuration.Instance.Daemon.Rpc.Port = (uint)nsDaemonPort.Value;
 
             Configuration.Instance.Wallet.WalletDir = txtWalletPath.Text;
             Configuration.Instance.Wallet.SaveWalletPassword = chkSaveWalletPassword.Checked.Value;
-            Configuration.Instance.Wallet.Rpc.Port = (int)nsWalletPort.Value;
+            Configuration.Instance.Wallet.Rpc.Port = (uint)nsWalletPort.Value;
 
             this.Close(DialogResult.Ok);
         }

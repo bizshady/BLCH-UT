@@ -6,13 +6,13 @@ namespace Nerva.Toolkit.Config
     {
         public bool IsPublic { get; set; } = false;
 
-        public int Port { get; set; } = -1;
+        public uint Port { get; set; } = 0;
 
         public string Login { get; set; } = "";
 
         public string Pass { get; set; } = "";
 
-        public static RpcDetails New(int port)
+        public static RpcDetails New(uint port)
         {
             return new RpcDetails
             {

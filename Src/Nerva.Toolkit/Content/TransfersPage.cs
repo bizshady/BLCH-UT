@@ -2,16 +2,13 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Eto.Forms;
-using Eto.Drawing;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
-using Nerva.Toolkit.CLI.Structures.Response;
 using AngryWasp.Helpers;
 using Nerva.Toolkit.Content.Dialogs;
 using Nerva.Toolkit.CLI;
-using System.Diagnostics;
 using Nerva.Toolkit.Config;
-using System.Threading.Tasks;
+using Nerva.Rpc.Wallet;
 
 namespace Nerva.Toolkit.Content
 {
@@ -21,7 +18,7 @@ namespace Nerva.Toolkit.Content
         public Scrollable MainControl => mainControl;
 
         GridView grid;
-        List<Transfer> txList = new List<Transfer>();
+        List<TransferItem> txList = new List<TransferItem>();
         bool needGridUpdate = false;
         uint lastHeight = 0;
 
@@ -36,7 +33,7 @@ namespace Nerva.Toolkit.Content
                 if (grid.SelectedRow == -1)
                     return;
 
-                Transfer t = txList[grid.SelectedRow];
+                var t = txList[grid.SelectedRow];
 
                 Helpers.TaskFactory.Instance.RunTask("gettx", $"Fetching transaction information", () =>
                 {
@@ -66,11 +63,11 @@ namespace Nerva.Toolkit.Content
                 GridLines = GridLines.Horizontal,
                 Columns =
                 {
-                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => r.Type)}, HeaderText = "Type" },
-                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => r.Height.ToString())}, HeaderText = "Height" },
-                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => StringHelper.UnixTimeStampToDateTime(r.Timestamp).ToString())}, HeaderText = "Time" },
-                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.FromAtomicUnits(r.Amount).ToString())}, HeaderText = "Amount" },
-                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<Transfer, string>(r => Conversions.WalletAddressShortForm(r.TxId))}, HeaderText = "TxID" },
+                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<TransferItem, string>(r => r.Type)}, HeaderText = "Type" },
+                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<TransferItem, string>(r => r.Height.ToString())}, HeaderText = "Height" },
+                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<TransferItem, string>(r => StringHelper.UnixTimeStampToDateTime(r.Timestamp).ToString())}, HeaderText = "Time" },
+                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<TransferItem, string>(r => Conversions.FromAtomicUnits(r.Amount).ToString())}, HeaderText = "Amount" },
+                    new GridColumn { DataCell = new TextBoxCell { Binding = Binding.Property<TransferItem, string>(r => Conversions.WalletAddressShortForm(r.TxId))}, HeaderText = "TxID" },
                 }
             };
 
@@ -85,7 +82,7 @@ namespace Nerva.Toolkit.Content
             Update(null);
         }
 
-        public void Update(TransferList t)
+        public void Update(GetTransfersResponseData t)
         {
             try
             {
@@ -131,7 +128,7 @@ namespace Nerva.Toolkit.Content
             }
         }
 
-        private int ProcessNewTransfers(TransferList t)
+        private int ProcessNewTransfers(GetTransfersResponseData t)
         {
 			int i = 0;
 
@@ -142,7 +139,7 @@ namespace Nerva.Toolkit.Content
 				return -1;
 			}
 
-            List<Transfer> merged = new List<Transfer>();
+            var merged = new List<TransferItem>();
             merged.AddRange(t.Incoming);
             merged.AddRange(t.Outgoing);
             merged.AddRange(t.Pending);

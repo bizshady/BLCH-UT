@@ -1,7 +1,7 @@
 using AngryWasp.Logger;
 using Eto.Forms;
+using Nerva.Rpc.Wallet;
 using Nerva.Toolkit.CLI;
-using Nerva.Toolkit.CLI.Structures.Response;
 
 namespace Nerva.Toolkit.Content.Dialogs
 {
@@ -17,8 +17,8 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         public DisplayKeysDialog() : base("Restore Info")
         {
-            KeyInfo ki = Cli.Instance.Wallet.Interface.QueryKey(Key_Type.All_Keys);
-            KeyInfo ki2 = Cli.Instance.Wallet.Interface.QueryKey(Key_Type.Mnemonic);
+            QueryKeyResponseData ki = Cli.Instance.Wallet.Interface.QueryKey("all_keys");
+            QueryKeyResponseData ki2 = Cli.Instance.Wallet.Interface.QueryKey("mnemonic");
 
             if (ki != null)
             {

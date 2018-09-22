@@ -9,13 +9,6 @@ using Newtonsoft.Json;
 
 namespace Nerva.Toolkit.Helpers
 {
-    public enum Supported_Systems
-    {
-        Ubuntu,
-        Fedora,
-        Debian
-    }
-
     public static class VersionManager
     {
         private static VersionInfo versionInfo;
@@ -29,7 +22,7 @@ namespace Nerva.Toolkit.Helpers
                 Log.Instance.Write("Checking for new versions");
 
                 string versionString = null;
-                NetHelper.MakeHttpRequest("http://getnerva.org/getbinaries.php", out versionString);
+                UpdateManager.MakeHttpRequest("http://getnerva.org/getbinaries.php", out versionString);
 
                 if (versionString == null)
                 {
