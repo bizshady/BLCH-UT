@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using Eto.Forms;
 using AngryWasp.Logger;
 using Nerva.Toolkit.Helpers;
-using Nerva.Toolkit.Config;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Content.Dialogs;
-using System.Diagnostics;
-using System.ComponentModel;
-using static Nerva.Toolkit.CLI.WalletInterface;
-using System.Threading.Tasks;
-using Nerva.Rpc;
 using Nerva.Rpc.Wallet;
+using Configuration = Nerva.Toolkit.Config.Configuration;
 
 namespace Nerva.Toolkit.Content
 {

@@ -16,6 +16,7 @@ namespace Nerva.Toolkit.CLI
 
         public static List<Process> GetRunningProcesses(string exe)
         {
+            //todo: GetProcessesByName may result in error. Use Process.MainModule.ModuleName
             List<Process> r = new  List<Process>();
             var pl = Process.GetProcessesByName(exe);
 

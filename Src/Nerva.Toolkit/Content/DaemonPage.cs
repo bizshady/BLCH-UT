@@ -31,6 +31,7 @@ namespace Nerva.Toolkit.Content
 		private Label lblMiningAddress = new Label() { Text = "." };
 		private Label lblMiningThreads = new Label() { Text = "." };
 		private Label lblMiningHashrate = new Label() { Text = "." };
+		private Label lblTimeToBlock = new Label() { Text = "." };
 
         #endregion
 
@@ -104,7 +105,9 @@ namespace Nerva.Toolkit.Content
 								new TableCell(lblMiningHashrate)),
 							new TableRow(
 								new TableCell(new Label { Text = "Network:" }),
-								new TableCell(lblNetwork)),
+								new TableCell(lblNetwork),
+								new TableCell(new Label { Text = "Time to Block:" }),
+								new TableCell(lblTimeToBlock)),
 							new TableRow(
 								new TableCell(null),
 								new TableCell(null))
@@ -158,6 +161,10 @@ namespace Nerva.Toolkit.Content
 						speed = $"{(double)mStatus.Speed} h/s";
 					
 					lblMiningHashrate.Text = speed;
+
+					double t = ((info.Difficulty / 60.0d) / mStatus.Speed) / 1440.0d;
+
+					lblTimeToBlock.Text = String.Format("{0:F2}", Math.Round(t, 2)) + " days";
 				}
 				else
 				{
@@ -165,6 +172,7 @@ namespace Nerva.Toolkit.Content
 					lblMiningAddress.Text = "-";
 					lblMiningThreads.Text = "-";
 					lblMiningHashrate.Text = "-";
+					lblTimeToBlock.Text = "-";
 				}
 
 				if (connections == null)

@@ -14,7 +14,6 @@ namespace Nerva.Toolkit.Config
 
         public bool CheckForUpdateOnStartup { get; set; }
 
-        public bool LogRpcTraffic { get; set; }
         public bool LogRpcErrors { get; set; } = true;
 
         public bool Testnet { get; set; }
@@ -42,7 +41,6 @@ namespace Nerva.Toolkit.Config
             {
                 ToolsPath = Path.Combine(Environment.CurrentDirectory, "CLI"),
                 CheckForUpdateOnStartup = false,
-                LogRpcTraffic = false,
                 Testnet = false,
 
                 Daemon = Daemon.New(true),

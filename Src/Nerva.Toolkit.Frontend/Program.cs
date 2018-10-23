@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
@@ -18,6 +17,7 @@ namespace Nerva.Toolkit.Frontend
 		/// Available command line arguments
 		/// --log-file: Location to write a log file to
 		/// --config-file: Location to load a config file from
+		/// --new-daemon: Kill any running daemon instances and restart them.
 		/// </summary>
 		[STAThread]
 		public static void Main(string[] args)
@@ -39,18 +39,12 @@ namespace Nerva.Toolkit.Frontend
 			bool newFile;
 
 			Configuration.Load(configFile, out newFile);
+			Nerva.Rpc.Configuration.ErrorLogVerbosity = Configuration.Instance.LogRpcErrors ? 
+				Nerva.Rpc.Error_Log_Verbosity.Normal : Nerva.Rpc.Error_Log_Verbosity.None;
+			
 			Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);
 
 			Configuration.Instance.NewDaemonOnStartup = cmd["new-daemon"] != null;
-
-			if (platform.IsGtk)
-			{
-				GLib.ExceptionManager.UnhandledException += (x) =>
-				{
-					var ex = x.ExceptionObject as Exception;
-					Log.Instance.WriteFatalException(ex, ex.Message);
-				};
-			}
 
 			try
 			{

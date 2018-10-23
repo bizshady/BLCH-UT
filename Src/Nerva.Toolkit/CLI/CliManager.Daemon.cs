@@ -37,6 +37,7 @@ namespace Nerva.Toolkit.CLI
                     proc.WaitForExit();
         
                     string n = Path.GetFileNameWithoutExtension(exe);
+                    //todo: GetProcessesByName may result in error. Use Process.MainModule.ModuleName
                     var p = Process.GetProcessesByName(n);
         
                     if (p.Length == 1)

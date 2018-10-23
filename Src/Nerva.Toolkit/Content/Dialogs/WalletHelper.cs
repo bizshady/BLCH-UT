@@ -156,7 +156,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         {
             Configuration.Instance.Wallet.LastOpenedWallet = walletFile;
 
-            string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : StringHelper.EncodeBase64(password);
+            string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : password.EncodeBase64();
 
             if (Configuration.Instance.Wallet.SaveWalletPassword)
                 Configuration.Instance.Wallet.LastWalletPassword = formattedPassword;
@@ -177,7 +177,7 @@ namespace Nerva.Toolkit.Content.Dialogs
             //Load from the saved password if that exists
             if (w.LastWalletPassword != null)
             {
-                string pass = w.LastWalletPassword == string.Empty ? string.Empty : StringHelper.DecodeBase64(w.LastWalletPassword);
+                string pass = w.LastWalletPassword == string.Empty ? string.Empty : w.LastWalletPassword.DecodeBase64();
                 if (Cli.Instance.Wallet.Interface.OpenWallet(w.LastOpenedWallet, pass))
                 {
                     Log.Instance.Write("Wallet file '{0}' opened", w.LastOpenedWallet);

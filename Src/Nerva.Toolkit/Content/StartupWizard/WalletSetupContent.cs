@@ -149,7 +149,7 @@ namespace Nerva.Toolkit.Content.Wizard
 
         public static void SaveWalletLogin(string walletFile, string password)
         {
-            string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : StringHelper.EncodeBase64(password);
+            string formattedPassword = string.IsNullOrEmpty(password) ? string.Empty : password.EncodeBase64();
             Configuration.Instance.Wallet.LastOpenedWallet = walletFile;
             Configuration.Instance.Wallet.LastWalletPassword = formattedPassword;
         }

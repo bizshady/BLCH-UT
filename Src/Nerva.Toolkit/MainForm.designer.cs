@@ -19,6 +19,7 @@ namespace Nerva.Toolkit
 		DaemonPage daemonPage = new DaemonPage();
 		BalancesPage balancesPage = new BalancesPage();
 		TransfersPage transfersPage = new TransfersPage();
+		ChartPage chartsPage = new ChartPage();
 
 		#endregion
 
@@ -39,6 +40,7 @@ namespace Nerva.Toolkit
 			daemonPage.ConstructLayout();
 			balancesPage.ConstructLayout();
 			transfersPage.ConstructLayout();
+			chartsPage.ConstructLayout();
 
 			TabControl tabs = new TabControl
 			{
@@ -46,6 +48,7 @@ namespace Nerva.Toolkit
 					new TabPage { Text = "Daemon", Content = daemonPage.MainControl },
 					new TabPage { Text = "Balances", Content = balancesPage.MainControl },
 					new TabPage { Text = "Transfers", Content = transfersPage.MainControl },
+					new TabPage { Text = "Charts", Content = chartsPage.MainControl },
 				}
 			};
 

@@ -21,6 +21,9 @@ namespace Nerva.Toolkit
         AsyncTaskContainer updateDaemonTask;
 
         uint lastTxHeight = 0;
+        uint lastHeight = 0;
+        uint averageHashrateAmount;
+        uint averageHashRateCount;
 
         public MainForm(bool newConfig)
         {
@@ -202,7 +205,7 @@ namespace Nerva.Toolkit
                     {
                         Application.Instance.Invoke(() =>
                         {
-                            lblDaemonStatus.Text = $"Height: {height} | Connections: {info.IncomingConnectionsCount}/{info.OutgoingConnectionsCount}";
+                            lblDaemonStatus.Text = $"Height: {height} | Connections: {info.OutgoingConnectionsCount}(out)+{info.IncomingConnectionsCount}(in)";
 
                             if (info.TargetHeight != 0 && info.Height < info.TargetHeight)
                                 lblDaemonStatus.Text += " | Syncing";
@@ -213,6 +216,22 @@ namespace Nerva.Toolkit
                             ad.Version = $"GUI: {Constants.VERSION}\r\nCLI: {info.Version}";
 
                             daemonPage.Update(info, connections, mStatus);
+                            chartsPage.HrPlot.AddDataPoint(0, mStatus.Speed);
+
+                            if (lastHeight != height)
+                            {
+                                lastHeight = height;
+                                if (averageHashRateCount > 0)
+                                {
+                                    uint avg = averageHashrateAmount / averageHashRateCount;
+                                    chartsPage.HrPlot.AddDataPoint(1, avg);
+                                    averageHashrateAmount = 0;
+                                    averageHashRateCount = 0;
+                                }
+                            }
+
+                            averageHashrateAmount += (uint)mStatus.Speed;
+                            ++averageHashRateCount;
                         });
                     }
                     else
