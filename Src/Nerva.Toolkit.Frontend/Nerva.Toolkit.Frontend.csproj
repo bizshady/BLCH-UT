@@ -24,10 +24,12 @@
     Eto.Platform.XamMac2 nuget package to give a consistent way of including it
     -->
     <Reference Include="..\..\External\Xamarin.Mac.dll"/>
+    <Reference Include="..\..\External\MonoMac.dll"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Eto.Platform.Gtk3" Version="*"/>
     <PackageReference Include="Eto.Platform.Wpf" Version="*"/>
+    <PackageReference Include="Eto.Platform.Mac64" Version="*"/>
     <PackageReference Include="Eto.Platform.XamMac2" Version="*"/>
   </ItemGroup>
 </Project>
