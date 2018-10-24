@@ -1,4 +1,5 @@
 using System;
+using Nerva.Toolkit.Helpers.Native;
 
 namespace Nerva.Toolkit.Helpers
 {	
@@ -35,6 +36,7 @@ namespace Nerva.Toolkit.Helpers
     public enum OS_Type
     {
         Linux,
+        Mac,
         Windows,
         Unsupported,
     }
@@ -54,7 +56,15 @@ namespace Nerva.Toolkit.Helpers
                     case PlatformID.Win32Windows:
                         return OS_Type.Windows;
                     case PlatformID.Unix:
-                        return OS_Type.Linux;
+                    {
+                        var uname = LinuxNative.Uname().sysname.ToLower();
+                        if (uname == "linux")
+                            return OS_Type.Linux;
+                        else if (uname == "darwin")
+                            return OS_Type.Mac;
+                        else
+                            return OS_Type.Unsupported; 
+                    }     
                     default:
                         return OS_Type.Unsupported; 
                 }

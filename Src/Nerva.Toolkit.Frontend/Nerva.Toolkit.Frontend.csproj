@@ -19,6 +19,13 @@
     <ProjectReference Include="..\Nerva.Toolkit\Nerva.Toolkit.csproj"/>
   </ItemGroup>
   <ItemGroup>
+    <!--
+    Xamarin.Mac is required by Eto.Platform.XamMac2, but not copied to the output directory. This dll is copied from the 
+    Eto.Platform.XamMac2 nuget package to give a consistent way of including it
+    -->
+    <Reference Include="..\..\External\Xamarin.Mac.dll"/>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Eto.Platform.Gtk3" Version="*"/>
     <PackageReference Include="Eto.Platform.Wpf" Version="*"/>
     <PackageReference Include="Eto.Platform.XamMac2" Version="*"/>

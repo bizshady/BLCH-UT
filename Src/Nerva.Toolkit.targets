@@ -27,6 +27,8 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../External/Nerva.Rpc.CSharp/Src/Nerva.Rpc/Nerva.Rpc.csproj" />
+    <ProjectReference Include="../../External/AngryWasp.Serializer/External/AngryWasp.Logger/Src/AngryWasp.Logger/AngryWasp.Logger.csproj" />
+    <ProjectReference Include="../../External/AngryWasp.Serializer/External/AngryWasp.Helpers/Src/AngryWasp.Helpers/AngryWasp.Helpers.csproj" />
     <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer/AngryWasp.Serializer.csproj" />
     <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer.Serializers/AngryWasp.Serializer.Serializers.csproj" />
   </ItemGroup>
