@@ -5,16 +5,8 @@
     <RootNamespace>Nerva.Toolkit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Eto.Forms" Version="*"/>
     <PackageReference Include="Newtonsoft.Json" Version="*"/>
     <PackageReference Include="System.IO.Compression" Version="*"/>
-  </ItemGroup>
-    <ItemGroup>
-    <!--
-    Mono.Posix is used for some unix specific requirements, and is included as part of the mono framework. It is not included on windows
-    so it needs to be manually referenced and copied from here so compilation succeeds on windows, even though windows does not use it.
-    -->
-    <Reference Include="..\..\External\Mono.Posix.dll"/>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="../../Content/NERVA-Logo.png"/>

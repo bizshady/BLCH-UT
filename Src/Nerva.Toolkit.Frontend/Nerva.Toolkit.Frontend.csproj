@@ -1,35 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="../Nerva.Toolkit.targets"/>
+  <Import Project="../Nerva.Toolkit.targets" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Nerva.Toolkit.Frontend</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System"/>
-    <Reference Include="System.Data"/>
-    <Reference Include="System.Xml"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="System.Core"/>
-    <Reference Include="System.Xml.Linq"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    <Reference Include="System.Net.Http"/>
-    <Reference Include="System.Xaml"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nerva.Toolkit\Nerva.Toolkit.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <!--
-    Xamarin.Mac is required by Eto.Platform.XamMac2, but not copied to the output directory. This dll is copied from the 
-    Eto.Platform.XamMac2 nuget package to give a consistent way of including it
-    -->
-    <Reference Include="..\..\External\Xamarin.Mac.dll"/>
-    <Reference Include="..\..\External\MonoMac.dll"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Eto.Platform.Gtk3" Version="*"/>
-    <PackageReference Include="Eto.Platform.Wpf" Version="*"/>
-    <PackageReference Include="Eto.Platform.Mac64" Version="*"/>
-    <PackageReference Include="Eto.Platform.XamMac2" Version="*"/>
+    <ProjectReference Include="../Nerva.Toolkit/Nerva.Toolkit.csproj" />
   </ItemGroup>
 </Project>
