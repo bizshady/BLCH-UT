@@ -2,3 +2,4 @@ Bin
 /Src/Nerva.Toolkit/obj
 /Src/Nerva.Toolkit.Frontend/obj
 BuildOutput
+.DS_Store

@@ -44,14 +44,10 @@
     <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer.Serializers/AngryWasp.Serializer.Serializers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="../../External/Xamarin.Mac.dll"/>
-    <Reference Include="../../External/MonoMac.dll"/>
-    <Reference Include="../../External/Mono.Posix.dll"/>
+    <Reference Include="../../External/Lib/MonoMac.dll"/>
+    <Reference Include="../../External/Lib/Mono.Posix.dll"/>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Eto.Forms" Version="2.5.0-ci-10024" />
-    <PackageReference Include="Eto.Platform.Gtk" Version="2.5.0-ci-10024" />
-    <PackageReference Include="Eto.Platform.Wpf" Version="2.5.0-ci-10024" />
-    <PackageReference Include="Eto.Platform.Mac64" Version="2.5.0-ci-10024" />
-  </ItemGroup>
+  <!--<ItemGroup>
+    <None Include="../../External/Lib/GtkSharp3/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>-->
 </Project>

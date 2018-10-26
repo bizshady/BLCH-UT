@@ -74,7 +74,7 @@ namespace Nerva.Toolkit
                         int i = (int)lblTaskList.Tag;
                         if (i != Helpers.TaskFactory.Instance.GetHashCode())
                         {
-                            lblTaskList.Text = $"Running Tasks: {Helpers.TaskFactory.Instance.Count}";
+                            lblTaskList.Text = $"Tasks: {Helpers.TaskFactory.Instance.Count}";
                             lblTaskList.ToolTip = Helpers.TaskFactory.Instance.ToString().TrimEnd();
                             lblTaskList.Tag = Helpers.TaskFactory.Instance.GetHashCode();
                         }

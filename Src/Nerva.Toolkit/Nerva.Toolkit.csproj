@@ -11,4 +11,7 @@
   <ItemGroup>
     <EmbeddedResource Include="../../Content/NERVA-Logo.png"/>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Eto.Forms" Version="2.5.0-ci-10024" />
+  </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@ using System.IO;
 using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using AngryWasp.Serializer;
+using Eto;
 using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Config;
@@ -22,8 +23,6 @@ namespace Nerva.Toolkit.Frontend
 		[STAThread]
 		public static void Main(string[] args)
 		{
-			var platform = Eto.Platform.Detect;
-
 			CommandLineParser cmd = CommandLineParser.Parse(args);
 
 			string logFile, configFile;
@@ -48,6 +47,8 @@ namespace Nerva.Toolkit.Frontend
 
 			try
 			{
+				Platform platform = Eto.Platform.Detect;
+				Log.Instance.Write("Platform detected as {0}", platform.ToString());
 				new Application(platform).Run(new MainForm(newFile));
 			}
 			catch (Exception ex)
