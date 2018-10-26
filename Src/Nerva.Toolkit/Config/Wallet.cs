@@ -17,7 +17,7 @@ namespace Nerva.Toolkit.Config
         {
             get
             {
-                if (OS.Type == OS_Type.Windows)
+                if (OS.IsWindows())
                     if (!walletDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
                         walletDir = walletDir + Path.DirectorySeparatorChar;
 
@@ -26,7 +26,7 @@ namespace Nerva.Toolkit.Config
 
             set
             {
-                if (OS.Type == OS_Type.Windows)
+                if (OS.IsWindows())
                     if (!value.EndsWith(Path.DirectorySeparatorChar.ToString()))
                         value = value + Path.DirectorySeparatorChar;
                 

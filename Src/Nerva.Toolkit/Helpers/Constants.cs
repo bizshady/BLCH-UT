@@ -35,6 +35,7 @@ namespace Nerva.Toolkit.Helpers
 
     public enum OS_Type
     {
+        NotSet,
         Linux,
         Mac,
         Windows,
@@ -43,10 +44,14 @@ namespace Nerva.Toolkit.Helpers
 
     public static class OS
     {
+        private static OS_Type type = OS_Type.NotSet;
         public static OS_Type Type
         {
             get
             {
+                if (type != OS_Type.NotSet)
+                    return type;
+
                 var p = Environment.OSVersion.Platform;
 
                 switch (p)
@@ -54,22 +59,38 @@ namespace Nerva.Toolkit.Helpers
                     case PlatformID.Win32NT:
                     case PlatformID.Win32S:
                     case PlatformID.Win32Windows:
-                        return OS_Type.Windows;
+                        type = OS_Type.Windows;
+                        break;
                     case PlatformID.Unix:
-                    {
-                        var uname = LinuxNative.Uname().sysname.ToLower();
-                        if (uname == "linux")
-                            return OS_Type.Linux;
-                        else if (uname == "darwin")
-                            return OS_Type.Mac;
-                        else
-                            return OS_Type.Unsupported; 
-                    }     
+                        {
+                            var uname = LinuxNative.Uname().sysname.ToLower();
+                            if (uname == "linux")
+                                type = OS_Type.Linux;
+                            else if (uname == "darwin")
+                                type = OS_Type.Mac;
+                            else
+                                type = OS_Type.Unsupported;
+                        }
+                        break;
                     default:
-                        return OS_Type.Unsupported; 
+                        type = OS_Type.Unsupported;
+                        break;
                 }
+
+                if (type == OS_Type.Unsupported)
+                    throw new NotSupportedException("The OS type could not be determined");
+
+                return type;
             }
         }
+
+        public static bool IsWindows() => type == OS_Type.Windows;
+
+        public static bool IsLinux() => type == OS_Type.Linux;
+
+        public static bool IsMac() => type == OS_Type.Mac;
+
+        public static bool IsUnix() => type == OS_Type.Linux || type == OS_Type.Mac;
     }
 
     public static class SeedNodes

@@ -23,7 +23,9 @@ namespace Nerva.Toolkit.Frontend
 		[STAThread]
 		public static void Main(string[] args)
 		{
-			CommandLineParser cmd = CommandLineParser.Parse(args);
+            //Workaround for debugging on Mac
+            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+            CommandLineParser cmd = CommandLineParser.Parse(args);
 
 			string logFile, configFile;
 

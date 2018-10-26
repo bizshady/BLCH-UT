@@ -19,7 +19,7 @@ namespace Nerva.Toolkit.Content.Dialogs
         {
             this.DefaultButton = btnCancel;
 
-            if (OS.Type == OS_Type.Linux)
+            if (OS.IsUnix())
                 this.Height = 400;
 
             btnAdd.Click += (s, e) =>
@@ -62,7 +62,7 @@ namespace Nerva.Toolkit.Content.Dialogs
 
         protected override void OnShown(EventArgs e)
         {
-            if (OS.Type == OS_Type.Windows)
+            if (OS.IsWindows())
                 this.Height = 400;
         }
 

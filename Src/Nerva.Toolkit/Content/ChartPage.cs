@@ -11,12 +11,12 @@ namespace Nerva.Toolkit.Content
         public StackLayout MainControl => mainControl;
 
         private PlotPanel hrPlot = new PlotPanel(
-            new FloatDataSet[] {
-                new FloatDataSet {
+            new DataSet[] {
+                new DataSet {
                     LineColor = Color.FromArgb(0, 255, 0),
                     Resolution = 60
                 },
-                new FloatDataSet {
+                new DataSet {
                     LineColor = Color.FromArgb(0, 0, 255),
                     Resolution = 60
                 }

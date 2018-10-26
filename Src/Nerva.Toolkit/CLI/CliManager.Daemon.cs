@@ -19,7 +19,8 @@ namespace Nerva.Toolkit.CLI
             switch (OS.Type)
             {
                 case OS_Type.Linux:
-                {
+                case OS_Type.Mac:
+                    {
                     //On Linux we have to use the --detach option to keep
                     //the daemon running after the wallet closes
                     //Using --detach spawns the daemon in a new process, different to the one we originally
@@ -75,7 +76,7 @@ namespace Nerva.Toolkit.CLI
                 a += $" --start-mining {ma} --mining-threads {Configuration.Instance.Daemon.MiningThreads}";
             }
             
-            if (OS.Type == OS_Type.Linux)
+            if (OS.IsUnix())
                 a += " --detach";
 
             return a;
