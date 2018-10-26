@@ -198,7 +198,7 @@ namespace Nerva.Toolkit.Content
 					accounts.Clear();
 				}
 
-				if (OS.Type == OS_Type.Windows)
+				if (OS.Type == OS_Type.Windows || OS.Type == OS_Type.Mac)
 				{
 					int si = grid.SelectedRow;
 					grid.DataStore = accounts.Count == 0 ? null : accounts;

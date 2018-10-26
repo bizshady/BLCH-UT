@@ -20,6 +20,9 @@ namespace Nerva.Toolkit.Helpers
 
         [JsonProperty("linux")]
         public string LinuxLink { get; set; }
+        
+        [JsonProperty("mac")]
+        public string MacLink { get; set; }
 
         [JsonProperty("gui")]
         public string GuiLink { get; set; }

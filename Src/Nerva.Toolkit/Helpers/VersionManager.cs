@@ -141,7 +141,7 @@ namespace Nerva.Toolkit.Helpers
                     a.ExtractToFile(extFile, true);
 
                     // ZipFile does not maintain linux permissions, so we have to set them
-                    if (Environment.OSVersion.Platform == PlatformID.Unix)
+                    if (OS.IsUnix())
                         LinuxNative.Chmod(extFile, 33261);
                 }
             }

@@ -46,10 +46,13 @@ namespace Nerva.Toolkit.Content.Wizard
                         {
                             case OS_Type.Windows:
                                 link = VersionManager.VersionInfo.WindowsLink;
-                            break;
+                                break;
                             case OS_Type.Linux:
                                 link = VersionManager.VersionInfo.LinuxLink;
-                            break;
+                                break;
+                            case OS_Type.Mac:
+                                link = VersionManager.VersionInfo.MacLink;
+                                break;
                         }
 
                         return CreateContent(link);
@@ -105,7 +108,7 @@ namespace Nerva.Toolkit.Content.Wizard
                 {
                     new Label { Text = "This platform is not supported" },
                     new Label { Text = "   " },
-                    new Label { Text = "Only Linux and Windows are supported" }
+                    new Label { Text = "Only Linux, Windows & Mac are supported" }
                 }
             };
         }

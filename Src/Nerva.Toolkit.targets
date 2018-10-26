@@ -47,7 +47,4 @@
     <Reference Include="../../External/Lib/MonoMac.dll"/>
     <Reference Include="../../External/Lib/Mono.Posix.dll"/>
   </ItemGroup>
-  <!--<ItemGroup>
-    <None Include="../../External/Lib/GtkSharp3/**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>-->
 </Project>
