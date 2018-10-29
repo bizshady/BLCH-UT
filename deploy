@@ -27,7 +27,6 @@ function generateversionfile()
 }
 
 generateversionfile
-exit 0
 
 files=($(find ${dir}/builds/*.zip))
 for item in ${files[*]}
@@ -45,3 +44,4 @@ do
   scp $item $1:/var/www/html/content/binaries/$f
 done
 
+scp ${dir}/version.php $1:/var/www/html/content/version.php
