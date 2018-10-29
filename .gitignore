@@ -1,7 +1,7 @@
 Bin
 /Src/Nerva.Toolkit/obj
 /Src/Nerva.Toolkit.Frontend/obj
-BuildOutput
+builder/output
 .DS_Store
 .vs
 version.php
