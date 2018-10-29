@@ -159,7 +159,7 @@ namespace Nerva.Toolkit.Helpers
                     if (OS.IsLinux())
                         installDir = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".local/bin");
                     else if (OS.IsMac())
-                        installDir = "/usrlocal/bin";
+                        installDir = "/usr/local/bin";
 
                     if (File.Exists(installerFile))
                         Process.Start(installerFile);
