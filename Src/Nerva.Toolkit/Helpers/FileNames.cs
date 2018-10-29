@@ -6,9 +6,9 @@ namespace Nerva.Toolkit.Helpers
 {
     public static class FileNames
     {
-        public const string NERVAD = "nervad-gui";
-        public const string CLI_WALLET = "nerva-wallet-cli-gui";
-        public const string RPC_WALLET = "nerva-wallet-rpc-gui";
+        public const string NERVAD = "nervad";
+        public const string CLI_WALLET = "nerva-wallet-cli";
+        public const string RPC_WALLET = "nerva-wallet-rpc";
 
         public static string GetCliExePath(string exe)
         {

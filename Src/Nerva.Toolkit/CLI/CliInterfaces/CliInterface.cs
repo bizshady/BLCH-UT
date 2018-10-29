@@ -16,13 +16,16 @@ namespace Nerva.Toolkit.CLI
 
         public static List<Process> GetRunningProcesses(string exe)
         {
-            //todo: GetProcessesByName may result in error. Use Process.MainModule.ModuleName
+            Process[] pl = Process.GetProcessesByName(exe);
             List<Process> r = new  List<Process>();
-            var pl = Process.GetProcessesByName(exe);
 
             foreach (var p in pl)
-                if (!p.HasExited)
-                    r.Add(p);
+            {
+                if (p.HasExited)
+                    continue;
+                    
+                r.Add(p);
+            }
             
             return r;
         }

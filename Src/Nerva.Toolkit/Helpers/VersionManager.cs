@@ -1,9 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using AngryWasp.Helpers;
 using AngryWasp.Logger;
 using Nerva.Toolkit.CLI;
+using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers.Native;
 using Newtonsoft.Json;
 
@@ -47,7 +50,7 @@ namespace Nerva.Toolkit.Helpers
                         if (Cli.Instance.Daemon != null)
                         {
                             Cli.Instance.Daemon.StopCrashCheck();
-                            Cli.Instance.Wallet.ForceClose();
+                            Cli.Instance.Daemon.ForceClose();
                         }
                         else
                             Cli.Instance.KillCliProcesses(FileNames.NERVAD);
@@ -55,7 +58,7 @@ namespace Nerva.Toolkit.Helpers
                         if (Cli.Instance.Wallet != null)
                         {
                             Cli.Instance.Wallet.StopCrashCheck();
-                            Cli.Instance.Daemon.ForceClose();
+                            Cli.Instance.Wallet.ForceClose();
                         }
                         else
                             Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);                     
@@ -79,7 +82,15 @@ namespace Nerva.Toolkit.Helpers
             TaskFactory.Instance.RunTask("downloadcli", "Downloading the CLI tools", () =>
             {
                 string url = $"{VersionInfo.BinaryUrl}binaries/{file}";
-                string destDir = Path.Combine(Environment.CurrentDirectory, "CLI");
+                string destDir = Configuration.Instance.ToolsPath;
+                
+                if (string.IsNullOrEmpty(destDir))
+                {
+                    if (OS.IsWindows())
+                        destDir = Path.Combine(Environment.CurrentDirectory, "CLI");
+                    else
+                        destDir = Path.Combine(Path.GetTempPath(), "nerva-cli");
+                }
 
                 if (!Directory.Exists(destDir))
                     Directory.CreateDirectory(destDir);
@@ -127,23 +138,49 @@ namespace Nerva.Toolkit.Helpers
                 Cli.Instance.KillCliProcesses(FileNames.RPC_WALLET);
 
                 Log.Instance.Write("Extracting CLI tools");
+                
                 ZipArchive archive = ZipFile.Open(destFile, ZipArchiveMode.Read);
                 foreach (var a in archive.Entries)
                 {
                     Log.Instance.Write("Extracting {0}", a.FullName);
-                    string newName = Path.GetFileNameWithoutExtension(a.FullName) + "-gui";
-
-                    if (OS.Type == OS_Type.Windows)
-                        newName += ".exe";
-
-                    string extFile = Path.Combine(destDir, newName);
-
+                    string extFile = Path.Combine(destDir, a.FullName);
                     a.ExtractToFile(extFile, true);
 
                     // ZipFile does not maintain linux permissions, so we have to set them
                     if (OS.IsUnix())
                         LinuxNative.Chmod(extFile, 33261);
                 }
+
+                if (OS.IsUnix())
+                {
+                    string installerFile = Path.Combine(destDir, "install");
+                    string installDir = null;
+
+                    if (OS.IsLinux())
+                        installDir = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".local/bin");
+                    else if (OS.IsMac())
+                        installDir = "/usrlocal/bin";
+
+                    if (File.Exists(installerFile))
+                        Process.Start(installerFile);
+                    else
+                    {
+                        Log.Instance.Write(Log_Severity.Warning, "Package does not contain an installer. Copying to install directory");
+
+                        try
+                        {
+                            foreach (var f in new DirectoryInfo(destDir).GetFiles())
+                                File.Copy(f.FullName, Path.Combine(installDir, f.Name), true);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Instance.WriteNonFatalException(ex);
+                        }
+                    }
+
+                    destDir = installDir;
+                }
+                
             }
             catch (Exception ex)
             {

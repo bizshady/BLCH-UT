@@ -38,10 +38,9 @@ namespace Nerva.Toolkit.CLI
                     proc.WaitForExit();
         
                     string n = Path.GetFileNameWithoutExtension(exe);
-                    //todo: GetProcessesByName may result in error. Use Process.MainModule.ModuleName
-                    var p = Process.GetProcessesByName(n);
-        
-                    if (p.Length == 1)
+                    var p = CliInterface.GetRunningProcesses(n);
+
+                    if (p.Count == 1)
                         controller.DoProcessStarted(exe, p[0]);
                     else
                         Log.Instance.Write(Log_Severity.Fatal, "Error creating CLI process {0}", exe);

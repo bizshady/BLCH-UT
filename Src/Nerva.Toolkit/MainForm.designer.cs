@@ -78,6 +78,9 @@ namespace Nerva.Toolkit
 			var file_Preferences = new Command { MenuText = "Preferences", ToolBarText = "Preferences" };	
 			file_Preferences.Executed += file_Preferences_Clicked;
 
+			var file_UpdateCheck = new Command { MenuText = "Check for Updates", ToolBarText = "Check for Updates" };	
+			file_UpdateCheck.Executed += file_UpdateCheck_Clicked;
+
 			var daemon_ToggleMining = new Command { MenuText = "Toggle Miner", ToolBarText = "Toggle Miner" };			
 			daemon_ToggleMining.Executed += daemon_ToggleMining_Clicked;
 

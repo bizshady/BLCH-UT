@@ -76,7 +76,7 @@ namespace Nerva.Toolkit.Helpers
 
         public int Count => containers.Count;
 
-        public Task RunTask(string name, string description, Action action)
+        public TaskContainer RunTask(string name, string description, Action action)
         {
             //Basically, we try to add the task to the list, if that works, we start the task,
             //otherwise we write a message in the log and return
@@ -85,7 +85,7 @@ namespace Nerva.Toolkit.Helpers
                 Description = description}))
             {
                 containers[name].Task = Task.Run(action);
-                return containers[name].Task;
+                return containers[name];
             }
             else
             {

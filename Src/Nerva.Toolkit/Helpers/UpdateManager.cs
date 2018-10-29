@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Net;
 using AngryWasp.Logger;
+using Nerva.Rpc;
 using Nerva.Rpc.Daemon;
 using Nerva.Toolkit.CLI;
+using Newtonsoft.Json;
 
 namespace Nerva.Toolkit.Helpers
 {
@@ -18,8 +20,12 @@ namespace Nerva.Toolkit.Helpers
 	{
         //Deprecated. Move all code to VersionManager
         private static Update_Status_Code updateStatus = Update_Status_Code.Undefined;
-
+        private static ulong currentLocalVersion;
+        private static ulong currentRemoteVersion;
         public static Update_Status_Code UpdateStatus => updateStatus;
+
+        public static ulong CurrentLocalVersion => currentLocalVersion;
+        public static ulong CurrentRemoteVersion => currentRemoteVersion;
 
         public static bool MakeHttpRequest(string url, out string returnString)
         {
@@ -61,20 +67,21 @@ namespace Nerva.Toolkit.Helpers
             
             var version = daemonInfo.Version;
             
-            ulong localVersion = Conversions.OctetSetToInt(version);
-            ulong remoteVersion = CheckAvailableVersion();
+            currentLocalVersion = Conversions.OctetSetToInt(version);
+            currentRemoteVersion = CheckAvailableVersion();
 
-            if (remoteVersion == 0)
+            if (currentRemoteVersion == 0)
                 return;
 
             Log.Instance.Write("Installed CLI version {0}", version);
-            updateStatus = (remoteVersion == localVersion) ? Update_Status_Code.UpToDate : Update_Status_Code.NewVersionAvailable;
+            updateStatus = (currentRemoteVersion == currentLocalVersion) ? Update_Status_Code.UpToDate : Update_Status_Code.NewVersionAvailable;
         }
         
         private static ulong CheckAvailableVersion()
         {
-            string versionString = null;
-            MakeHttpRequest("http://api.getnerva.org/getversion.php", out versionString);
+            string infoJson = null;
+            MakeHttpRequest("http://api.getnerva.org/getinfo.php", out infoJson);
+            string versionString = JsonConvert.DeserializeObject<ResponseData<GetInfoResponseData>>(infoJson).Result.Version;
 
             if (versionString == null)
             {

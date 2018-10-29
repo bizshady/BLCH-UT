@@ -10,12 +10,14 @@ using Eto.Forms;
 using Nerva.Toolkit.CLI;
 using Nerva.Toolkit.Config;
 using Nerva.Toolkit.Helpers;
+using Nerva.Toolkit.Helpers.Native;
 
 namespace Nerva.Toolkit.Content.Wizard
 {
     public class GetCliContent : WizardContent
     {
         private Control content;
+        private bool existingCli = false;
 
         public override string Title => "Download NERVA";
 
@@ -46,12 +48,15 @@ namespace Nerva.Toolkit.Content.Wizard
                         {
                             case OS_Type.Windows:
                                 link = VersionManager.VersionInfo.WindowsLink;
+                                existingCli = false;
                                 break;
                             case OS_Type.Linux:
                                 link = VersionManager.VersionInfo.LinuxLink;
+                                existingCli = File.Exists(Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".local/bin/nervad"));
                                 break;
                             case OS_Type.Mac:
                                 link = VersionManager.VersionInfo.MacLink;
+                                existingCli = File.Exists("/usr/local/bin/nervad");
                                 break;
                         }
 
@@ -66,6 +71,25 @@ namespace Nerva.Toolkit.Content.Wizard
             {
                 HandleDownloadClick(link);
             };
+
+            if (existingCli)
+            {
+                GetExistingCliPath();
+                return new StackLayout
+                {
+                    Orientation = Orientation.Vertical,
+                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                    VerticalContentAlignment = VerticalAlignment.Stretch,
+                    Items =
+                    {
+                        new Label { Text = $"It appears you already have the" },
+                        new Label { Text = $"{OS.Type} CLI tools installed." },
+                        new Label { Text = $"Press >> to continue." },
+                        new Label { Text = "   " },
+                        new StackLayoutItem(null, true),
+                    }
+                };
+            }
 
             return new StackLayout
             {
@@ -83,6 +107,8 @@ namespace Nerva.Toolkit.Content.Wizard
                         Orientation = Orientation.Horizontal,
                         HorizontalContentAlignment = HorizontalAlignment.Stretch,
                         VerticalContentAlignment = VerticalAlignment.Stretch,
+                        Padding = new Padding(10, 0, 0, 0),
+                        Spacing = 10,
                         Items =
                         {
                             new StackLayoutItem(null, true),
@@ -93,6 +119,19 @@ namespace Nerva.Toolkit.Content.Wizard
                     pbDownload
                 }
             };
+        }
+
+        private void GetExistingCliPath()
+        {
+            string dest = null;
+            if (OS.IsMac())
+                dest = "/usr/local/bin";
+            else if (OS.IsLinux())
+                dest = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".local/bin");
+            else //should never happen
+                Log.Instance.Write(Log_Severity.Fatal, "Attempt to use existing CLI path on unsupported system");
+
+            Configuration.Instance.ToolsPath = dest;
         }
 
         private Control CreateNotSupportedContent()
@@ -145,7 +184,7 @@ namespace Nerva.Toolkit.Content.Wizard
                     btnDownload.Enabled = true;
 
                     if (success)
-                    {
+                    { 
                         Parent.EnableNextButton(true);
                         Configuration.Instance.ToolsPath = dest;
                         Log.Instance.Write("Setting Config.ToolsPath: {0}", dest);
