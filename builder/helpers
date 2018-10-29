@@ -1,0 +1,13 @@
+#!/bin/bash
+
+BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NERVA_DIR=$(dirname $BUILDER_DIR)
+
+function detectversion()
+{
+    ver=$(awk '/public const string VERSION = /{ print $6 }' < ${NERVA_DIR}/Src/Nerva.Toolkit/Helpers/Constants.cs)
+	name=$(awk '/public const string CODE_NAME = /{ print $6 }' < ${NERVA_DIR}/Src/Nerva.Toolkit/Helpers/Constants.cs)
+    export NERVA_VERSION=$(echo ${ver} | tr -d '";')
+	export NERVA_CODENAME=$(echo ${name} | tr -d '";')
+    echo NERVA version detected as ${NERVA_VERSION}: ${NERVA_CODENAME}
+}

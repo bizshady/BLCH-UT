@@ -1,0 +1,19 @@
+#!/bin/bash
+
+BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NERVA_DIR=$(dirname $BUILDER_DIR)
+BUILDER_OUTPUT_DIR=${BUILDER_DIR}/output
+source ${BUILDER_DIR}/helpers
+detectversion
+
+#Build the source
+mkdir -p ${BUILDER_OUTPUT_DIR}/bin
+dotnet restore
+msbuild /property:GenerateFullPaths=true /property:Configuration=Release \
+/property:TrimUnusedDependencies=true /t:build /p:OutputPath=${BUILDER_OUTPUT_DIR}/bin ${NERVA_DIR}/Nerva.Toolkit.sln
+
+${BUILDER_DIR}/package-mac
+
+rm -rf ${BUILDER_OUTPUT_DIR}/bin/Nerva.Toolkit.Frontend.app
+
+${BUILDER_DIR}/package

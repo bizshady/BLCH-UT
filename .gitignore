@@ -4,3 +4,5 @@ Bin
 BuildOutput
 .DS_Store
 .vs
+version.php
+*.zip
