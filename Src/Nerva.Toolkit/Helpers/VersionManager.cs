@@ -99,7 +99,7 @@ namespace Nerva.Toolkit.Helpers
 
                 if (File.Exists(destFile))
                 {
-                    Log.Instance.Write("Local copy of CLI tools found.");
+                    Log.Instance.Write("CLI tools found @ {0}", destFile);
                     ExtractFile(destDir, destFile, onComplete);
                 }
                 else
