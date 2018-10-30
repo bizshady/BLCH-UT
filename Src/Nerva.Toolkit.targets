@@ -45,7 +45,8 @@
     <ProjectReference Include="../../External/AngryWasp.Serializer/Src/AngryWasp.Serializer.Serializers/AngryWasp.Serializer.Serializers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="../../External/Lib/MonoMac.dll"/>
-    <Reference Include="../../External/Lib/Mono.Posix.dll"/>
+    <Content Include="../../External/Lib/MonoMac.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
