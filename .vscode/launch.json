@@ -5,23 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug-Windows",
-            "type": "clr",
-            "request": "launch",
-            "program": "${workspaceRoot}/Bin/PortableDebug/Nerva.Toolkit.Frontend.exe",
-            "cwd": "${workspaceRoot}/Bin",
-            "preLaunchTask": "build-debug-windows",
-            "args":[
-                "--log-file", "./app.log",
-                "--config-file", "./app.config"
-            ]
-        },
-        {
             "name": "Debug-Linux",
             "type": "mono",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Debug/Nerva.Toolkit.Frontend.exe",
-            "cwd": "${workspaceRoot}/Bin",
+            "program": "${workspaceRoot}/Bin/Debug/Linux/Nerva.Toolkit.Linux.exe",
+            "cwd": "${workspaceRoot}/Bin/Debug/Linux",
             "preLaunchTask": "build-debug-linux",
             "args":[
                 "--log-file", "./app.log",
@@ -29,12 +17,12 @@
             ]
         },
         {
-            "name": "Release",
-            "type": "mono",
+            "name": "Debug-Windows",
+            "type": "clr",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Release/Nerva.Toolkit.Frontend.exe",
-            "cwd": "${workspaceRoot}/Bin",
-            "preLaunchTask": "build-release",
+            "program": "${workspaceRoot}/Bin/Debug/Windows/Nerva.Toolkit.Linux.exe",
+            "cwd": "${workspaceRoot}/Bin/Debug/Windows",
+            "preLaunchTask": "build-debug-windows",
             "args":[
                 "--log-file", "./app.log",
                 "--config-file", "./app.config"

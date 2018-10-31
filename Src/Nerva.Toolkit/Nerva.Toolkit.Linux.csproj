@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Nerva.Toolkit.targets"/>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Nerva.Toolkit</RootNamespace>
+    <DefineConstants>$(DefineConstants);UNIX;</DefineConstants>
+    <AssemblyName>Nerva.Toolkit.Linux.Backend</AssemblyName>
+    <OutputPath>../../Bin/$(Configuration)/Linux</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../Content/NERVA-Logo.png"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Posix"/>
+  </ItemGroup>
+</Project>

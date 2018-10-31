@@ -63,7 +63,7 @@ namespace Nerva.Toolkit.Helpers
                         break;
                     case PlatformID.Unix:
                         {
-                            var uname = LinuxNative.Uname().sysname.ToLower();
+                            var uname = UnixNative.Sysname();
                             if (uname == "linux")
                                 type = OS_Type.Linux;
                             else if (uname == "darwin")

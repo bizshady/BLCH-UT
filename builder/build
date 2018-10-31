@@ -1,19 +1,32 @@
 #!/bin/bash
 
 BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NERVA_DIR=$(dirname $BUILDER_DIR)
-BUILDER_OUTPUT_DIR=${BUILDER_DIR}/output
 source ${BUILDER_DIR}/helpers
 detectversion
 
-#Build the source
-mkdir -p ${BUILDER_OUTPUT_DIR}/bin
-dotnet restore
-msbuild /property:GenerateFullPaths=true /property:Configuration=Release \
-/property:TrimUnusedDependencies=true /t:build /p:OutputPath=${BUILDER_OUTPUT_DIR}/bin ${NERVA_DIR}/Nerva.Toolkit.sln
+function preclean()
+{
+    find ${NERVA_DIR}/Src -iname "bin" -o -iname "obj" | xargs rm -rf
+}
 
-${BUILDER_DIR}/package-mac
+function postclean()
+{
+    find ${NERVA_DIR}/Bin -iname "*.pdb" | xargs rm -rf
+}
 
-rm -rf ${BUILDER_OUTPUT_DIR}/bin/Nerva.Toolkit.Frontend.app
+function build()
+{
+    preclean
 
-${BUILDER_DIR}/package
+    msbuild /t:restore /t:build \
+    /p:GenerateFullPaths=true /p:Configuration=Release /p:TrimUnusedDependencies=true \
+    /p:OutputPath=${NERVA_DIR}/Bin/Release/$1 ${NERVA_DIR}/Src/Nerva.Toolkit.Frontend/Nerva.Toolkit.Frontend.$1.csproj
+
+    postclean
+}
+
+rm -rf ${NERVA_DIR}/Bin/Release
+
+build Linux
+build Windows
+build Mac

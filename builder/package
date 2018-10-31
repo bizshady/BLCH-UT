@@ -1,10 +1,20 @@
 #!/bin/bash
 
 BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NERVA_DIR=$(dirname $BUILDER_DIR)
-BUILDER_OUTPUT_DIR=${BUILDER_DIR}/output
 source ${BUILDER_DIR}/helpers
 detectversion
+
+function linux()
+{
+
+}
+
+function windows()
+{
+	#todo: need an installer
+	cd ${BUILDER_DIR}/output
+	zip -r ${NERVA_DIR}/nerva-gui-v${NERVA_VERSION}_windows.zip windows/
+}
 
 function install()
 {

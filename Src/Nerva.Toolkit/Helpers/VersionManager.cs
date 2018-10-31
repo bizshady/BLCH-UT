@@ -148,7 +148,7 @@ namespace Nerva.Toolkit.Helpers
 
                     // ZipFile does not maintain linux permissions, so we have to set them
                     if (OS.IsUnix())
-                        LinuxNative.Chmod(extFile, 33261);
+                        UnixNative.Chmod(extFile, 33261);
                 }
 
                 if (OS.IsUnix())

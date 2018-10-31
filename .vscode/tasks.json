@@ -9,10 +9,9 @@
             "command": "msbuild",
             "args": [
                 // Ask msbuild to generate full paths for file names.
-                "/property:GenerateFullPaths=true",
-                "/t:build",
-                "/property:Configuration=Debug",
-                "/property:TrimUnusedDependencies=true"
+                "/t:build", "/p:GenerateFullPaths=true", "/p:Configuration=Debug", "/p:TrimUnusedDependencies=true",
+                "/p:OutputPath=${workspaceRoot}/Bin/Debug/Linux",
+                "${workspaceRoot}/Nerva.Toolkit.Linux.sln"
             ],
             "group": {
                 "kind": "build",
@@ -31,34 +30,14 @@
             "command": "msbuild",
             "args": [
                 // Ask msbuild to generate full paths for file names.
-                "/property:GenerateFullPaths=true",
-                "/t:build",
-                "/property:Configuration=PortableDebug",
-                "/property:TrimUnusedDependencies=true"
+                "/t:build", "/p:GenerateFullPaths=true", "/p:Configuration=Debug", "/p:TrimUnusedDependencies=true",
+                "/p:OutputPath=${workspaceRoot}/Bin/Debug/Linux",
+                "${workspaceRoot}/Src/Nerva.Toolkit.Frontend/Nerva.Toolkit.Frontend.Windows.csproj"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "presentation": {
-                // Reveal the output only if unrecognized errors occur.
-                "reveal": "silent"
-            },
-            // Use the standard MS compiler pattern to detect errors, warnings and infos
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "build-release",
-            "type": "shell",
-            "command": "msbuild",
-            "args": [
-                // Ask msbuild to generate full paths for file names.
-                "/property:GenerateFullPaths=true",
-                "/t:build",
-                "/property:Configuration=Release",
-                "/property:TrimUnusedDependencies=true"
-            ],
-            "group": "build",
             "presentation": {
                 // Reveal the output only if unrecognized errors occur.
                 "reveal": "silent"

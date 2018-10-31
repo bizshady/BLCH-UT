@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Nerva.Toolkit.targets"/>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Nerva.Toolkit</RootNamespace>
+    <DefineConstants>$(DefineConstants);WINDOWS;</DefineConstants>
+    <AssemblyName>Nerva.Toolkit.Windows.Backend</AssemblyName>
+    <OutputPath>../../Bin/$(Configuration)/Windows</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../Content/NERVA-Logo.png"/>
+  </ItemGroup>
+</Project>
