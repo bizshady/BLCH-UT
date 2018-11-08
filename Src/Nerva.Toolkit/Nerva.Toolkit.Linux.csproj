@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Nerva.Toolkit</RootNamespace>
     <DefineConstants>$(DefineConstants);UNIX;</DefineConstants>
-    <AssemblyName>Nerva.Toolkit.Linux.Backend</AssemblyName>
+    <AssemblyName>Nerva.Toolkit.Backend</AssemblyName>
     <OutputPath>../../Bin/$(Configuration)/Linux</OutputPath>
   </PropertyGroup>
   <ItemGroup>

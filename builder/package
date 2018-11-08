@@ -1,34 +1,63 @@
 #!/bin/bash
 
+#Launcher64 is taken from the Eto.Forms.Mac64 2.5.0-ci-10024 nuget package
+
 BUILDER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source ${BUILDER_DIR}/helpers
 detectversion
 
-function linux()
+function mac()
 {
+	macdir=${NERVA_DIR}/Bin/Release/Mac
 
+	mkdir -p ${macdir}/Contents
+	mkdir -p ${macdir}/Contents/MacOS
+	mkdir -p ${macdir}/Contents/MonoBundle
+	mkdir -p ${macdir}/Contents/Resources
+
+	find ${macdir}/ -maxdepth 1 -type f -name '*' -exec mv -n {} ${macdir}/Contents/MonoBundle \;
+
+	plist=$(sed -e "s/{NERVA_VERSION}/${NERVA_VERSION}/" -e "s/{DISPLAY_NAME}/${NERVA_CODENAME}/" ${BUILDER_DIR}/Info.plist.template)
+	echo $plist > ${macdir}/Contents/info.plist
+
+	cp ${BUILDER_DIR}/logos/nerva-logo-color.icns ${macdir}/Contents/Resources/nerva-logo-color.icns
+	cp ${BUILDER_DIR}/logos/nerva-logo-color-2.icns ${macdir}/Contents/Resources/nerva-logo-color-2.icns
+
+	cp ${BUILDER_DIR}/Launcher64 ${macdir}/Contents/MacOS/Nerva.Toolkit
+
+	mv ${macdir} ${NERVA_DIR}/Bin/Release/Nerva.Toolkit.app
+
+
+	cd ${NERVA_DIR}/Bin/Release
+	zip -r ${NERVA_DIR}/nerva-gui-v${NERVA_VERSION}_mac.zip Nerva.Toolkit.app/
 }
 
 function windows()
 {
-	#todo: need an installer
-	cd ${BUILDER_DIR}/output
-	zip -r ${NERVA_DIR}/nerva-gui-v${NERVA_VERSION}_windows.zip windows/
+	cd ${NERVA_DIR}/Bin/Release/Windows
+	zip -rj ${NERVA_DIR}/nerva-gui-v${NERVA_VERSION}_windows.zip ./*
 }
 
-function install()
+#the code of this function is used to generate the install script
+function linuxinstall()
 {
-	mkdir -p ~/.local/bin/nervagui
-	cp ./bin/* ~/.local/bin/nervagui
-	cp ./nerva-logo-color.png ~/.local/bin/nervagui/nerva-logo-color.png
+	dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	homedir=$(realpath ~/)
+
+	mkdir -p ${homedir}/.local/bin/nervagui
+	cp -r ${dir}/Bin/* ${homedir}/.local/bin/nervagui
+
+	if [ ! -d ${homedir}/.nerva ]; then
+		mkdir ${homedir}/.nerva
+	fi
 
 	#generate a launcher script
-	lfile=~/.local/bin/nerva-gui
+	lfile=${homedir}/.local/bin/nerva-gui
 	echo "#!/bin/bash" > $lfile
-	echo "mono $(realpath ~/.local/bin/nervagui)/Nerva.Toolkit.Frontend.exe --log-file $(realpath ~/.nerva)/gui.log --config-file $(realpath ~/.nerva)/gui.config" >> $lfile
+	echo "mono ${homedir}/.local/bin/nervagui/Nerva.Toolkit.exe --log-file ${homedir}/.nerva/gui.log --config-file ${homedir}/.nerva/gui.config" >> $lfile
 	chmod +x $lfile
 
-	dfile=~/.local/share/applications/nerva-gui.desktop
+	dfile=${homedir}/.local/share/applications/nerva-gui.desktop
 
 	#Construct .desktop file
 	echo "[Desktop Entry]" > $dfile
@@ -36,36 +65,41 @@ function install()
 	echo "Exec=nerva-gui" >> $dfile
 	echo "Terminal=false" >> $dfile
 	echo "Type=Application" >> $dfile
-	echo "Icon=$(realpath ~/.local/bin/nervagui)/nerva-logo-color.png" >> $dfile
+	echo "Icon=${homedir}/.local/bin/nervagui/Res/nerva-logo-color.png" >> $dfile
 
 	chmod +x $dfile
 
-	ufile=~/.local/bin/nerva-gui-uninstall
+	ufile=${homedir}/.local/bin/nerva-gui-uninstall
 
 	#Construct uninstaller script
 	echo "#!/bin/bash" > $ufile
-	echo "rm -rf ~/.local/bin/nervagui" >> $ufile
-	echo "rm ~/.local/bin/nerva-gui" >> $ufile
-	echo "rm ~/.local/share/applications/nerva-gui.desktop" >> $ufile
-	echo "rm ~/.local/bin/nerva-gui-uninstall" >> $ufile
+	echo "rm -rf ${homedir}/.local/bin/nervagui" >> $ufile
+	echo "rm ${homedir}/.local/bin/nerva-gui" >> $ufile
+	echo "rm ${homedir}/.local/share/applications/nerva-gui.desktop" >> $ufile
+	echo "rm ${homedir}/.local/bin/nerva-gui-uninstall" >> $ufile
 
 	chmod +x $ufile
 }
 
-dir=${BUILDER_OUTPUT_DIR}/Nerva.Toolkit
-mkdir -p "${dir}"
-cp -r "${BUILDER_OUTPUT_DIR}/bin" ${dir}
+function linux()
+{
+	linuxdir=${NERVA_DIR}/Bin/Release/Linux
+	mkdir -p ${linuxdir}/Bin/Res
 
-cp "${BUILDER_DIR}/nerva-logo-color.png" "${dir}/nerva-logo-color.png"
+	find ${linuxdir}/ -maxdepth 1 -type f -name '*' -exec mv -n {} ${linuxdir}/Bin \;
+	cp ${BUILDER_DIR}/logos/nerva-logo-color.png ${linuxdir}/Bin/Res/nerva-logo-color.png
 
-#Construct linux installer script
-lscript=${dir}/install.linux
-echo "#!/bin/bash" > $lscript
-echo "function $(declare -f install)" >> $lscript
-echo "install" >> $lscript
-chmod +x $lscript
+	#Construct linux installer script
+	lscript=${linuxdir}/install
+	echo "#!/bin/bash" > $lscript
+	echo "function $(declare -f linuxinstall)" >> $lscript
+	echo "linuxinstall" >> $lscript
+	chmod +x $lscript
 
-#windows users aren't getting an installer. That OS just makes it too hard to script something that works
+	cd ${NERVA_DIR}/Bin/Release/Linux
+	zip -r ${NERVA_DIR}/nerva-gui-v${NERVA_VERSION}_linux.zip ./*
+}
 
-cd ${BUILDER_OUTPUT_DIR}
-zip -r ${NERVA_DIR}/nerva-gui-v${NERVA_VERSION}.zip Nerva.Toolkit/
+linux
+mac
+windows

@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Nerva.Toolkit</RootNamespace>
     <DefineConstants>$(DefineConstants);UNIX;</DefineConstants>
-    <AssemblyName>Nerva.Toolkit.Mac.Backend</AssemblyName>
+    <AssemblyName>Nerva.Toolkit.Backend</AssemblyName>
     <OutputPath>../../Bin/$(Configuration)/Mac</OutputPath>
   </PropertyGroup>
   <ItemGroup>

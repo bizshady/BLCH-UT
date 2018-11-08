@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Nerva.Toolkit.Frontend</RootNamespace>
     <DefineConstants>$(DefineConstants);WINDOWS;</DefineConstants>
-    <AssemblyName>Nerva.Toolkit.Windows</AssemblyName>
+    <AssemblyName>Nerva.Toolkit</AssemblyName>
     <OutputPath>../../Bin/$(Configuration)/Windows</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

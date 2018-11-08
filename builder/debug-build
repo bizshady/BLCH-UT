@@ -19,14 +19,10 @@ function build()
     preclean
 
     msbuild /t:restore /t:build \
-    /p:GenerateFullPaths=true /p:Configuration=Release /p:TrimUnusedDependencies=true \
-    /p:OutputPath=${NERVA_DIR}/Bin/Release/$1 ${NERVA_DIR}/Src/Nerva.Toolkit.Frontend/Nerva.Toolkit.Frontend.$1.csproj
+    /p:GenerateFullPaths=true /p:Configuration=Debug /p:TrimUnusedDependencies=true \
+    /p:OutputPath=${NERVA_DIR}/Bin/Debug/$1 ${NERVA_DIR}/Src/Nerva.Toolkit.Frontend/Nerva.Toolkit.Frontend.$1.csproj
 
     postclean
 }
 
-rm -rf ${NERVA_DIR}/Bin/Release
-
 build Linux
-build Mac
-build Windows

@@ -8,9 +8,8 @@
             "name": "Debug-Linux",
             "type": "mono",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Debug/Linux/Nerva.Toolkit.Linux.exe",
+            "program": "${workspaceRoot}/Bin/Debug/Linux/Nerva.Toolkit.exe",
             "cwd": "${workspaceRoot}/Bin/Debug/Linux",
-            "preLaunchTask": "build-debug-linux",
             "args":[
                 "--log-file", "./app.log",
                 "--config-file", "./app.config"
@@ -20,7 +19,7 @@
             "name": "Debug-Windows",
             "type": "clr",
             "request": "launch",
-            "program": "${workspaceRoot}/Bin/Debug/Windows/Nerva.Toolkit.Linux.exe",
+            "program": "${workspaceRoot}/Bin/Debug/Windows/Nerva.Toolkit.exe",
             "cwd": "${workspaceRoot}/Bin/Debug/Windows",
             "preLaunchTask": "build-debug-windows",
             "args":[

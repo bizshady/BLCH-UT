@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Nerva.Toolkit.Frontend</RootNamespace>
     <DefineConstants>$(DefineConstants);UNIX;</DefineConstants>
-    <AssemblyName>Nerva.Toolkit.Linux</AssemblyName>
+    <AssemblyName>Nerva.Toolkit</AssemblyName>
     <OutputPath>../../Bin/$(Configuration)/Linux</OutputPath>
   </PropertyGroup>
   <ItemGroup>
