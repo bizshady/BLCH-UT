@@ -6,4 +6,4 @@ builder/output
 .vs
 version.php
 *.zip
-*.md5
+*.md5.txt

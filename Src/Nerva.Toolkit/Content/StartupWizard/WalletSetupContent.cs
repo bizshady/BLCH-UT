@@ -58,12 +58,14 @@ namespace Nerva.Toolkit.Content.Wizard
                             Application.Instance.Invoke( () =>
                             {
                                 lblImport.Text = "Wallet creation failed";
-                                Parent.EnableNextButton(false);     
+                                Parent.EnableNextButton(true);     
                             });
                         }
                     });
                     
                 }
+                else
+                    Parent.EnableNextButton(true); 
             };
 
             btnImportAccount.Click += (s, e) =>
@@ -105,11 +107,14 @@ namespace Nerva.Toolkit.Content.Wizard
                             Application.Instance.Invoke( () =>
                             {
                                 lblImport.Text = "Wallet import failed";
-                                Parent.EnableNextButton(false);     
+                                Parent.EnableNextButton(true);     
                             });
                         }
                     });
                 }
+                else
+                    Parent.EnableNextButton(true); 
+                
             };
 
             return new StackLayout

@@ -145,9 +145,9 @@ namespace Nerva.Toolkit.Content.Wizard
                 btnNext.Enabled = (currentPage < pages.Length - 1);
 
                 if (currentPage >= pages.Length - 1)
-                {
                     btnNext.Text = "Finish";
-                }
+                else
+                    btnNext.Text = ">>";
 			});
         }
 
