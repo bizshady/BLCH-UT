@@ -46,12 +46,12 @@ namespace Nerva.Toolkit.Content.Dialogs
         public PreferencesDialog() : base("Preferences")
         {
             btnGenRandDaemonPort.Click += (s, e) => nsDaemonPort.Value = MathHelper.Random.NextInt((int)nsDaemonPort.MinValue, (int)nsDaemonPort.MaxValue);
-            btnUseDefaultPort.Click += (s, e) => nsDaemonPort.Value = (chkTestnet.Checked.Value ? 18566 : 17566);
+            btnUseDefaultPort.Click += (s, e) => nsDaemonPort.Value = (chkTestnet.Checked.Value ? 18566 : 13895);
 
             chkTestnet.CheckedChanged += (s, e) =>
             {
                 if (nsDaemonPort.Value == 17566 || nsDaemonPort.Value == 18566)
-                    nsDaemonPort.Value = (chkTestnet.Checked.Value ? 18566 : 17566);
+                    nsDaemonPort.Value = (chkTestnet.Checked.Value ? 18566 : 13895);
             };
 
             btnToolsBrowse.Click += (s, e) =>

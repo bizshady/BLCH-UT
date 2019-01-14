@@ -23,7 +23,7 @@ namespace Nerva.Toolkit.Config
                 MiningAddress = Constants.DEV_WALLET_ADDRESS,
                 MiningThreads = 2,
 
-                Rpc = RpcDetails.New(testnet ? 18566u : 17566u)
+                Rpc = RpcDetails.New(testnet ? 18566u : 13895u)
             };
         }
     }
